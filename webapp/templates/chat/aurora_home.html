@@ -217,9 +217,8 @@
                 <div class="ar-bubble"><div class="markdown-prose">{{ m.content|render_markdown }}</div></div>
                 <div class="ar-meta">
                   {% if m.elapsed_seconds %}<span class="ar-tag">⏱ {{ m.elapsed_seconds|floatformat:1 }}s</span>{% endif %}
-                  {% if m.tokens_completion %}<span class="ar-tag" title="tokens do orquestrador (prompt + resposta)">🔤 {{ m.tokens_prompt|default:0 }} + {{ m.tokens_completion }} tokens</span>{% endif %}
-                  <span class="ar-tag" title="modelo roteador (principal)">🧠 {{ thread.model }}</span>
-                  {% if m.forecaster_used %}<span class="ar-tag" title="modelo de série vencedor do comitê retrospectivo">📈 {{ m.forecaster_used }}</span>{% endif %}
+                  {% if m.tokens_completion %}<span class="ar-tag" title="tokens do Jurema (prompt + resposta)">🔤 {{ m.tokens_prompt|default:0 }} + {{ m.tokens_completion }} tokens</span>{% endif %}
+                  <span class="ar-tag" title="LLM que redigiu a resposta">🧠 Jurema-7B</span>
                 </div>
               </div>
             </div>
@@ -265,7 +264,7 @@
           <button type="submit" class="ar-send" id="send-btn">Enviar →</button>
         </div>
       </form>
-      <div class="ar-hint">O Qwen3 orquestra e escolhe a fonte; séries temporais usam o Chronos-2 automaticamente. Análise retrospectiva (SINAN 2014–2024) · respostas podem conter imprecisões — confira as fontes.</div>
+      <div class="ar-hint">O Aurora identifica a fonte certa (dados oficiais, leis ou documentação) e o Jurema redige a resposta. Dados SINAM/SIPIA-CT · respostas podem conter imprecisões — confira as fontes.</div>
     </div>
   </main>
 </div>
@@ -329,8 +328,8 @@
   if (thread) thread.scrollTop = thread.scrollHeight;
 
   // Overlay "pensando" ao enviar (o servidor processa e recarrega a página)
-  const STAGES = ['Lendo a pergunta','Qwen3 escolhendo a fonte certa','Consultando dados / leis',
-                  'Analisando (Chronos-2 se for série temporal)','Redigindo a resposta em português'];
+  const STAGES = ['Lendo a pergunta','Identificando a fonte certa','Consultando dados / leis',
+                  'Organizando as informações','Redigindo a resposta em português'];
   function thinkingOverlay(text) {
     const inner = thread.querySelector('.ar-inner');
     const hello = inner.querySelector('.ar-hello'); if (hello) hello.remove();
