@@ -1,37 +1,48 @@
-Projeto Aurora - Pacote de deploy com Docker
-=============================================
+Aurora Responde - Pacote de deploy com Docker (fork leve, so Jurema)
+=====================================================================
 
 Conteudo:
-  Dockerfile, docker-compose.yml, .dockerignore  -> imagem e orquestracao
-  docker/entrypoint.sh, docker/fetch_models.py    -> init + download dos modelos
-  deploy.sh / deploy.ps1                           -> CLONE AUTOMATICO + subida (Linux/Windows)
-  deploy.env.example                               -> onde vai a "key do GitHub" (copie p/ deploy.env)
-  .env.example                                     -> modelo do .env (banco EXTERNO + chaves de API)
-  docs/docker.md, docs/Aurora-Docker.pdf           -> documentacao completa (passo a passo)
+  Dockerfile, docker-compose.yml, .dockerignore  -> imagem leve e orquestracao
+  docker/entrypoint.sh                            -> init (espera banco + migrate)
+  deploy.sh / deploy.ps1                          -> CLONE AUTOMATICO + subida (Linux/Windows)
+  deploy.env.example                              -> onde vai a "key do GitHub" (copie p/ deploy.env)
+  .env.example                                    -> modelo do .env (banco EXTERNO)
+  docs/docker.md                                  -> documentacao completa (passo a passo)
+
+Arquitetura: UM so LLM, o Jurema-7B (via Ollama). Sem Qwen3, sem forecasting
+(Chronos/ChatTime), sem embeddings/pgvector, sem chaves de API.
 
 
-COMO USAR (servidor novo)
--------------------------
+COMO USAR (manual, recomendado)
+-------------------------------
+  1. git clone https://github.com/projetoaurora41-cloud/Aurora-Responde.git
+     cd Aurora-Responde
+  2. python -m venv venv  &&  ativar  &&  pip install -r requirements.txt
+  3. copie .env.example -> .env e preencha PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD
+  4. instale o Jurema no Ollama:
+        ollama pull hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF
+        ollama cp  hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF jurema-7b
+  5. python webapp/manage.py migrate  &&  python webapp/manage.py runserver
+  6. abra http://127.0.0.1:8000/
+  (passo a passo completo em TUTORIAL.md)
+
+
+COMO USAR (Docker, servidor novo)
+---------------------------------
   1. Instale git + Docker (com 'docker compose').
-
   2. Coloque a "key do GitHub" no deploy.env:
         Linux:   cp deploy.env.example deploy.env
         Windows: Copy-Item deploy.env.example deploy.env
      e edite AURORA_REPO_URL com um token (PAT, escopo 'repo').
-
   3. Rode o bootstrap (clona o repo e cria o .env):
         Linux:   bash deploy.sh
         Windows: powershell -ExecutionPolicy Bypass -File deploy.ps1
-
-     -> Na 1a vez ele CRIA o Projeto-Aurora/.env e PARA, pedindo pra editar.
-
-  4. Edite Projeto-Aurora/.env com o banco EXTERNO (ver secao abaixo).
-
-  5. Rode o deploy de novo (agora sobe os containers):
+     -> Na 1a vez ele CRIA o Aurora-Responde/.env e PARA, pedindo pra editar.
+  4. Edite Aurora-Responde/.env com o banco EXTERNO (ver secao abaixo).
+  5. Rode o deploy de novo (agora sobe os containers: web + ollama + Jurema):
         bash deploy.sh          (ou deploy.ps1 no Windows)
      Depois crie o admin:
         docker compose exec web python manage.py createsuperuser
-
   6. Acesse:  http://IP-DO-SERVIDOR:8000
 
 
@@ -42,38 +53,35 @@ sem aspas, sem espacos em volta do "="). Exemplo do que editar:
 
     PGHOST=host.docker.internal      # Postgres na PROPRIA maquina (host)
     PGPORT=5432                      # ...ou o IP/host se o banco for remoto
-    PGDATABASE=Aurola
+    PGDATABASE=Aurora
     PGUSER=postgres
     PGPASSWORD=sua-senha-aqui
+    JUREMA_MODEL=jurema-7b
+    OLLAMA_MODEL=jurema-7b
 
-Abra e edite com:   nano Projeto-Aurora/.env   (Linux)
-                    notepad Projeto-Aurora\.env (Windows)
+Abra e edite com:   nano Aurora-Responde/.env    (Linux)
+                    notepad Aurora-Responde\.env (Windows)
 
   >>> NAO rode  'dotenv PGHOST=... PGPORT=...'  no terminal! <<<
-  Aquele comando NAO define variaveis - ele tenta EXECUTAR "PGHOST=..." como
-  se fosse um programa, e da o erro:
-      FileNotFoundError: .../PGHOST=host.docker.internal
   As variaveis vao DENTRO do arquivo .env, nao num comando dotenv.
 
 
 IMPORTANTE
 ----------
 * O BANCO DE DADOS NAO faz parte do Docker. Ele e EXTERNO: voce precisa ter um
-  PostgreSQL rodando, com o banco/usuario criados e a extensao pgvector, e
-  aceitando conexao do container (ver docs/Aurora-Docker.pdf).
-
+  PostgreSQL rodando, com os dados (SINAM/VIOLBR + SIPIA-CT) ja carregados e
+  aceitando conexao do container.
 * Se o Postgres roda na PROPRIA maquina, use  PGHOST=host.docker.internal
-  (ja funciona no Linux tambem, gracas ao extra_hosts do docker-compose.yml).
+  (funciona no Linux tambem, gracas ao extra_hosts do docker-compose.yml).
+* O Jurema-7B (~4,7 GB) e baixado automaticamente pelo servico 'ollama-pull'
+  na 1a subida; fica no volume 'ollama-models'.
 
 
 SE O BUILD FALHAR COM "Temporary failure resolving 'deb.debian.org'"
 -------------------------------------------------------------------
 E' DNS dos conteineres (comum em VPS). O deploy.sh JA corrige sozinho:
 grava {"dns":["8.8.8.8","1.1.1.1"]} em /etc/docker/daemon.json e reinicia o
-Docker. Basta rodar 'bash deploy.sh' de novo. Para desativar essa correcao:
-    AURORA_SKIP_DNS_FIX=1 bash deploy.sh
-Para trocar os servidores DNS:
-    AURORA_DOCKER_DNS="1.1.1.1 8.8.8.8" bash deploy.sh
+Docker. Basta rodar 'bash deploy.sh' de novo.
 
 
-Detalhes e troubleshooting: docs/docker.md  e  docs/Aurora-Docker.pdf
+Detalhes e troubleshooting: docs/docker.md

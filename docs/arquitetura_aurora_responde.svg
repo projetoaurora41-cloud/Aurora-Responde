@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" font-family="'Segoe UI',Raleway,Inter,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#5b6b7b"/>
+    </marker>
+    <style>
+      .title{font-size:22px;font-weight:800;fill:#071D41}
+      .sub{font-size:13px;fill:#5b6b7b}
+      .boxt{font-size:14px;font-weight:700}
+      .boxs{font-size:11.5px;fill:#5b6b7b}
+      .tag{font-size:11px;font-weight:700;fill:#fff}
+      .lbl{font-size:11px;fill:#5b6b7b}
+      .edge{stroke:#5b6b7b;stroke-width:1.6;fill:none;marker-end:url(#arr)}
+    </style>
+  </defs>
+
+  <!-- título -->
+  <text x="40" y="44" class="title">Aurora Responde — arquitetura (só Jurema)</text>
+  <text x="40" y="66" class="sub">Um chat único. Roteador determinístico escolhe a fonte; o Jurema-7B redige todas as respostas.</text>
+
+  <!-- 1. Usuário -->
+  <rect x="40" y="110" width="150" height="70" rx="12" fill="#eef3fb" stroke="#c7d6ee"/>
+  <text x="115" y="142" text-anchor="middle" class="boxt" fill="#071D41">Pergunta</text>
+  <text x="115" y="162" text-anchor="middle" class="boxs">usuário (PT-BR)</text>
+
+  <!-- 2. Guardrails entrada -->
+  <rect x="230" y="105" width="160" height="80" rx="12" fill="#fff7e6" stroke="#f2c94c"/>
+  <text x="310" y="133" text-anchor="middle" class="boxt" fill="#8a6d00">Guardrails (entrada)</text>
+  <text x="310" y="152" text-anchor="middle" class="boxs">risco → Conselho Tutelar/</text>
+  <text x="310" y="168" text-anchor="middle" class="boxs">Disque 100/BO · injeção · PII</text>
+
+  <!-- 3. Roteador determinístico -->
+  <rect x="430" y="105" width="170" height="80" rx="12" fill="#eaf5ec" stroke="#8fcf9c"/>
+  <text x="515" y="133" text-anchor="middle" class="boxt" fill="#2f6b3a">Roteador</text>
+  <text x="515" y="152" text-anchor="middle" class="boxs">determinístico (sem LLM):</text>
+  <text x="515" y="168" text-anchor="middle" class="boxs">tema · geo · tipo · ano</text>
+
+  <!-- edges topo -->
+  <path class="edge" d="M190,145 L228,145"/>
+  <path class="edge" d="M390,145 L428,145"/>
+
+  <!-- 4. Fontes (fan-out) -->
+  <text x="515" y="222" text-anchor="middle" class="lbl">escolhe UMA fonte</text>
+
+  <rect x="150" y="250" width="180" height="76" rx="12" fill="#eef3fb" stroke="#c7d6ee"/>
+  <text x="240" y="277" text-anchor="middle" class="boxt" fill="#071D41">Dados ao vivo</text>
+  <text x="240" y="296" text-anchor="middle" class="boxs">PostgreSQL — SINAM/VIOLBR</text>
+  <text x="240" y="312" text-anchor="middle" class="boxs">+ SIPIA-CT · números exatos</text>
+
+  <rect x="350" y="250" width="150" height="76" rx="12" fill="#eef3fb" stroke="#c7d6ee"/>
+  <text x="425" y="277" text-anchor="middle" class="boxt" fill="#071D41">Legislação</text>
+  <text x="425" y="296" text-anchor="middle" class="boxs">corpus jurídico curado</text>
+  <text x="425" y="312" text-anchor="middle" class="boxs">(ECA, leis, ...)</text>
+
+  <rect x="520" y="250" width="150" height="76" rx="12" fill="#eef3fb" stroke="#c7d6ee"/>
+  <text x="595" y="277" text-anchor="middle" class="boxt" fill="#071D41">Documentação</text>
+  <text x="595" y="296" text-anchor="middle" class="boxs">docs/ do produto</text>
+  <text x="595" y="312" text-anchor="middle" class="boxs">(como funciona)</text>
+
+  <!-- edges roteador -> fontes -->
+  <path class="edge" d="M470,185 C420,215 300,220 250,248"/>
+  <path class="edge" d="M510,185 L470,248"/>
+  <path class="edge" d="M560,185 C600,215 610,225 605,248"/>
+
+  <!-- 5. Jurema -->
+  <rect x="300" y="380" width="380" height="78" rx="14" fill="#efeaff" stroke="#b9a7f5"/>
+  <text x="490" y="410" text-anchor="middle" class="boxt" fill="#3b2fb0">Jurema-7B · redige a resposta</text>
+  <text x="490" y="430" text-anchor="middle" class="boxs">único LLM (Ollama local). Narra a partir dos dados —</text>
+  <text x="490" y="446" text-anchor="middle" class="boxs">nunca inventa números. Fallback: narrativa pronta do payload.</text>
+
+  <!-- edges fontes -> jurema -->
+  <path class="edge" d="M260,326 C300,355 380,360 410,378"/>
+  <path class="edge" d="M430,326 L470,378"/>
+  <path class="edge" d="M580,326 C560,355 540,360 540,378"/>
+
+  <!-- 6. Guardrails saida + resposta -->
+  <rect x="300" y="492" width="180" height="48" rx="10" fill="#fff7e6" stroke="#f2c94c"/>
+  <text x="390" y="521" text-anchor="middle" class="boxt" fill="#8a6d00">Guardrails (saída)</text>
+
+  <rect x="520" y="492" width="160" height="48" rx="10" fill="#eaf5ec" stroke="#8fcf9c"/>
+  <text x="600" y="521" text-anchor="middle" class="boxt" fill="#2f6b3a">Resposta</text>
+
+  <path class="edge" d="M450,458 L410,490"/>
+  <path class="edge" d="M480,516 L518,516"/>
+
+  <text x="40" y="548" class="lbl">Sem Qwen3 · sem forecasting (Chronos/ChatTime) · sem embeddings. Leve: Django + PostgreSQL + Ollama(Jurema).</text>
+</svg>

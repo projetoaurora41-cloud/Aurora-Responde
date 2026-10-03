@@ -8,7 +8,7 @@ chat único (Aurora responde) e validar o roteador, os filtros e os follow-ups.
 2. Cole a pergunta e envie (Ctrl+Enter).
 3. Confira o chip **"Consultou `<ferramenta>`"** logo abaixo do seu texto e clique
    em **detalhes** para ver os argumentos e o resultado da ferramenta.
-4. Nos casos de série temporal, confira o badge do modelo vencedor (ex.: **Chronos-2**).
+4. A resposta é redigida pelo **Jurema-7B** (badge 🧠 Jurema-7B na mensagem).
 
 As 4 rotas ("modelos") que o roteador escolhe:
 
@@ -113,9 +113,8 @@ código/HTML/site e escrita criativa):
 
 ---
 
-## Anexo — forecasters (análise retrospectiva)
-No chat, o forecaster é fixo em **Chronos-2** (a série temporal escolhe o vencedor
-do comitê automaticamente). Para exercitar os OUTROS modelos de série
-(`chattime`, `random_forest`, `ets`, `seasonal_naive`, `drift`, `remote_api`),
-use o **benchmark** em `/series-temporais/benchmark/` (rodada *Retrospectivo* ou
-*Integrado*), onde dá para escolher/comparar cada forecaster.
+## Anexo — geração das respostas
+Todas as respostas são redigidas pelo **Jurema-7B** (via Ollama) a partir dos
+dados retornados pela ferramenta. Não há modelos de forecasting neste fork: os
+relatórios são SQL puro (totais por ano, rankings, séries). Ver
+[arquitetura.md](arquitetura.md).

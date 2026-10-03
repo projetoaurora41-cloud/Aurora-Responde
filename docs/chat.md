@@ -1,178 +1,96 @@
-# Chat (orquestrador + ferramentas + pipeline inteligente)
+# Chat (roteador determinístico + Jurema)
 
-Interface conversacional sobre as séries SINAM. Um LLM local (Qwen3 via
-**Ollama**) recebe a pergunta em PT-BR, **conhece o schema do banco** (pré-injetado
-no system prompt) e tem ferramentas que cobrem desde análise estrutural até
-previsão com seleção automática de modelo.
+Interface conversacional única do Aurora Responde. A pergunta em PT-BR passa por
+um **roteador determinístico** (código) que escolhe **uma** fonte; o **Jurema-7B**
+(via Ollama) redige a resposta. Tudo local — nenhuma chamada a API externa.
 
 ```
-Usuário ──► chat ──► orchestrator ──┬─ Ollama (Qwen3-8B)
-                                    │
-                                    └─ Tools (11):
-                                       list_saved_queries, list_forecasters
-                                       load_series, run_sql           (Postgres)
-                                       analyze_series                 (Analytics)
-                                       backtest_forecast              (Analytics + Forecasters)
-                                       auto_forecast       ◄── pipeline completo
-                                       forecast_from_sql, qa_from_sql,
-                                       forecast, qa_multiple_choice    (Forecasters)
+Usuário ─► guardrails(entrada) ─► roteador determinístico ─┬─ relatorio_brasil/uf/municipio  (SQL SINAM)
+                                                           ├─ ranking_municipios             (SQL SINAM)
+                                                           ├─ rag_juridico                   (corpus de leis)
+                                                           ├─ consulta_sipia_ct              (view SIPIA-CT)
+                                                           └─ rag_interno                    (docs/*.md)
+                                      │
+                                      └─► Jurema-7B redige ─► guardrails(saída) ─► resposta
 ```
 
-Tudo local. Nenhuma chamada externa.
+## Pré-requisitos
 
-## Pré-requisitos manuais
-
-1. **Instalar Ollama** (Windows): <https://ollama.com/download/windows>
-2. **Baixar o modelo orquestrador** (~5 GB):
-   ```powershell
-   ollama pull qwen3:8b
+1. **Instalar o [Ollama](https://ollama.com/download)**.
+2. **Instalar o Jurema-7B** (único LLM, ~4,7 GB) e apelidá-lo `jurema-7b`:
+   ```bash
+   ollama pull hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF
+   ollama cp  hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF jurema-7b
    ```
-3. **GPU recomendada**: RTX com >= 12 GB.
+3. GPU ajuda, mas **não é obrigatória** (em CPU a 1ª resposta demora mais, pois
+   carrega o modelo na memória; as seguintes são rápidas).
 
-## Forecasters disponíveis
+## Roteador determinístico (sem LLM escolhendo)
 
-Listados em [`src/series_models/__init__.py`](../src/series_models/__init__.py).
+Em [`orchestrator.py`](../webapp/chats/series_temporais/orquestrador/orchestrator.py).
+Parte de um default (`relatorio_brasil`, `{}`) e refina com detectores de texto —
+os mesmos que, no projeto original, apenas **corrigiam** o Qwen3:
 
-| Chave            | Backend                        | Tamanho | GPU | QA  | Uso típico                                  |
-|------------------|--------------------------------|---------|-----|-----|----------------------------------------------|
-| `chronos2`       | Amazon Chronos-2               | 120M    | ✅  | ❌  | Forecast SOTA, intervalos calibrados.       |
-| `chattime`       | ChatTime-1-7B (vendored)       | 7B      | ✅  | ✅  | QA múltipla escolha (a)/(b)/(c).            |
-| `ets`            | Holt-Winters (statsmodels)     | <1 MB   | ❌  | ❌  | Baseline forte com tendência/sazonalidade.  |
-| `seasonal_naive` | Repete o último ciclo          | —       | ❌  | ❌  | Sanity check obrigatório em séries sazonais.|
-| `drift`          | Linear entre 1º e último ponto | —       | ❌  | ❌  | Sanity check em séries tendenciosas.        |
+| Detector | Decide |
+|----------|--------|
+| `_route_category` | tema: dados / legislação / produto / SIPIA-CT |
+| `_maybe_rewrite_tool_call` | nível geográfico: Brasil / UF / município |
+| `_maybe_rewrite_to_ranking` | ranking ("cidade mais violenta", "top estados") |
+| `_enforce_violencia_filter` | tipo de violência (herda do contexto em follow-ups) |
+| `_extract_year_filter` | ano (`ano`) ou intervalo (`ano__gte`/`ano__lte`) |
 
-## Pipeline `auto_forecast` (recomendado)
+A ferramenta escolhida roda **uma vez** (`run_tool`). O resultado completo vai
+para o banco (para a UI); uma versão humanizada (`_humanize_result_for_llm`, com
+uma `narrativa_sugerida` pronta) alimenta o gerador.
 
-A tool **`auto_forecast`** encapsula análise + comitê + seleção + previsão em
-uma única chamada. O LLM aciona ela toda vez que o usuário pede uma previsão
-sem citar modelo específico.
+## Ferramentas
 
-```
-auto_forecast(sql ou query_id, horizon)
-   ├─ analyze_series           → SeriesProfile (sazonalidade, tendência, missing, ...)
-   ├─ walk-forward backtest    → MAE/RMSE/MAPE/WAPE para cada candidato
-   │     ├─ Chronos-2
-   │     ├─ ETS
-   │     └─ Seasonal Naive
-   ├─ vencedor = argmin(WAPE)
-   └─ forecast final com o vencedor → mediana + p10/p90 (quando disponível)
-```
+| Tool | Quando o roteador usa | Fonte |
+|------|-----------------------|-------|
+| `relatorio_brasil` | pergunta nacional | SQL SINAM ao vivo |
+| `relatorio_uf` | menção a um estado | SQL SINAM ao vivo |
+| `relatorio_municipio` | menção a uma cidade | SQL SINAM ao vivo |
+| `ranking_municipios` | pedido de ranking | SQL SINAM ao vivo |
+| `rag_juridico` | tema jurídico/leis | corpus curado ([`leis_corpus.py`](../webapp/chats/series_temporais/orquestrador/leis_corpus.py)) |
+| `consulta_sipia_ct` | Conselho Tutelar / SIPIA | view `sipiact.vw_sipiact_long` |
+| `rag_interno` | "como o Aurora funciona" | busca por palavra-chave nos `docs/*.md` |
 
-Output devolvido ao LLM:
+As ferramentas de relatório devolvem números **exatos** do PostgreSQL (totais por
+ano, rankings, séries). Não há forecasting: relatórios são SQL puro.
 
-```jsonc
-{
-  "winner": "chronos2",
-  "winner_metrics": { "wape": 14.04, "mape": 15.2, "rmse": 7415.7 },
-  "ranking": [
-    { "model": "chronos2",       "wape": 14.04, "elapsed": 12.3 },
-    { "model": "seasonal_naive", "wape": 15.00, "elapsed": 0.0  },
-    { "model": "ets",            "wape": 15.86, "elapsed": 0.3  }
-  ],
-  "profile": {
-    "length": 60, "inferred_freq": "ME",
-    "seasonality_lag": 3, "trend_slope": 609.8,
-    "notes": ["serie curta (n<100) — prefira foundation",
-              "tendencia crescente forte (slope=+610/mes)",
-              "sazonalidade clara em lag=3 (acf=0.83)"]
-  },
-  "predicted": [55040, 56832, ...],
-  "quantiles": { "p10": [...], "p50": [...], "p90": [...] }
-}
-```
+## Geração com o Jurema
 
-O LLM transforma isso numa resposta estruturada (modelo escolhido + métricas +
-previsão + interpretação em prosa).
+`_narrar_com_jurema` (em `orchestrator.py`) monta o prompt a partir do payload e
+chama o Jurema (`ollama.generate`). Regras embutidas no prompt: usar **apenas** os
+números fornecidos, não citar anos sem dados, prosa curta em PT-BR.
 
-## Analytics (`src/analytics/`)
-
-Componente reutilizável (não depende de Django).
-
-### `analyze_series(values, idx, freq_hint)`
-
-Retorna um `SeriesProfile` com:
-
-- comprimento, range, frequência inferida, % missing, % zeros
-- estatísticas (mean, median, std, CV)
-- **tendência** (slope da regressão linear + strength)
-- **sazonalidade** (ACF nos lags candidatos de acordo com a freq)
-- **outliers** (regra IQR)
-- flags `has_negatives`, `is_count_like`
-- `notes`: lista de observações em PT-BR
-
-### `walk_forward_backtest(values, predict_fn, horizon, n_folds=3)`
-
-Rolling-origin com N folds. Para cada fold treina em `values[:cut]` e mede em
-`values[cut:cut+horizon]`. Retorna `BacktestResult` com:
-
-- `overall`: métricas agregadas
-- `folds`: cada fold com cut-point, predição, verdadeiro, métricas
-
-### `metrics(y_true, y_pred)`
-
-MAE · RMSE · MAPE · sMAPE · **WAPE** · bias.
-
-WAPE (`sum |err| / sum |y|`) é o critério primário do comitê — robusto a zeros
-e outliers, é a métrica padrão para previsão em saúde pública.
-
-## Tools (lista completa)
-
-| Tool                  | Quando usar                                                       |
-|-----------------------|-------------------------------------------------------------------|
-| `auto_forecast`       | **Previsão sem citar modelo.** Pipeline completo.                |
-| `analyze_series`      | Só o diagnóstico estrutural, sem prever.                          |
-| `backtest_forecast`   | Comparar UM modelo específico (não comitê).                       |
-| `forecast_from_sql`   | Usuário citou um modelo específico ("usa o ETS").                 |
-| `qa_from_sql`         | Pergunta múltipla escolha sobre série ad-hoc.                     |
-| `forecast`            | Usar SavedQuery do catálogo.                                      |
-| `qa_multiple_choice`  | QA sobre SavedQuery.                                              |
-| `load_series`         | Resumo de uma SavedQuery (sem rodar nada).                        |
-| `run_sql`             | Contagem, ranking, agregação. Apenas SELECT/WITH.                 |
-| `list_saved_queries`  | Listar atalhos disponíveis.                                       |
-| `list_forecasters`    | Listar modelos disponíveis.                                       |
-
-## Schema injetado no system prompt
-
-Em [`webapp/chat/schema_cache.py`](../webapp/chat/schema_cache.py). Carregado
-uma vez por processo. O LLM começa cada conversa **já sabendo**:
-
-- Quais tabelas existem (`VIOLBR20`..`VIOLBR24`).
-- Todas as colunas (~150) com tipo (todas TEXT).
-- Top-5 valores das colunas categóricas (`CS_SEXO`, `SG_UF`, `VIOL_FISIC`, ...).
-- Regras de SQL: aspas duplas, regex em `DT_NOTIFIC`, padrão para séries.
-
-Isso evita que o LLM "chute" nomes de tabela/coluna e elimina a maioria das
-respostas do tipo "não tenho consulta salva pra isso".
+- **Jurídico:** o parecer já é gerado dentro de `rag_juridico` (via `_ask_jurema`),
+  ancorado nos trechos de lei; `_narrar_com_jurema` só o repassa + cita a base legal.
+- **Dados / SIPIA / produto:** o Jurema reescreve a `narrativa_sugerida`.
+- **Fallback:** se o Jurema estiver indisponível ou divagar, usa a própria
+  `narrativa_sugerida` — garante sempre uma resposta.
 
 ## Variáveis de ambiente
 
-| Variável         | Default                              |
-|------------------|---------------------------------------|
-| `OLLAMA_HOST`    | `http://127.0.0.1:11434`              |
-| `OLLAMA_MODEL`   | `qwen3:8b`                            |
-| `CHRONOS2_MODEL` | `amazon/chronos-2`                    |
-| `CHATTIME_MODEL` | `ChengsenWang/ChatTime-1-7B-Chat`     |
+| Variável | Default |
+|----------|---------|
+| `OLLAMA_HOST` | `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` / `JUREMA_MODEL` | `jurema-7b` |
+| `JUREMA_NUM_PREDICT` | `520` |
+| `AURORA_MAX_DATA_YEAR` | `2024` |
 
-## Exemplos de pergunta
+## Exemplos
 
-- *"Quantas vítimas femininas em 2023? Prevê 14 dias."*  
-  → `auto_forecast(sql, 14)` → mostra ranking + previsão + métrica
-- *"Compara Chronos-2 e ETS na consulta 1 com horizonte de 30."*  
-  → 2× `backtest_forecast` + interpretação
-- *"A tendência é (a) crescente (b) estável (c) decrescente?"*  
-  → `qa_from_sql` (rota fixa via ChatTime)
-- *"Quais consultas existem?"*  
-  → `list_saved_queries`
-- *"Quantos registros de mulheres em SP no carnaval de 2024?"*  
-  → `run_sql`
+- *"Quantos casos de violência sexual em SP em 2023?"* → `relatorio_uf(SP, violencia_sexual, ano=2023)`
+- *"Qual a cidade mais violenta do Ceará?"* → `ranking_municipios(uf=CE)`
+- *"O que diz a Lei Menino Bernardo?"* → `rag_juridico` → parecer do Jurema citando a lei
+- *"Distribuição por sexo no Conselho Tutelar"* → `consulta_sipia_ct(indicador=Sexo)`
+- *"Como o Aurora Responde funciona?"* → `rag_interno`
 
 ## Limitações conhecidas
 
-- **Sem streaming**: resposta vem inteira após todos os tool calls. Tempo
-  típico por turno: 5–15 s; com `auto_forecast` chega a 20–40 s
-  (3 modelos no backtest).
-- **Backtest custa GPU**: cada fold do Chronos-2 leva 5–15 s. O `auto_forecast`
-  usa 2 folds por padrão.
-- **Sem cancelamento**: fechar a aba não interrompe o servidor.
-- **`statsmodels` pode warnar** sobre convergência em séries muito curtas (n<24).
-  O adapter cai pra simple exponential smoothing sem trend nesse caso.
+- **Sem streaming:** a resposta vem inteira após a geração.
+- **1ª resposta lenta:** o Jurema carrega na memória na primeira chamada.
+- **Multi-intenção:** uma pergunta que mistura "dados E lei" cai em uma rota só
+  (aceitável para esta versão).
+- **Dados = notificações registradas** (SINAM/SIPIA), sujeitas a subnotificação.

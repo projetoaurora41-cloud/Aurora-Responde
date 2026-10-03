@@ -1,214 +1,149 @@
-# Tutorial — SINAM + ChatTime
+# Tutorial — Aurora Responde
 
-Guia passo-a-passo do zero, no Windows. Para visão geral do projeto, leia o
-[README](README.md). Para detalhes por componente, veja [`docs/`](docs/).
+Guia passo-a-passo do zero (Windows e Linux/macOS) para clonar e rodar o **Aurora
+Responde**: o chat único que usa **só o Jurema-7B** para responder. Para a visão
+geral, veja o [README](README.md); para detalhes por componente, [`docs/`](docs/).
 
 ---
 
 ## 1. Pré-requisitos
 
-Instalar uma única vez:
+Instalar uma vez:
 
-| Ferramenta       | Onde                                                |
-|------------------|------------------------------------------------------|
-| Python 3.14      | <https://www.python.org/downloads/> *(marcar "Add to PATH")* |
-| Git for Windows  | <https://git-scm.com/download/win>                   |
-| PostgreSQL 16+   | <https://www.postgresql.org/download/windows/>       |
+| Ferramenta | Onde |
+|------------|------|
+| Python 3.12+ | <https://www.python.org/downloads/> *(marque "Add to PATH")* |
+| Git | <https://git-scm.com/downloads> |
+| Ollama | <https://ollama.com/download> |
 
-Conferir no PowerShell:
+Você também precisa de acesso a um **PostgreSQL** com os dados do projeto
+(SINAM/VIOLBR + SIPIA-CT) já carregados. As credenciais vão no `.env` (passo 4).
 
-```powershell
+Conferir:
+```bash
 python --version
 git --version
-psql --version
+ollama --version
 ```
-
-Você também precisa do banco **`Aurola`** rodando localmente, com as tabelas
-`VIOLBR20` … `VIOLBR24` populadas (uma por ano). Veja
-[docs/database.md](docs/database.md) para detalhes do schema.
 
 ---
 
 ## 2. Clonar o projeto
 
+**Windows (PowerShell):**
 ```powershell
-cd C:\Users\herna
-git clone https://github.com/Hernandison/projeto-sinam-chattime.git Projeto_Sinam
-cd Projeto_Sinam
+cd C:\Users\<voce>\Aurora
+git clone https://github.com/projetoaurora41-cloud/Aurora-Responde.git
+cd Aurora-Responde
 ```
 
-Se a pasta já existe, apenas `cd C:\Users\herna\Projeto_Sinam`.
+**Linux/macOS:**
+```bash
+git clone https://github.com/projetoaurora41-cloud/Aurora-Responde.git
+cd Aurora-Responde
+```
 
 ---
 
-## 3. Criar e ativar o venv
+## 3. Criar o venv e instalar dependências
 
+**Windows:**
 ```powershell
 python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
-
-Se o PowerShell barrar a ativação:
-
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-```
-
-e reative. O prompt deve ficar com o prefixo `(venv)`.
-
----
-
-## 4. Instalar dependências
-
-```powershell
-python -m pip install --upgrade pip
+.\venv\Scripts\Activate.ps1          # se barrar: Set-ExecutionPolicy -Scope Process Bypass
 pip install -r requirements.txt
 ```
 
-Aproximadamente 3 GB e alguns minutos (torch CPU, transformers, Django, etc.).
+**Linux/macOS:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+São **8 pacotes leves** (Django, psycopg, pandas/numpy, ollama, markdown,
+pypdf, python-dotenv) — segundos, não gigabytes. Sem PyTorch.
 
 ---
 
-## 5. Criar o arquivo `.env`
+## 4. Criar o `.env`
 
-Na raiz, copie de [`.env.example`](.env.example) e ajuste:
+Na raiz, copie de [`.env.example`](.env.example) e ajuste as credenciais do banco:
 
 ```ini
-PGHOST=localhost
-PGPORT=5432
-PGDATABASE=Aurola
+PGHOST=187.127.34.12
+PGPORT=5433
+PGDATABASE=Aurora
 PGUSER=postgres
 PGPASSWORD=SUA_SENHA_AQUI
-CHATTIME_MODEL=ChengsenWang/ChatTime-1-7B-Chat
+
+OLLAMA_MODEL=jurema-7b
+JUREMA_MODEL=jurema-7b
+SIPIA_CT_TABLE=sipiact.vw_sipiact_long
+SIPIA_CT_VALUE_COL=quantidade
 ```
+
+> O `.env` **nunca** é versionado (está no `.gitignore`). Ele guarda segredos —
+> não compartilhe nem faça commit.
 
 ---
 
-## 6. Testar a conexão com o banco
+## 5. Instalar o Jurema-7B no Ollama
 
-```powershell
-python -m src.main ping
+O Jurema é o **único LLM** — redige todas as respostas. Baixe uma vez (~4,7 GB) e
+apelide como `jurema-7b`:
+
+```bash
+ollama pull hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF
+ollama cp  hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF jurema-7b
+ollama list        # deve listar "jurema-7b"
 ```
 
-Saída esperada (exemplo):
-
-```
-PostgreSQL 18.3 on x86_64-windows, compiled by msvc-19.44.35225, 64-bit
-```
-
-> **Importante:** sempre execute como módulo (`-m src.main`). Rodar
-> `python src/main.py` direto gera `ModuleNotFoundError: No module named 'db'`
-> porque o arquivo usa imports relativos. Veja
-> [docs/troubleshooting.md](docs/troubleshooting.md).
+Deixe o Ollama rodando (ele inicia como serviço no Windows/macOS).
 
 ---
 
-## 7. Smoke test (primeira execução baixa ~13 GB)
+## 6. Migrar e subir o servidor
 
-```powershell
-python scripts\smoke_chattime.py
+```bash
+python webapp/manage.py migrate        # Windows: python webapp\manage.py migrate
+python webapp/manage.py runserver
 ```
 
-O que acontece:
+> Se o banco do `.env` já tem as tabelas (dados + ORM), o `migrate` é
+> praticamente no-op. Para criar um admin: `python webapp/manage.py createsuperuser`.
 
-1. Consulta `VIOLBR24` e monta uma série diária.
-2. Baixa `ChengsenWang/ChatTime-1-7B-Chat` em `%USERPROFILE%\.cache\huggingface`
-   (somente na primeira vez).
-3. Roda forecast de 14 dias e imprime `t+1` … `t+14`.
+Acesse:
 
-Em CPU-only o load demora vários minutos — é esperado.
-
----
-
-## 8. Configurar a interface web (Django)
-
-A interface gerencia consultas salvas, executa forecast/QA e mantém histórico
-por usuário.
-
-```powershell
-python webapp\manage.py migrate
-python webapp\manage.py seed_queries
-python webapp\manage.py createsuperuser
-```
-
-Subir o servidor:
-
-```powershell
-python webapp\manage.py runserver
-```
-
-Acessar:
-
-| URL                              | O que faz                                |
-|----------------------------------|------------------------------------------|
-| <http://127.0.0.1:8000/login/>   | login                                    |
-| <http://127.0.0.1:8000/signup/>  | criar conta                              |
-| <http://127.0.0.1:8000/>         | lista de consultas salvas                |
-| `/<id>/`                         | detalhe + gráfico + botões forecast/QA   |
-| <http://127.0.0.1:8000/history/> | histórico de execuções                   |
-| <http://127.0.0.1:8000/admin/>   | admin Django (cadastros, super-usuário)  |
-
-Detalhes em [docs/webapp.md](docs/webapp.md).
+| URL | O que é |
+|-----|---------|
+| <http://127.0.0.1:8000/> | O chat (home) |
+| <http://127.0.0.1:8000/login/> · `/signup/` | Autenticação |
+| <http://127.0.0.1:8000/admin/> | Admin Django |
 
 ---
 
-## 9. Usar a CLI
+## 7. Testar o chat
 
-| Comando                                                        | O que faz                            |
-|----------------------------------------------------------------|--------------------------------------|
-| `python -m src.main ping`                                      | testa conexão com o banco            |
-| `python -m src.main tables`                                    | lista tabelas no schema `public`     |
-| `python -m src.main describe VIOLBR24`                         | colunas e tipos da tabela            |
-| `python -m src.main query --sql "SELECT ..."`                  | roda SQL e imprime tabela            |
-| `python -m src.main forecast --sql "..." --horizon 14`         | série → forecast com ChatTime        |
-| `python -m src.main ask "(a)... (b)... (c)..." --sql "..."`    | QA múltipla escolha sobre a série    |
+Abra <http://127.0.0.1:8000/>, clique **+ Nova conversa** e pergunte, por exemplo:
 
-Referência completa: [docs/cli.md](docs/cli.md).
+- *"Quantos casos de violência sexual em São Paulo em 2023?"* (dados)
+- *"O que diz a Lei Menino Bernardo?"* (legislação)
+- *"No Conselho Tutelar, qual a distribuição por sexo?"* (SIPIA-CT)
+- *"Como o Aurora Responde funciona?"* (sobre a plataforma)
 
----
-
-## 10. Chat com IA (requer o Jurema-7B no Ollama)
-
-A interface é um chat conversacional onde o **Jurema-7B** (via **Ollama**) é o
-**único LLM**: ele redige todas as respostas em PT-BR a partir dos dados ao vivo
-(PostgreSQL), da legislação e da documentação. Um roteador determinístico escolhe
-a fonte — não há orquestrador Qwen3 nem modelos de forecast.
-
-Instalação adicional (necessária para o chat):
-
-1. **Baixar e instalar o Ollama**: <https://ollama.com/download/windows>
-2. **Puxar o Jurema-7B** (~4,7 GB, primeira vez) e apelidá-lo como `jurema-7b`:
-   ```powershell
-   ollama pull hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF
-   ollama cp hf.co/rlmoura/Jurema-7B-Q4_K_M-GGUF jurema-7b
-   ```
-3. Abrir `http://127.0.0.1:8000/`, clicar **+ Nova conversa**.
-
-Detalhes em [docs/chat.md](docs/chat.md). Sem GPU dedicada o chat ainda
-funciona, mas as respostas são mais lentas.
+> A **1ª resposta** demora mais (~1 min) enquanto o Jurema carrega na memória; as
+> seguintes são rápidas. Sem GPU funciona, só mais lento.
 
 ---
 
-## 11. Próximos terminais
+## 8. Problemas comuns
 
-Em todo terminal novo:
+| Sintoma | Solução |
+|--------|---------|
+| `Ollama indisponível` no rodapé do chat | O Ollama não está rodando, ou o `jurema-7b` não foi instalado (passo 5). |
+| `connection ... failed` / `no password supplied` | Credenciais do banco erradas no `.env` (passo 4). |
+| Resposta genérica sem números | O Jurema caiu no *fallback* (indisponível) — confira o Ollama. |
+| PowerShell barra o `Activate.ps1` | `Set-ExecutionPolicy -Scope Process Bypass` e reative o venv. |
 
-```powershell
-cd C:\Users\herna\Projeto_Sinam
-.\venv\Scripts\Activate.ps1
-```
-
-Sem isso, `python` usará o interpretador global e dará `ModuleNotFoundError`
-nas dependências.
-
----
-
-## 12. Problemas comuns
-
-Lista resumida — completa em [docs/troubleshooting.md](docs/troubleshooting.md).
-
-- `ModuleNotFoundError: No module named 'db'` → use `python -m src.main`.
-- `OperationalError: connection refused` → Postgres parado ou `.env` errado.
-- `OSError 1455 (paging file too small)` → use sempre `ChatTimeRunner.get()`,
-  nunca `ChatTime(...)` direto.
-- PowerShell barrando o venv → `Set-ExecutionPolicy -Scope Process Bypass`.
+Mais em [docs/troubleshooting.md](docs/troubleshooting.md) e [docs/chat.md](docs/chat.md).

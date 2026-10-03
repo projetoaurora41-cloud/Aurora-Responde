@@ -13,9 +13,9 @@
 #   4. sobe todos os recursos: build da app + Ollama + download dos modelos.
 #
 # Variáveis (podem vir de um arquivo ./deploy.env — veja deploy.env.example):
-#   AURORA_REPO_URL  URL do repo. PRIVADO -> use um PAT no HTTPS:
-#                    https://<TOKEN>@github.com/projetoaurora41-cloud/Projeto-Aurora.git
-#   AURORA_DIR       pasta destino do clone (padrão: Projeto-Aurora)
+#   AURORA_REPO_URL  URL do repo (PAT no HTTPS se for privado):
+#                    https://<TOKEN>@github.com/projetoaurora41-cloud/Aurora-Responde.git
+#   AURORA_DIR       pasta destino do clone (padrão: Aurora-Responde)
 #   AURORA_BRANCH    branch (padrão: main)
 # =============================================================================
 set -euo pipefail
@@ -29,8 +29,8 @@ if [ -f deploy.env ]; then
   set -a; . ./deploy.env; set +a
 fi
 
-REPO_URL="${AURORA_REPO_URL:-https://github.com/projetoaurora41-cloud/Projeto-Aurora.git}"
-TARGET_DIR="${AURORA_DIR:-Projeto-Aurora}"
+REPO_URL="${AURORA_REPO_URL:-https://github.com/projetoaurora41-cloud/Aurora-Responde.git}"
+TARGET_DIR="${AURORA_DIR:-Aurora-Responde}"
 BRANCH="${AURORA_BRANCH:-main}"
 
 # sudo só quando não for root
@@ -259,9 +259,9 @@ fi
 # Garante DNS nos contêineres ANTES do build (senão o apt/pip falham sem rede).
 ensure_docker_dns
 
-log "subindo containers (build + provisiona modelos)..."
+log "subindo containers (build + provisiona o Jurema)..."
 $DOCKER compose up --build -d
 
 log "pronto! App em http://localhost:8000  (ou http://IP-DO-SERVIDOR:8000)"
-log "acompanhe o download dos modelos: $DOCKER compose logs -f ollama-pull models-init"
+log "acompanhe o download do Jurema: $DOCKER compose logs -f ollama-pull"
 $DOCKER compose ps

@@ -88,7 +88,6 @@ reconhecidas são descartadas e devolvidas em `filters_ignored`.
 | `query(filters, limit=50)`                   | `{total_rows, rows: [...], filters_applied, ...}`    |
 | `aggregate(filters, group_by, top=20)`       | `{total_rows, rows: [{<grouping>, n}], ...}`         |
 | `time_series(filters, freq="D")`             | `{n_points, dates: [...], values: [...]}`            |
-| `series_for_forecast(filters, freq)`         | `(np.array, DatetimeIndex, info_dict)` para auto_fc  |
 
 ### Filtros aceitos
 
@@ -121,17 +120,17 @@ autor_sexo, autor_alcool
 
 ## Tools do chat que usam a camada semântica
 
-Em [`webapp/chat/tools.py`](../webapp/chat/tools.py):
+Em [`webapp/chats/series_temporais/orquestrador/tools.py`](../webapp/chats/series_temporais/orquestrador/tools.py):
 
-| Tool                     | Mapeia para                |
-|--------------------------|-----------------------------|
-| `consultar`              | `queries.query`             |
-| `contar`                 | `queries.aggregate`         |
-| `serie_temporal`         | `queries.time_series`       |
-| `previsao_automatica`    | `series_for_forecast` + `auto_forecast` |
+| Tool                   | Mapeia para (camada `sinam.queries`) |
+|------------------------|---------------------------------------|
+| `relatorio_brasil`     | `aggregate` (nacional)                |
+| `relatorio_uf`         | `aggregate` filtrado por UF           |
+| `relatorio_municipio`  | `resolver_municipio` + `aggregate`/`time_series` |
+| `ranking_municipios`   | `aggregate` agrupado por município    |
 
-As tools antigas (`run_sql`, `peek_table`, `forecast_from_sql`, `auto_forecast`,
-etc.) continuam disponíveis como atalhos para casos não cobertos.
+Os relatórios são **SQL puro** (totais por ano, rankings, séries) — números
+exatos do PostgreSQL. Não há forecasting neste fork.
 
 ## Manutenção
 

@@ -1,11 +1,11 @@
 # Banco de dados (`Aurola`)
 
-PostgreSQL local — **banco único do projeto**. Contém tanto os dados
-SINAM/VIOLBR (`VIOLBR*` brutos + `sinam_notificacao` limpo) quanto o estado da
-aplicação Django (usuários, consultas salvas, histórico, conversas dos chats e
-os embeddings vetoriais via pgvector).
+PostgreSQL — **banco único do projeto** (externo, definido no `.env`). Contém
+tanto os dados SINAM/VIOLBR (`VIOLBR*` brutos + `sinam_notificacao` limpo) e o
+SIPIA-CT (`sipiact.vw_sipiact_long`) quanto o estado da aplicação Django
+(usuários e conversas dos chats).
 
-- A **CLI** (`src/db.py`) lê os dados VIOLBR brutos.
+- O módulo **`src/db.py`** acessa os dados (consultas SQL ao vivo).
 - O **Django** lê e grava via ORM (é o `DATABASES["default"]`).
 
 ## Conexão
@@ -20,8 +20,8 @@ os embeddings vetoriais via pgvector).
 
 Conferir:
 
-```powershell
-python -m src.main ping
+```bash
+python webapp/manage.py check
 ```
 
 ## Tabelas SINAM
@@ -53,15 +53,9 @@ Schema: `public`.
 > converter: `WHERE "DT_NOTIFIC" ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'`. Caso
 > contrário, valores corrompidos quebram `::date`.
 
-Lista completa via:
-
-```powershell
-python -m src.main describe VIOLBR24
-```
-
 ## Padrão de consulta para séries temporais
 
-ChatTime espera uma série numérica regular. Recomendação:
+Os relatórios (`relatorio_*`) montam séries regulares assim:
 
 ```sql
 SELECT "DT_NOTIFIC"::date AS data,
@@ -72,14 +66,11 @@ SELECT "DT_NOTIFIC"::date AS data,
  ORDER BY 1;
 ```
 
-- O alias `data` é o default do `--date-col`.
-- O alias `valor` é o default do `--value-col`.
 - Para mensal, troque `"DT_NOTIFIC"::date` por
-  `date_trunc('month', "DT_NOTIFIC"::date)::date` e passe `--freq ME`.
+  `date_trunc('month', "DT_NOTIFIC"::date)::date`.
 
-Veja
-[`webapp/forecasts/management/commands/seed_queries.py`](../webapp/forecasts/management/commands/seed_queries.py)
-para mais exemplos prontos.
+Os helpers de agregação/série ficam na camada semântica (`sinam.queries`) e em
+`src/db.py`.
 
 ## Helpers em `src/db.py`
 

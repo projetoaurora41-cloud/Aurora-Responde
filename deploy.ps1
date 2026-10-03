@@ -23,8 +23,8 @@ if (Test-Path "deploy.env") {
   }
 }
 
-$RepoUrl   = if ($env:AURORA_REPO_URL) { $env:AURORA_REPO_URL } else { "https://github.com/projetoaurora41-cloud/Projeto-Aurora.git" }
-$TargetDir = if ($env:AURORA_DIR)      { $env:AURORA_DIR }      else { "Projeto-Aurora" }
+$RepoUrl   = if ($env:AURORA_REPO_URL) { $env:AURORA_REPO_URL } else { "https://github.com/projetoaurora41-cloud/Aurora-Responde.git" }
+$TargetDir = if ($env:AURORA_DIR)      { $env:AURORA_DIR }      else { "Aurora-Responde" }
 $Branch    = if ($env:AURORA_BRANCH)   { $env:AURORA_BRANCH }   else { "main" }
 
 # ---- 1) Dependências (git, Docker Desktop) via winget ----
