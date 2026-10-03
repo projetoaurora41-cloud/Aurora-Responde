@@ -141,14 +141,17 @@ def consultar(filtros: dict, group_by: str | None = None, top: int = 15) -> dict
     agg = _agg_expr()
     where, params, descr = _build_where(filtros or {}, cols)
 
-    # A view tem uma categoria 'Total' (linha-resumo) que duplicaria a soma.
-    # Exclui por padrão, exceto quando o usuário filtra explicitamente categoria.
+    # A view tem linhas-lixo da ingestão dos CSVs: a categoria 'Total'
+    # (linha-resumo que duplicaria a soma) e cabeçalhos mal parseados
+    # ('coluna', 'coluna (2)'...). Exclui ambos por padrão, exceto quando o
+    # usuário filtra 'categoria' explicitamente.
     tem_categoria_filtro = any(k.split("__")[0] == "categoria" for k in (filtros or {}))
     if ("categoria" in cols and not tem_categoria_filtro
             and os.getenv("SIPIA_CT_EXCLUDE_TOTAL", "1") == "1"):
-        clause = f'{_ident("categoria")} NOT ILIKE %s'
+        catq = _ident("categoria")
+        clause = f"({catq} NOT ILIKE %s AND {catq} NOT ILIKE %s)"
         where = (where + " AND " + clause) if where else (" WHERE " + clause)
-        params = list(params) + ["Total"]
+        params = list(params) + ["Total", "coluna%"]
 
     filtros_txt = "; ".join(descr) if descr else "nenhum (base completa)"
 
@@ -180,16 +183,46 @@ def consultar(filtros: dict, group_by: str | None = None, top: int = 15) -> dict
     if gb and gb in cols:
         gq = _ident(gb)
         try:
+            # Puxa até 200 linhas (cap de segurança) e consolida em Python: isso
+            # permite mesclar variações/typos da origem (ex.: 'Femenino' ->
+            # 'Feminino') antes de ordenar e cortar no top.
             rows = _run(
                 f"SELECT {gq} AS dim, COALESCE({agg},0) AS n FROM {tq}{where} "
-                f"GROUP BY 1 ORDER BY n DESC NULLS LAST LIMIT %s",
-                list(params) + [int(top)],
+                f"GROUP BY 1 ORDER BY n DESC NULLS LAST LIMIT 200",
+                list(params),
             )
+            dist: dict[str, int] = {}
+            for r in rows:
+                valor = r[0] if r[0] not in (None, "") else "Ignorado"
+                valor = _normalizar_categoria(gb, valor)
+                dist[valor] = dist.get(valor, 0) + int(r[1] or 0)
+            ordenado = sorted(dist.items(), key=lambda kv: -kv[1])[:int(top)]
             out["distribuicao_por"] = gb
-            out["distribuicao"] = [
-                {"valor": (r[0] if r[0] not in (None, "") else "Ignorado"), "n": int(r[1] or 0)}
-                for r in rows
-            ]
+            out["distribuicao"] = [{"valor": v, "n": n} for v, n in ordenado]
         except Exception as exc:  # noqa: BLE001
             out["aviso"] = f"Falha ao agrupar por {gb}: {type(exc).__name__}: {exc}"
     return out
+
+
+# Correções de categorias conhecidas da origem (typos/variações nos CSVs do
+# SIPIA-CT). Chave e valor comparados sem acento/caixa; o valor é o rótulo final.
+_CATEGORIA_FIX = {
+    "femenino": "Feminino",
+    "feminino": "Feminino",
+    "masculino": "Masculino",
+}
+
+
+def _normalizar_categoria(dimensao: str, valor: str) -> str:
+    """Normaliza rótulos de categoria só para a dimensão 'Sexo' (onde há o typo
+    'Femenino'). Nas demais dimensões devolve o valor como veio."""
+    if (dimensao or "").strip().lower() != "categoria":
+        return valor
+    chave = _norm_txt(valor)
+    return _CATEGORIA_FIX.get(chave, valor)
+
+
+def _norm_txt(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or ""))
+    return "".join(c for c in s if not unicodedata.combining(c)).strip().lower()
