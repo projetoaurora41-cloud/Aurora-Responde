@@ -1,0 +1,79 @@
+Projeto Aurora - Pacote de deploy com Docker
+=============================================
+
+Conteudo:
+  Dockerfile, docker-compose.yml, .dockerignore  -> imagem e orquestracao
+  docker/entrypoint.sh, docker/fetch_models.py    -> init + download dos modelos
+  deploy.sh / deploy.ps1                           -> CLONE AUTOMATICO + subida (Linux/Windows)
+  deploy.env.example                               -> onde vai a "key do GitHub" (copie p/ deploy.env)
+  .env.example                                     -> modelo do .env (banco EXTERNO + chaves de API)
+  docs/docker.md, docs/Aurora-Docker.pdf           -> documentacao completa (passo a passo)
+
+
+COMO USAR (servidor novo)
+-------------------------
+  1. Instale git + Docker (com 'docker compose').
+
+  2. Coloque a "key do GitHub" no deploy.env:
+        Linux:   cp deploy.env.example deploy.env
+        Windows: Copy-Item deploy.env.example deploy.env
+     e edite AURORA_REPO_URL com um token (PAT, escopo 'repo').
+
+  3. Rode o bootstrap (clona o repo e cria o .env):
+        Linux:   bash deploy.sh
+        Windows: powershell -ExecutionPolicy Bypass -File deploy.ps1
+
+     -> Na 1a vez ele CRIA o Projeto-Aurora/.env e PARA, pedindo pra editar.
+
+  4. Edite Projeto-Aurora/.env com o banco EXTERNO (ver secao abaixo).
+
+  5. Rode o deploy de novo (agora sobe os containers):
+        bash deploy.sh          (ou deploy.ps1 no Windows)
+     Depois crie o admin:
+        docker compose exec web python manage.py createsuperuser
+
+  6. Acesse:  http://IP-DO-SERVIDOR:8000
+
+
+COMO PREENCHER O .env  (leia com atencao!)
+------------------------------------------
+O .env e um ARQUIVO de texto. Cada linha e   CHAVE=valor   (uma por linha,
+sem aspas, sem espacos em volta do "="). Exemplo do que editar:
+
+    PGHOST=host.docker.internal      # Postgres na PROPRIA maquina (host)
+    PGPORT=5432                      # ...ou o IP/host se o banco for remoto
+    PGDATABASE=Aurola
+    PGUSER=postgres
+    PGPASSWORD=sua-senha-aqui
+
+Abra e edite com:   nano Projeto-Aurora/.env   (Linux)
+                    notepad Projeto-Aurora\.env (Windows)
+
+  >>> NAO rode  'dotenv PGHOST=... PGPORT=...'  no terminal! <<<
+  Aquele comando NAO define variaveis - ele tenta EXECUTAR "PGHOST=..." como
+  se fosse um programa, e da o erro:
+      FileNotFoundError: .../PGHOST=host.docker.internal
+  As variaveis vao DENTRO do arquivo .env, nao num comando dotenv.
+
+
+IMPORTANTE
+----------
+* O BANCO DE DADOS NAO faz parte do Docker. Ele e EXTERNO: voce precisa ter um
+  PostgreSQL rodando, com o banco/usuario criados e a extensao pgvector, e
+  aceitando conexao do container (ver docs/Aurora-Docker.pdf).
+
+* Se o Postgres roda na PROPRIA maquina, use  PGHOST=host.docker.internal
+  (ja funciona no Linux tambem, gracas ao extra_hosts do docker-compose.yml).
+
+
+SE O BUILD FALHAR COM "Temporary failure resolving 'deb.debian.org'"
+-------------------------------------------------------------------
+E' DNS dos conteineres (comum em VPS). O deploy.sh JA corrige sozinho:
+grava {"dns":["8.8.8.8","1.1.1.1"]} em /etc/docker/daemon.json e reinicia o
+Docker. Basta rodar 'bash deploy.sh' de novo. Para desativar essa correcao:
+    AURORA_SKIP_DNS_FIX=1 bash deploy.sh
+Para trocar os servidores DNS:
+    AURORA_DOCKER_DNS="1.1.1.1 8.8.8.8" bash deploy.sh
+
+
+Detalhes e troubleshooting: docs/docker.md  e  docs/Aurora-Docker.pdf

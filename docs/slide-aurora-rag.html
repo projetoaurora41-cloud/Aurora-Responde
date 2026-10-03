@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>AURORA Responde — Como funciona (RAG)</title>
+<style>
+  @page{ size:297mm 210mm; margin:0 }
+  :root{
+    --blue:#1351B4; --blue-dark:#071D41; --blue-600:#0c326f;
+    --yellow:#FFCD07; --green:#168821;
+    --text:#1b2a3a; --muted:#5b6b7b; --border:#dce3ec;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#e9edf4;font-family:"Raleway","Inter",system-ui,Segoe UI,sans-serif;color:var(--text);
+       display:flex;justify-content:center;align-items:flex-start}
+  .slide{width:297mm;height:210mm;background:#fff;position:relative;overflow:hidden}
+  .blob{position:absolute;right:-90px;top:-110px;width:360px;height:360px;border-radius:50%;
+        background:radial-gradient(circle at 30% 30%,#fff6d6,#ffe9a8);z-index:0}
+  .blob2{position:absolute;left:-80px;bottom:-150px;width:300px;height:300px;border-radius:50%;background:#eaf1fb;z-index:0}
+  .wrap{position:relative;z-index:1;padding:30px 44px 0}
+
+  .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--blue);padding-bottom:12px}
+  .head .mark{width:42px;height:42px;border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center}
+  .head .mark svg{width:23px;height:23px}
+  .head h1{font-size:16px;font-weight:800;letter-spacing:.3px;color:var(--blue-dark)}
+  .head .sub{font-size:11px;color:var(--muted)}
+  .head .gov{margin-left:auto;font-size:10.5px;color:var(--muted);text-align:right;line-height:1.35}
+  .head .gov b{color:var(--blue-dark)}
+
+  .title{margin:18px 0 4px;font-size:33px;font-weight:800;color:var(--blue-dark);line-height:1.05}
+  .title .rag{color:var(--blue)}
+  .beta{display:inline-block;vertical-align:middle;font-size:12px;font-weight:800;letter-spacing:.03em;
+        background:var(--yellow);color:#33270a;border-radius:20px;padding:3px 11px;margin-left:8px;
+        box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .lead{font-size:14px;color:var(--muted);margin-bottom:16px}
+  .lead b{color:var(--text)}
+
+  .flow{display:flex;align-items:stretch;gap:8px;margin-bottom:18px}
+  .step{flex:1;background:#eef3fb;border:1px solid #d9e4f6;border-radius:12px;padding:11px 13px;position:relative}
+  .step .n{position:absolute;top:-11px;left:11px;width:23px;height:23px;border-radius:50%;background:var(--yellow);
+           color:#33270a;font-weight:800;font-size:12px;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .step h3{font-size:13px;font-weight:800;color:var(--blue-600);margin:9px 0 4px}
+  .step p{font-size:11.5px;color:#33465a;line-height:1.35}
+  .arrow{align-self:center;color:var(--yellow);font-size:24px;font-weight:900;flex:0 0 14px;text-align:center}
+
+  .cols{display:grid;grid-template-columns:1.28fr 1fr;gap:20px}
+  .sect-lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;margin-bottom:9px}
+
+  .models{display:flex;flex-direction:column;gap:10px}
+  .model{display:flex;gap:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 13px;
+         box-shadow:0 1px 2px rgba(16,42,80,.05)}
+  .model .ic{width:40px;height:40px;flex:0 0 40px;border-radius:10px;display:grid;place-items:center;font-size:20px}
+  .ic.b{background:rgba(19,81,180,.10)} .ic.g{background:rgba(22,136,33,.12)} .ic.a{background:rgba(255,205,7,.22)}
+  .model .nm{font-size:14.5px;font-weight:800;color:var(--blue-dark)}
+  .model .role{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .model .desc{font-size:11.5px;color:#33465a;line-height:1.35;margin-top:2px}
+  .model .why{font-size:11px;color:var(--green);font-weight:700;margin-top:3px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .chip{font-size:10.5px;font-weight:700;background:#eef3fb;border:1px solid #d6e2f5;color:var(--blue-600);border-radius:20px;padding:2px 9px}
+  .chip.y{background:#fff7e0;border-color:#f0e2b6;color:#8a6d00}
+
+  .side{display:flex;flex-direction:column;gap:12px}
+  .ragbox{background:var(--blue-dark);color:#eaf1ff;border-radius:12px;padding:14px 15px}
+  .ragbox h3{font-size:13.5px;font-weight:800;color:#fff;margin-bottom:6px}
+  .ragbox p{font-size:11.5px;line-height:1.42;color:#d6e2fb}
+  .ragbox b{color:var(--yellow)}
+  .fontes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .fonte{font-size:10.5px;font-weight:700;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
+         color:#fff;border-radius:8px;padding:4px 9px}
+  .why-box{background:#fff7e0;border:1px solid #f0e2b6;border-radius:12px;padding:12px 14px}
+  .why-box h3{font-size:12.5px;font-weight:800;color:#8a6d00;margin-bottom:7px}
+  .why-box li{list-style:none;font-size:11.5px;color:#4a3d12;line-height:1.35;margin-bottom:5px;padding-left:16px;position:relative}
+  .why-box li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:800}
+  .why-box b{color:#5a4a00}
+
+  .nums{position:absolute;left:0;right:0;bottom:0;background:var(--blue);color:#fff;display:flex;height:58px}
+  .nums .cell{flex:1;text-align:center;padding:7px 5px;border-right:1px solid rgba(255,255,255,.18)}
+  .nums .cell:last-child{border-right:0}
+  .nums .v{font-size:18px;font-weight:800;line-height:1}
+  .nums .l{font-size:10px;opacity:.92;margin-top:4px;line-height:1.15}
+  .page{position:absolute;right:16px;bottom:66px;font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="blob"></div><div class="blob2"></div>
+  <div class="wrap">
+
+    <div class="head">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div>
+        <h1>PROJETO AURORA</h1>
+        <div class="sub">Análise Unificada de Registros para Orientar Respostas e Ações de Proteção à Criança e ao Adolescente</div>
+      </div>
+      <div class="gov"><b>MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA</b><br>UFS · UFBA</div>
+    </div>
+
+    <div class="title">Como funciona o <span class="rag">AURORA Responde</span> (RAG) <span class="beta">BETA · v0.1.0</span></div>
+    <div class="lead">O assistente <b>recupera a informação na fonte oficial</b> e o modelo <b>responde citando essa fonte</b> — resposta verificável, sem “inventar”.</div>
+
+    <div class="flow">
+      <div class="step"><div class="n">1</div><h3>Pergunta</h3><p>Em linguagem natural (até 2.000 caracteres). Ex.: “evolução da violência sexual em Sergipe”.</p></div>
+      <div class="arrow">›</div>
+      <div class="step"><div class="n">2</div><h3>Guardrails</h3><p>Mascara dados pessoais (CPF etc.), bloqueia usos indevidos e, em relato de risco, encaminha para o Conselho Tutelar / Disque 100.</p></div>
+      <div class="arrow">›</div>
+      <div class="step"><div class="n">3</div><h3>Roteador (Qwen3)</h3><p>Interpreta a pergunta e escolhe a <b>ferramenta da fonte certa</b> (dados, lei, painel), em até 6 rodadas.</p></div>
+      <div class="arrow">›</div>
+      <div class="step"><div class="n">4</div><h3>Recupera + gera</h3><p>Busca o trecho na fonte e o modelo redige a resposta <b>ancorada e citando a origem</b>.</p></div>
+      <div class="arrow">›</div>
+      <div class="step"><div class="n">5</div><h3>Resposta</h3><p>Prosa clara + “Consultou &lt;ferramenta&gt;”, a fonte e a contagem de tokens usados.</p></div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="sect-lbl">Modelos de IA usados — locais, via Ollama</div>
+        <div class="models">
+          <div class="model">
+            <div class="ic b">🧭</div>
+            <div>
+              <div class="nm">Qwen3&nbsp;:&nbsp;8b <span class="role">— Orquestrador / roteador</span></div>
+              <div class="desc">Interpreta a pergunta, escolhe a ferramenta e redige a resposta final.</div>
+              <div class="chips"><span class="chip">8,2 bi de parâmetros</span><span class="chip y">janela 40.960 tokens</span></div>
+              <div class="why">→ a “janela” é a memória: cabe a pergunta + os dados recuperados + o histórico da conversa.</div>
+            </div>
+          </div>
+          <div class="model">
+            <div class="ic g">📈</div>
+            <div>
+              <div class="nm">Chronos-2 <span class="role">— Modelo de série temporal</span></div>
+              <div class="desc">Valida a evolução dos registros contra o histórico (análise retrospectiva). Recebe a série numérica, não texto.</div>
+              <div class="chips"><span class="chip">forecaster do comitê</span><span class="chip">fidelidade retrospectiva</span></div>
+              <div class="why">→ indica se a tendência observada é real, e não ruído.</div>
+            </div>
+          </div>
+          <div class="model">
+            <div class="ic a">⚖️</div>
+            <div>
+              <div class="nm">Jurema-7B <span class="role">— LLM jurídico</span></div>
+              <div class="desc">Redige o parecer legal ancorado num corpus de leis (CF, ECA, Código Penal, Leis 14.344, 13.431, 13.010, 14.811/2024, 15.487/2026…).</div>
+              <div class="chips"><span class="chip">7,6 bi de parâmetros</span><span class="chip y">janela 32.768 tokens</span><span class="chip">até 450 tokens/resposta</span></div>
+              <div class="why">→ cita lei e artigo; o corpus corrige o que o modelo erraria sozinho.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="ragbox">
+          <h3>O que é RAG (Retrieval-Augmented Generation)</h3>
+          <p><b>Recupera</b> o trecho relevante da fonte e <b>aumenta</b> o modelo com ele; o modelo então <b>gera</b> a resposta com base nesse trecho e <b>cita a origem</b>. Os números crus vão para as tabelas e gráficos da tela — o modelo recebe só o resumo.</p>
+          <div class="fontes">
+            <span class="fonte">SINAN — dados</span><span class="fonte">Séries temporais</span>
+            <span class="fonte">ECA / legislação</span><span class="fonte">SIPIA-CT</span><span class="fonte">Documentação</span>
+          </div>
+        </div>
+        <div class="why-box">
+          <h3>Por que essa arquitetura importa</h3>
+          <li><b>Privacidade e soberania:</b> os modelos rodam na infraestrutura do projeto — dados sensíveis de crianças não são enviados a serviços externos.</li>
+          <li><b>Respostas verificáveis:</b> ancoradas na fonte e com citação — menos alucinação, adequadas ao uso institucional/jurídico.</li>
+          <li><b>Sem custo por consulta:</b> modelos abertos e próprios, sem tarifa por pergunta.</li>
+        </div>
+      </div>
+    </div>
+
+    <div class="page">11</div>
+  </div>
+
+  <div class="nums">
+    <div class="cell"><div class="v">≤ 2.000</div><div class="l">caracteres por pergunta</div></div>
+    <div class="cell"><div class="v">24 mensagens</div><div class="l">de memória da conversa</div></div>
+    <div class="cell"><div class="v">6 rodadas</div><div class="l">de ferramentas (temperatura 0,2)</div></div>
+    <div class="cell"><div class="v">~4.100 + 250</div><div class="l">tokens por resposta (pergunta + resposta)</div></div>
+    <div class="cell"><div class="v">12 normas</div><div class="l">no corpus jurídico</div></div>
+  </div>
+</div>
+</body>
+</html>

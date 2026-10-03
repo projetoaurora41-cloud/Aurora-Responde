@@ -1,0 +1,263 @@
+/* ============================================================================
+   Chat Dados Jurídicos — design system próprio (inspirado no Open WebUI)
+   Auto-contido: define seus tokens e reset; não depende do app.css.
+   ============================================================================ */
+
+.jur-body {
+    --jur-bg: #0d0d0d;
+    --jur-surface: #171717;
+    --jur-surface-2: #212122;
+    --jur-hover: #2a2a2c;
+    --jur-border: #2a2a2c;
+    --jur-border-2: #3a3a3d;
+    --jur-text: #ececec;
+    --jur-muted: #9a9aa0;
+    --jur-faint: #6b6b70;
+    --jur-accent: #1351B4;
+    --jur-accent-hover: #4d82e0;
+    --jur-danger: #E52207;
+    --jur-radius: 10px;
+    --jur-radius-lg: 16px;
+    --jur-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --jur-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: var(--jur-font);
+    font-size: 14px;
+    color: var(--jur-text);
+    background: var(--jur-bg);
+    -webkit-font-smoothing: antialiased;
+}
+.jur-body *, .jur-body *::before, .jur-body *::after { box-sizing: border-box; }
+.jur-body button, .jur-body input, .jur-body textarea, .jur-body select { font-family: inherit; }
+.jur-body code, .jur-body pre { font-family: var(--jur-mono); }
+
+.jur-shell { display: grid; grid-template-columns: 264px 1fr; height: 100vh; }
+
+/* ---------------------------------------------------------------- Sidebar */
+.jur-sidebar {
+    background: var(--jur-surface);
+    border-right: 1px solid var(--jur-border);
+    display: flex; flex-direction: column; padding: 10px; gap: 8px; overflow: hidden;
+}
+.jur-brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px; }
+.jur-brand .mark {
+    width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+    font-size: 16px; background: linear-gradient(135deg, var(--jur-accent), #0ea5e9);
+}
+.jur-brand .name { font-weight: 700; font-size: 13.5px; }
+.jur-brand .sub { font-size: 10.5px; color: var(--jur-faint); }
+
+.jur-newchat {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px; border-radius: var(--jur-radius); border: 1px solid var(--jur-border-2);
+    background: var(--jur-surface-2); color: var(--jur-text);
+    font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none;
+}
+.jur-newchat:hover { background: var(--jur-hover); }
+
+.jur-search {
+    width: 100%; background: var(--jur-bg); border: 1px solid var(--jur-border);
+    color: var(--jur-text); border-radius: var(--jur-radius); padding: 8px 11px; font-size: 12.5px;
+}
+.jur-search::placeholder { color: var(--jur-faint); }
+.jur-search:focus { outline: none; border-color: var(--jur-border-2); }
+
+.jur-threads { list-style: none; margin: 2px 0 0; padding: 0;
+    overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.jur-thread {
+    display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px;
+    color: var(--jur-muted); text-decoration: none; font-size: 13px;
+}
+.jur-thread:hover { background: var(--jur-hover); color: var(--jur-text); }
+.jur-thread.active { background: var(--jur-hover); color: var(--jur-text); }
+.jur-thread .t-link { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
+    color: inherit; text-decoration: none; }
+.jur-thread .t-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jur-thread .t-del { opacity: 0; border: none; background: transparent; color: var(--jur-faint);
+    cursor: pointer; padding: 2px 4px; border-radius: 6px; line-height: 1; }
+.jur-thread:hover .t-del { opacity: 1; }
+.jur-thread .t-del:hover { color: var(--jur-danger); }
+
+.jur-side-foot { border-top: 1px solid var(--jur-border); padding-top: 6px; }
+.jur-side-link { display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+    color: var(--jur-muted); font-size: 13px; border-radius: 8px; text-decoration: none;
+    width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+.jur-side-link:hover { background: var(--jur-hover); color: var(--jur-text); }
+
+/* ------------------------------------------------------------------- Main */
+.jur-main { display: flex; flex-direction: column; height: 100vh; min-width: 0; }
+/* Conteúdo rolável (telas que não são a conversa: listagens, formulários) */
+.jur-main .owui-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 28px; }
+.jur-topbar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; }
+.jur-model {
+    background: var(--jur-surface-2); border: 1px solid var(--jur-border);
+    color: var(--jur-text); border-radius: 999px; padding: 7px 14px; font-size: 13px;
+    font-weight: 500; max-width: 320px; cursor: pointer;
+}
+.jur-model:focus { outline: none; border-color: var(--jur-border-2); }
+.jur-spacer { flex: 1; }
+.jur-chat-title { font-size: 13px; color: var(--jur-muted); cursor: pointer; max-width: 280px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 6px; border-radius: 6px; }
+.jur-chat-title:hover { background: var(--jur-hover); color: var(--jur-text); }
+.jur-icon-btn {
+    border: 1px solid transparent; background: transparent; color: var(--jur-muted);
+    border-radius: 8px; padding: 7px 9px; cursor: pointer; line-height: 1; font-size: 14px;
+    text-decoration: none; display: inline-grid; place-items: center;
+}
+.jur-icon-btn:hover { background: var(--jur-hover); color: var(--jur-text); }
+.jur-icon-btn.active { color: var(--jur-accent-hover); background: rgba(19,81,180,.16); }
+
+/* Controles da conversa (dropdown) */
+.jur-menu-wrap { position: relative; }
+.jur-controls { position: absolute; right: 0; top: 42px; z-index: 30; width: 320px;
+    background: var(--jur-surface); border: 1px solid var(--jur-border-2); border-radius: 12px;
+    padding: 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.jur-controls[hidden] { display: none; }  /* o atributo hidden precisa vencer o display:flex */
+.jur-ctrl-label { font-size: 12px; color: var(--jur-muted); display: flex; justify-content: space-between; }
+.jur-ctrl-label b { color: var(--jur-accent-hover); }
+.jur-controls input[type=range] { width: 100%; accent-color: var(--jur-accent); }
+.jur-ctrl-textarea { background: var(--jur-bg); border: 1px solid var(--jur-border); color: var(--jur-text);
+    border-radius: 8px; padding: 8px 10px; font-size: 13px; resize: vertical; width: 100%; }
+.jur-ctrl-textarea:focus { outline: none; border-color: var(--jur-accent); }
+
+/* --------------------------------------------------------------- Mensagens */
+.jur-messages { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+.jur-thread-col { max-width: 768px; margin: 0 auto; padding: 16px 20px 8px; }
+
+.jur-msg { display: flex; gap: 12px; margin: 18px 0; align-items: flex-start; }
+.jur-msg.user { flex-direction: row-reverse; }
+.jur-avatar { width: 28px; height: 28px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff; }
+.jur-avatar.assistant { background: linear-gradient(135deg, var(--jur-accent), #0ea5e9); }
+.jur-avatar.user { background: var(--jur-border-2); }
+.jur-bubble { min-width: 0; max-width: 100%; }
+.jur-msg.user .jur-bubble {
+    background: var(--jur-surface-2); border-radius: 18px; padding: 10px 15px; max-width: 85%;
+}
+.jur-content { font-size: 15px; line-height: 1.7; color: var(--jur-text); word-wrap: break-word; }
+.jur-msg.user .jur-content { white-space: pre-wrap; }
+
+/* Markdown (assistente) */
+.jur-content > :first-child { margin-top: 0; }
+.jur-content > :last-child { margin-bottom: 0; }
+.jur-content p { margin: 0 0 12px; }
+.jur-content ul, .jur-content ol { margin: 0 0 12px; padding-left: 24px; }
+.jur-content li { margin: 4px 0; }
+.jur-content h1, .jur-content h2, .jur-content h3 { margin: 16px 0 8px; line-height: 1.3; }
+.jur-content a { color: var(--jur-accent-hover); }
+.jur-content code:not(pre code) { background: var(--jur-surface-2); border: 1px solid var(--jur-border);
+    padding: 1px 5px; border-radius: 5px; font-size: .85em; }
+.jur-content pre { background: #0a0a0a; border: 1px solid var(--jur-border); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 12px; position: relative; }
+.jur-content pre code { background: none; border: none; padding: 0; font-size: 13px; }
+.jur-content table { border-collapse: collapse; margin: 0 0 12px; width: 100%; font-size: 13.5px; }
+.jur-content th, .jur-content td { border: 1px solid var(--jur-border); padding: 6px 10px; text-align: left; }
+.jur-content blockquote { border-left: 3px solid var(--jur-accent); margin: 0 0 12px;
+    padding: 2px 14px; color: var(--jur-muted); }
+.jur-copy { position: absolute; top: 8px; right: 8px; font-size: 11px; background: var(--jur-surface-2);
+    border: 1px solid var(--jur-border); color: var(--jur-muted); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.jur-copy:hover { color: var(--jur-text); }
+.jur-cursor::after { content: "▍"; color: var(--jur-accent); animation: jur-blink 1s steps(2) infinite; }
+@keyframes jur-blink { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+/* Ações por mensagem */
+.jur-msg-actions { display: flex; gap: 6px; margin-top: 8px; opacity: 0; transition: opacity .12s; }
+.jur-msg:hover .jur-msg-actions { opacity: 1; }
+.jur-msg.user .jur-msg-actions { justify-content: flex-end; }
+.jur-action-btn { background: transparent; border: 1px solid var(--jur-border); color: var(--jur-muted);
+    border-radius: 7px; padding: 3px 9px; font-size: 11.5px; cursor: pointer; }
+.jur-action-btn:hover { background: var(--jur-hover); color: var(--jur-text); }
+
+/* Estado vazio + sugestões */
+.jur-empty { height: 100%; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+.jur-empty .hi { font-size: 26px; font-weight: 600; }
+.jur-empty .hi small { display: block; font-size: 14px; font-weight: 400; color: var(--jur-muted); margin-top: 6px; }
+.jur-suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 240px)); gap: 10px; }
+.jur-suggestion { text-align: left; background: var(--jur-surface); border: 1px solid var(--jur-border);
+    border-radius: 12px; padding: 12px 14px; color: var(--jur-text); font-size: 13px; cursor: pointer; }
+.jur-suggestion:hover { background: var(--jur-surface-2); border-color: var(--jur-border-2); }
+.jur-suggestion b { display: block; margin-bottom: 2px; }
+.jur-suggestion span { color: var(--jur-faint); }
+
+/* ---------------------------------------------------------------- Composer */
+.jur-composer { padding: 8px 20px 16px; }
+.jur-composer-inner { max-width: 768px; margin: 0 auto; background: var(--jur-surface);
+    border: 1px solid var(--jur-border-2); border-radius: var(--jur-radius-lg); padding: 10px 12px; }
+.jur-composer-inner:focus-within { border-color: var(--jur-accent); }
+.jur-input { width: 100%; background: transparent; border: none; outline: none; resize: none;
+    color: var(--jur-text); font-size: 15px; line-height: 1.5; max-height: 200px; padding: 4px 2px; }
+.jur-input::placeholder { color: var(--jur-faint); }
+.jur-composer-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.jur-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--jur-muted);
+    cursor: pointer; user-select: none; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--jur-border); }
+.jur-chip:hover { background: var(--jur-hover); color: var(--jur-text); }
+.jur-chip input { display: none; }
+.jur-chip.on { background: rgba(19,81,180,.14); border-color: var(--jur-accent); color: var(--jur-accent-hover); }
+.jur-send { margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer;
+    background: var(--jur-text); color: var(--jur-bg); display: grid; place-items: center; flex: none; }
+.jur-send:hover { background: #fff; }
+.jur-send:disabled { opacity: .4; cursor: not-allowed; }
+.jur-send.stop { background: var(--jur-danger); color: #fff; }
+.jur-send.stop:hover { background: #f87171; }
+.jur-hint { max-width: 768px; margin: 8px auto 0; font-size: 11px; color: var(--jur-faint); text-align: center; }
+.jur-docs { max-width: 768px; margin: 0 auto 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.jur-doc-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--jur-text);
+    background: var(--jur-surface-2); border: 1px solid var(--jur-border); border-radius: 999px; padding: 4px 6px 4px 10px; }
+.jur-doc-chip .doc-x { border: none; background: transparent; color: var(--jur-faint); cursor: pointer;
+    font-size: 12px; line-height: 1; padding: 0 2px; }
+.jur-doc-chip .doc-x:hover { color: var(--jur-danger); }
+
+/* ----------------------------------------------- Página Modelos & Conexões */
+.jur-settings { padding: 24px; overflow-y: auto; max-width: 880px; margin: 0 auto; width: 100%; }
+.jur-card { background: var(--jur-surface); border: 1px solid var(--jur-border);
+    border-radius: var(--jur-radius-lg); padding: 18px 20px; margin-bottom: 18px; }
+.jur-card h3 { margin: 0 0 6px; font-size: 15px; }
+.jur-muted-txt, .jur-muted { color: var(--jur-muted); font-size: 13px; margin: 0 0 12px; }
+.jur-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.jur-table th, .jur-table td { border-bottom: 1px solid var(--jur-border); padding: 9px 10px;
+    text-align: left; vertical-align: middle; }
+.jur-table th { color: var(--jur-faint); font-weight: 600; font-size: 11.5px;
+    text-transform: uppercase; letter-spacing: .03em; }
+.jur-btn { border: 1px solid var(--jur-border-2); background: var(--jur-surface-2); color: var(--jur-text);
+    border-radius: 8px; padding: 6px 12px; font-size: 12.5px; cursor: pointer; }
+.jur-btn:hover { border-color: var(--jur-accent); }
+.jur-btn-primary { background: var(--jur-accent); border-color: var(--jur-accent); color: #fff; }
+.jur-btn-primary:hover { background: var(--jur-accent-hover); }
+.jur-btn-danger:hover { border-color: var(--jur-danger); color: var(--jur-danger); }
+.jur-test-result { font-size: 12px; margin-left: 6px; }
+.jur-test-result.ok { color: #168821; }
+.jur-test-result.err { color: var(--jur-danger); }
+.jur-form p { margin: 0 0 12px; display: flex; flex-direction: column; gap: 4px; }
+.jur-form label { font-size: 12.5px; color: var(--jur-muted); }
+.jur-form input, .jur-form select { background: var(--jur-bg); border: 1px solid var(--jur-border);
+    color: var(--jur-text); border-radius: 8px; padding: 8px 10px; font-size: 13px; width: 100%; }
+.jur-form input:focus, .jur-form select:focus { outline: none; border-color: var(--jur-accent); }
+.jur-alert { background: rgba(19,81,180,.12); border: 1px solid var(--jur-border);
+    color: var(--jur-text); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px; }
+
+/* ------------------------------------------------------------- Tema claro */
+.jur-body.light {
+    --jur-bg: #f4f6fb;
+    --jur-surface: #ffffff;
+    --jur-surface-2: #eef2f8;
+    --jur-hover: #e6edf6;
+    --jur-border: #dce3ec;
+    --jur-border-2: #c3cedb;
+    --jur-text: #1b2a3a;
+    --jur-muted: #5b6b7b;
+    --jur-faint: #8494a4;
+    --jur-accent: #1351B4;
+    --jur-accent-hover: #0c326f;
+}
+.jur-body.light .jur-send { background: var(--jur-accent); color: #fff; }
+.jur-body.light .jur-send:hover { background: var(--jur-accent-hover); }
+.jur-body.light .jur-content pre { background: #1e1e24; }  /* mantém código escuro p/ contraste */
+
+/* Janela "mini" da home (iframe ?embed=1): mostra só o chat, sem a barra lateral.
+   Ao maximizar, a home remove .embed-mini via postMessage -> interface completa. */
+.jur-body.embed-mini .jur-sidebar { display: none; }
+.jur-body.embed-mini .jur-shell { grid-template-columns: 1fr; }

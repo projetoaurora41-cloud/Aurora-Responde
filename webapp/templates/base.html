@@ -1,0 +1,76 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Aurora Responde{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=9">
+    <link rel="stylesheet" href="{% static 'css/govbr.css' %}?v=3">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="gov-faixa" style="background:var(--govbr-blue-dark,#071D41); color:#fff; font-size:12.5px">
+  <div style="max-width:100%; display:flex; align-items:center; gap:10px; padding:6px 20px">
+    <b style="font-weight:800; letter-spacing:.3px">gov.br</b>
+    <span style="opacity:.5">|</span>
+    <span style="opacity:.92">Plataforma Aurora · Enfrentamento à Violência · PROCC/UFS — MJSP</span>
+  </div>
+</div>
+
+{% block body %}
+<div class="app app--slim">
+    <main class="main" style="margin:0 auto; max-width:1040px; width:100%">
+        <div class="topbar">
+            {% block topbar %}
+                <div class="crumb">
+                    <a href="{% url 'home' %}">Aurora Responde</a>
+                </div>
+            {% endblock %}
+            <div class="topbar-actions">
+                {% block topbar_actions %}{% endblock %}
+                {% if user.is_authenticated %}
+                    <span class="text-faint text-sm" style="margin-right:8px">{{ user.username }}</span>
+                    {% if user.is_staff %}
+                        <a href="/admin/" class="btn btn-sm btn-ghost" target="_blank">Admin</a>
+                    {% endif %}
+                    <form method="post" action="{% url 'logout' %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm">Sair</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-ghost">Entrar</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content {% block content_class %}{% endblock %}">
+            {% if messages %}
+                {% for m in messages %}
+                    <div class="alert alert-{{ m.tags|default:'info' }}">{{ m }}</div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+    // Default Chart.js theme — gov.br light
+    if (window.Chart) {
+        Chart.defaults.color = '#5b6b7b';
+        Chart.defaults.borderColor = 'rgba(16,42,80,0.08)';
+        Chart.defaults.font.family = 'Raleway, Inter, sans-serif';
+        Chart.defaults.font.size = 11;
+    }
+</script>
+<script src="{% static 'js/chat_ui.js' %}?v=6"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

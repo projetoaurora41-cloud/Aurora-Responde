@@ -1,0 +1,40 @@
+# Ambiente virtual local (enorme — nunca vai para a imagem)
+venv/
+.venv/
+env/
+
+# Git e metadados
+.git/
+.gitignore
+.gitattributes
+
+# Segredos — injetados em runtime via env_file, não copiados para a imagem
+.env
+
+# Bancos locais / legado
+*.sqlite3
+webapp/db.sqlite3
+
+# Caches Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Notebooks e artefatos pesados de docs (não usados em runtime)
+*.ipynb
+docs/img/
+docs/*.pdf
+
+# IDE / SO
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+
+# Modelos baixados localmente (vêm de volume/cache, não da imagem)
+models/
+*.safetensors
+*.bin

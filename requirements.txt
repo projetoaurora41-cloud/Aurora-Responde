@@ -1,0 +1,22 @@
+# Aurora Responde — fork leve (só Jurema + RAG + dados ao vivo).
+# Sem forecasting (torch/Chronos/ChatTime), sem embeddings (pgvector/
+# sentence-transformers), sem clientes de API externa. O chat consulta o
+# Postgres para números exatos e o Jurema-7B (via Ollama) redige as respostas.
+
+# --- Web framework + banco ---
+django>=5.1,<6.1
+psycopg[binary]>=3.2
+python-dotenv>=1.0
+
+# --- Acesso a dados (src/db.py: consultas SQL ao vivo) ---
+numpy>=2.1.2
+pandas>=2.3.0
+
+# --- LLM local (Jurema-7B como gerador de todas as respostas) ---
+ollama>=0.4
+
+# --- Renderização de markdown nas respostas do chat ---
+markdown>=3.5
+
+# --- Extração de texto de PDF (upload de documentos no chat) — opcional ---
+pypdf>=6.0

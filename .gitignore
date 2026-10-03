@@ -1,0 +1,55 @@
+# Virtualenv
+venv/
+.venv/
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+.ini
+# Credencial de deploy (token do GitHub p/ o clone automatico) — nunca versionar
+deploy.env
+# Logs
+*.log
+webapp/runserver.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor / IDE
+.vscode/
+.idea/
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Heavy generated artifacts (regenerable)
+tests/banco20/
+tests/benchmark/results/
+
+# Backups e artefatos temporários
+*.bak
+Aurora-Docker.zip
+.cj_*.txt
+
+# Vendored ChatTime sub-clone metadata (we keep the code, not the upstream git history)
+ChatTime/.git/
+ChatTime/.git_upstream_backup/
+
+# Django local state (users/queries/history are per-installation)
+webapp/db.sqlite3
+webapp/db.sqlite3.*
+webapp/*.sqlite3
+webapp/*.sqlite3.*
+webapp/staticfiles/
+
+govbr-ds-wbc-next/
+node_modules/
+aurora-docker/

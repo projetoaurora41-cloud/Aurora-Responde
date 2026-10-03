@@ -1,0 +1,538 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Encoding & language -----------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+
+% --- Layout ------------------------------------------------------------------
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+
+% --- Tabelas e listas --------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+
+% --- Cor, código, gráficos ---------------------------------------------------
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,backgrounds}
+
+% --- Hyperref no final --------------------------------------------------------
+\usepackage[
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue!60!black,
+    citecolor=black
+]{hyperref}
+
+% --- Estilo de código -------------------------------------------------------
+\definecolor{codebg}{rgb}{0.96,0.96,0.97}
+\definecolor{codekw}{rgb}{0.16,0.30,0.65}
+\definecolor{codestr}{rgb}{0.10,0.45,0.20}
+\definecolor{codecomment}{rgb}{0.50,0.50,0.55}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    commentstyle=\color{codecomment}\itshape,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black!10},
+    framesep=4pt,
+    xleftmargin=4pt,
+    captionpos=b,
+}
+
+% --- Atalhos -----------------------------------------------------------------
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\file}[1]{\texttt{\small\color{black!75} #1}}
+
+% --- Meta --------------------------------------------------------------------
+\title{\textbf{Protocolo de Benchmark Integrado Retrospectivo}\\
+  \large Pipeline SINAM + ChatTime --- avaliação ponta a ponta de LLMs
+  orquestradores e modelos de série temporal em prompts de análise do passado}
+\author{Projeto SINAM/VIOLBR \\ \small \texttt{hernandison@gmail.com}}
+\date{Junho de 2026}
+
+% =============================================================================
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este documento descreve o protocolo de avaliação aplicado ao pipeline
+SINAM + ChatTime --- uma arquitetura que combina um \emph{LLM orquestrador}
+(Qwen3 via Ollama) com modelos de \emph{série temporal} (Chronos--2,
+ChatTime, ETS, Random Forest, entre outros) para responder perguntas em
+português sobre notificações de violência (sistema VIOLBR). O caso de uso
+principal do produto é a \textbf{análise retrospectiva}: o usuário
+pergunta \emph{como evoluiu} um tipo de violência em uma UF/município
+nos últimos anos, e o sistema responde com tendências, sazonalidade e
+diagnóstico estrutural. O benchmark é estruturado em três modalidades:
+\textbf{Orquestrador} (avalia só o LLM, com forecaster fixo),
+\textbf{Retrospectivo puro} (\emph{walk-forward backtest} dos forecasters
+em séries isoladas) e \textbf{Integrado Retrospectivo} (avalia a cadeia
+ponta a ponta, com prompts típicos de análise do passado). Esta última
+--- o foco deste documento --- faz produto cartesiano
+\(\text{LLM} \times \text{forecaster}\) sobre o gold-set de perguntas
+retrospectivas e mede sete critérios booleanos por execução, agregados
+num \emph{score} ponderado.
+\end{abstract}
+
+\tableofcontents
+\vspace{1em}
+
+% =============================================================================
+\section{Motivação}
+
+\subsection{O caso de uso real é retrospectivo}
+
+O produto SINAM + ChatTime não foi pensado para projetar o futuro --- é
+uma ferramenta de \textbf{análise do passado}. Perguntas típicas:
+
+\begin{itemize}[leftmargin=*]
+\item \emph{``Como evoluiu a violência sexual em Sergipe nos últimos anos?''}
+\item \emph{``Qual a tendência de tortura no Brasil entre 2020 e 2024?''}
+\item \emph{``A negligência contra idosos no RJ está crescendo?''}
+\end{itemize}
+
+Todas pedem \emph{olhar para trás}: tendência, sazonalidade, mudança de
+regime, diagnóstico estrutural. Mesmo quando o pipeline interno usa
+forecasters para \emph{cross-validar} a série (backtest em janela móvel),
+o que o usuário recebe é uma narrativa retrospectiva.
+
+\subsection{Por que avaliar a cadeia inteira}
+
+A avaliação tradicional separa LLM de modelo preditivo: mede \emph{tool
+calling} com um \emph{dataset} sintético e mede acurácia do \emph{forecaster}
+em séries isoladas. Em produção, porém, o resultado depende dos dois
+funcionarem \emph{juntos}. Se o LLM roteia errado (chama
+\code{relatorio\_municipio} pra ``Aracaju'' sem a UF), nem o melhor
+forecaster do mundo salva a resposta.
+
+A modalidade \textbf{Integrado Retrospectivo} fecha essa lacuna: ela
+responde com dados a pergunta de produto \emph{``qual combinação
+\(\langle \text{LLM}, \text{forecaster} \rangle\) vale a pena pro caso
+de uso retrospectivo nesse domínio?''}, em vez de tratar cada componente
+como otimizável isoladamente.
+
+% =============================================================================
+\section{Arquitetura de avaliação}
+
+O sistema é dividido em três \emph{posições} funcionalmente distintas
+(figura \ref{fig:arch}). Um mesmo modelo \emph{pode} ocupar mais de uma
+posição, mas a avaliação trata cada \emph{slot} separadamente.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=0.6cm and 0.7cm,
+    box/.style={
+        rectangle, draw=black!40, rounded corners=2pt,
+        minimum width=3.6cm, minimum height=1.7cm, align=center,
+        font=\small
+    },
+    arrow/.style={-{Stealth[length=2mm]}, thick, black!60},
+    label/.style={font=\footnotesize\itshape, black!60}
+]
+\node[box, fill=blue!8]  (orq)    {\textbf{Orquestrador}\\(P1)\\Qwen3--8B + tools};
+\node[box, fill=green!8, right=of orq] (retro)
+    {\textbf{Retrospectivo}\\(P2)\\Explica o passado\\ChatTime, RF, ETS};
+\node[box, fill=orange!10, right=of retro] (prosp)
+    {\textbf{Prospectivo}\\(P3)\\Projeta o futuro\\Chronos--2, TimesFM};
+\draw[arrow] (orq) -- (retro);
+\draw[arrow] (retro) -- (prosp);
+\node[label, below=0.05cm of orq]   {pergunta PT-BR};
+\node[label, below=0.05cm of retro] {séries SINAM};
+\node[label, below=0.05cm of prosp] {horizonte futuro};
+\end{tikzpicture}
+\caption{As três posições da arquitetura. O Integrado mede a cadeia
+P1 $\to$ P2/P3 funcionando junta.}
+\label{fig:arch}
+\end{figure}
+
+% =============================================================================
+\section{As três modalidades de \emph{benchmark}}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l X l@{}}
+\toprule
+\textbf{Modalidade} & \textbf{O que mede} & \textbf{Gold-set} \\
+\midrule
+Orquestrador puro & Só \emph{tool calling} do LLM (forecaster fixo
+              \code{chronos2}) & 25 perguntas \\
+Retrospectivo puro & Walk-forward backtest dos forecasters sobre
+              séries SINAM isoladas & 30 séries \\
+\textbf{Integrado Retrospectivo} & \textbf{Cadeia LLM $\times$ forecaster
+              sobre prompts de análise do passado} & \textbf{20 perguntas} \\
+\bottomrule
+\end{tabularx}
+\caption{As três modalidades. As duas primeiras são \emph{diagnósticas}
+(isolam componentes). A terceira é \emph{decisional} --- é a que
+recomendamos para escolher a combinação que vai pra produção.}
+\end{table}
+
+\subsection{Por que rodar o Integrado Retrospectivo}
+
+\begin{itemize}[leftmargin=*]
+\item O \textbf{Orquestrador puro} pode dar 100\% em tool calling sem
+que o forecaster funcione: ele só verifica \emph{qual} tool foi chamada,
+não o que ela retorna.
+\item O \textbf{Retrospectivo puro} pode mostrar WAPE excelente em série
+isolada, mas se o LLM roteia mal a pergunta o usuário nunca chega a ver
+esse WAPE.
+\item O \textbf{Integrado Retrospectivo} responde com dados a pergunta
+de produto: \emph{``a combinação \code{qwen3:8b $\times$ chattime}
+aguenta os prompts retrospectivos típicos dentro de 3\,min, ou
+\code{qwen3:8b $\times$ chronos2} é mais previsível?''}.
+\end{itemize}
+
+% =============================================================================
+\section{Gold-set Integrado Retrospectivo}
+
+O conjunto vive em \file{tests/benchmark/perguntas\_integrado.jsonl} ---
+20 perguntas \textbf{retrospectivas} (análise de tendência passada),
+divididas em \textbf{dois blocos} de 10:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Bloco \code{i*}} --- registro analítico genérico
+(``Faça a análise retrospectiva de...''). Estilo conciso.
+\item \textbf{Bloco \code{j*}} --- registro jurídico-forense
+(``Promotor de Justiça do MP-SP requer análise...''). Inclui
+referências legais (Lei Maria da Penha, Estatuto do Idoso,
+Lei 13.344/2016 de tráfico de pessoas, etc.) e papéis profissionais
+(MP, Defensoria, Procuradoria, vara especializada, advocacia).
+Testa robustez do LLM a \emph{prompts} formais longos.
+\end{itemize}
+Cada linha é um JSON com a estrutura:
+
+\begin{lstlisting}[language=Python,caption={Schema de um caso do gold-set retrospectivo.}]
+{
+  "id": "i01",
+  "category": "retrospectivo_uf",
+  "question": "Faça a análise retrospectiva de violência sexual em Sergipe nos últimos anos",
+  "expected_tools":       ["relatorio_uf"],
+  "expected_args":        {"relatorio_uf": {"uf": "SE"}},
+  "expected_filter_keys": ["violencia_sexual"],
+  "needs_wape":           true,
+  "max_seconds":          180
+}
+\end{lstlisting}
+
+\paragraph{Categorias.} \code{retrospectivo\_uf},
+\code{retrospectivo\_municipio}, \code{retrospectivo\_brasil},
+\code{retrospectivo\_combo}. Permitem decompor o desempenho por
+\emph{tipo} de pergunta retrospectiva (tabela \ref{tab:by-cat-result}).
+
+\paragraph{Por que o nome \emph{forecast} foi descartado.} Apesar de o
+pipeline interno usar forecasters em \emph{backtest} para diagnosticar
+sazonalidade e tendência, o que o usuário pede é sempre uma narrativa
+sobre o passado --- nunca uma projeção futura. Manter o prefixo
+\code{forecast\_} no \emph{schema} era confuso para quem lê os
+resultados, então padronizamos como \code{retrospectivo\_*}.
+
+% =============================================================================
+\section{Métrica de avaliação (sete \emph{checks} booleanos)}
+
+Cada execução é avaliada por \code{evaluate\_case()} em
+\file{tests/benchmark/runners/run\_orquestrador.py}, que devolve sete
+\emph{flags} booleanas:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{Flag} & \textbf{Verifica} \\
+\midrule
+\code{correct\_chain}      & Sequência de tools chamadas = \code{expected\_tools} \\
+\code{args\_ok}            & UF/município extraído bate com \code{expected\_args} \\
+\code{filter\_keys\_ok}    & Filtro de tipo de violência detectado corretamente \\
+\code{gold\_kw\_present}   & \emph{Keywords} âncora aparecem na resposta gerada \\
+\code{no\_forbidden\_tools}& Não chamou \emph{tool} de outra modalidade \\
+\code{no\_forbidden\_kw}   & Não usou palavra-veto (e.g.\ ``diminuiu'' em série crescente) \\
+\code{within\_time}        & $\text{elapsed\_s} \le \text{max\_seconds}$ \\
+\bottomrule
+\end{tabularx}
+\caption{Os sete critérios avaliados por execução. Tudo persiste no
+\code{per\_combo.csv} de cada \emph{run}.}
+\label{tab:flags}
+\end{table}
+
+\subsection{Métricas derivadas}
+
+Computadas em \file{webapp/benchmark/views.py} (função
+\code{\_integ\_stats}) e em \file{webapp/benchmark/worker.py}
+(\code{\_summarise\_integrado}):
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Acurácia} --- média aritmética das sete \emph{flags}, por
+linha:
+\begin{equation}
+\text{acc}_i = \frac{1}{7} \sum_{k=1}^{7} \mathbf{1}[\text{flag}_k^{(i)} = \text{True}]
+\end{equation}
+
+\item \textbf{Strict correctness} --- conjunção das três \emph{hard
+checks}:
+\begin{equation}
+\text{strict}_i = \text{correct\_chain}_i \wedge \text{args\_ok}_i \wedge \text{filter\_keys\_ok}_i
+\end{equation}
+
+\item \textbf{Full pass} --- todas as sete flags \texttt{True}.
+
+\item \textbf{Latências} --- p50 e p95 do \code{elapsed\_s} dentro do
+combo.
+
+\item \textbf{Score} --- combinação linear ponderada (seção \ref{sec:score}).
+\end{itemize}
+
+% =============================================================================
+\section{Score ponderado}
+\label{sec:score}
+
+Para cada par $\langle \text{orq}, \text{fc} \rangle$, define-se:
+
+\begin{equation}
+\boxed{
+\text{score} \;=\; 0{,}50 \cdot \text{chain\_ok}_\% \;+\; 0{,}20 \cdot \text{args\_ok}_\%
+              \;+\; 0{,}15 \cdot \text{filter\_keys}_\% \;+\; 0{,}15 \cdot \text{within\_time}_\%
+}
+\label{eq:score}
+\end{equation}
+
+\paragraph{Justificativa dos pesos.}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Chain (50\%)} é o erro mais catastrófico --- chamar a
+\emph{tool} errada destrói a resposta inteira, independente do que vem
+depois.
+\item \textbf{Args (20\%)} é parametrização: pega a UF certa mas mira no
+filtro errado. Ruim, mas recuperável.
+\item \textbf{Filter keys (15\%)} é o tipo de violência detectado;
+parametrização secundária.
+\item \textbf{Within time (15\%)} pune combos que tecnicamente
+\emph{funcionam} mas seriam inaceitáveis em \emph{chat} interativo. É o
+peso que reprova o ChatTime apesar da acurácia razoável.
+\end{itemize}
+
+% =============================================================================
+\section{Produto cartesiano e execução}
+
+O \emph{runner} em \file{webapp/benchmark/worker.py} (função
+\code{\_run\_integrado}) constrói o produto cartesiano:
+
+\begin{equation}
+\mathcal{E} \;=\; \mathcal{O} \times \mathcal{F} \times \mathcal{C}
+\end{equation}
+
+onde $\mathcal{O}$ é o conjunto de orquestradores selecionados,
+$\mathcal{F}$ o de forecasters e $\mathcal{C}$ o gold-set
+(\(|\mathcal{C}| = 20\); 10 \emph{retrospectivos} + 10 \emph{jurídicos}).
+Para cada $(o, f, c) \in \mathcal{E}$ é
+disparada uma chamada da cadeia inteira; o resultado vai pra
+\file{tests/benchmark/results/$\langle$date$\rangle$\_integ\_run$\langle$id$\rangle$/per\_combo.csv}.
+
+\paragraph{Latência total esperada.} Estimativa:
+
+\begin{equation}
+T \;\approx\; |\mathcal{O}| \cdot |\mathcal{F}| \cdot |\mathcal{C}| \cdot \bar{t}_\text{call}
+\end{equation}
+
+com $\bar{t}_\text{call} \approx 30\,$s para Qwen3 + Chronos--2 e
+$\approx 75\,$s incluindo ChatTime.
+
+% =============================================================================
+\section{Implementação --- mapa de arquivos}
+
+\begin{table}[h!]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{Arquivo} & \textbf{Papel} \\
+\midrule
+\file{tests/benchmark/perguntas\_integrado.jsonl} & 20 perguntas-gold (10 retrospectivas \code{i*} + 10 jurídicas \code{j*}) com schema do §4 \\
+\file{tests/benchmark/runners/run\_orquestrador.py} & \code{evaluate\_case()} aplica os 7 \emph{checks} \\
+\file{webapp/benchmark/models.py} & \code{BenchmarkRun} (kind, status, progresso, summary) \\
+\file{webapp/benchmark/worker.py} & \code{\_run\_integrado()} produto cartesiano; \code{\_summarise\_integrado()} agrega \\
+\file{webapp/benchmark/views.py} & \code{run\_new\_integrado}, \code{run\_quick\_integrado}, \code{run\_detail}, \code{\_integ\_stats} \\
+\file{webapp/templates/benchmark/run\_new\_integrado.html} & UI: seleção de orq × fc, prévia do cartesiano, estimativa \\
+\file{webapp/templates/benchmark/run\_status.html} & UI: \emph{progress bar} + \emph{log} ao vivo (polling a cada 2\,s) \\
+\file{webapp/templates/benchmark/run\_detail.html} & UI: KPIs, 4 gráficos Chart.js, \emph{ranking} dos pares \\
+\file{webapp/chat/orchestrator.py} & Loop de \emph{tool calling} (OpenAI-compatible) \\
+\file{webapp/chat/tools.py} & \code{relatorio\_uf}, \code{relatorio\_municipio}, \code{relatorio\_brasil} \\
+\file{src/series_models/\{chronos2,chattime,baselines,random\_forest,remote\_api\}\_adapter.py} &
+  Adaptadores de \emph{forecaster} chamados pelas \emph{tools} \\
+\bottomrule
+\end{tabularx}
+\caption{Onde cada peça mora.}
+\end{table}
+
+% =============================================================================
+\section{Resultado real --- \texttt{2026-06-05\_integ\_run3}}
+
+Combo testado: \emph{qwen3:8b $\times$ chattime}, 10 perguntas (essa
+execução é anterior à inclusão do bloco jurídico de junho/26; rodadas
+futuras incluem os 20 itens).
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}l r@{}}
+\toprule
+\textbf{Métrica} & \textbf{Valor} \\
+\midrule
+Acurácia (média dos 7 \emph{checks}) & 74{,}3\,\% \\
+\code{correct\_chain} \%               & 100{,}0\,\% \\
+\code{args\_ok} \%                     & 90{,}0\,\% \\
+\code{filter\_keys\_ok} \%             & 70{,}0\,\% \\
+\code{within\_time} \%                 & 0{,}0\,\% \\
+Strict correctness                    & 30{,}0\,\% \\
+Full pass                             & 0{,}0\,\% \\
+p50 latência                          & 303{,}2\,s \\
+p95 latência                          & 328{,}8\,s \\
+\textbf{Score} (eq.~\ref{eq:score})    & \textbf{69{,}0} \\
+\bottomrule
+\end{tabular}
+\caption{Métricas agregadas do \emph{run} \code{integ\_run3}.}
+\end{table}
+
+\paragraph{Leitura.} O LLM acertou \emph{tool} em 100\% dos casos e
+parâmetros em 90\%. O ponto fraco é o tempo: \code{within\_time} = 0\%
+significa que \emph{nenhuma} execução cumpriu o teto de 180\,s --- todas
+as chamadas com ChatTime estouraram. Em produção, isso reprova o
+ChatTime independentemente da qualidade da previsão.
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+\textbf{Categoria} & \textbf{N} & \textbf{Chain OK} & \textbf{Args OK} & \textbf{Within time} \\
+\midrule
+\code{retrospectivo\_uf}        & 5 & 100\% &  80\% & 0\% \\
+\code{retrospectivo\_brasil}    & 2 & 100\% & 100\% & 0\% \\
+\code{retrospectivo\_municipio} & 2 & 100\% & 100\% & 0\% \\
+\code{retrospectivo\_combo}     & 1 & 100\% & 100\% & 0\% \\
+\bottomrule
+\end{tabular}
+\caption{Desempenho por categoria de pergunta retrospectiva
+(\emph{breakdown} calculado em \code{\_integ\_stats}).}
+\label{tab:by-cat-result}
+\end{table}
+
+% =============================================================================
+\section{Visualizações}
+
+A página \file{run\_detail.html} renderiza quatro gráficos via Chart.js
+em \emph{grid} 2$\times$2:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Score por combinação} --- barras coloridas, escala 0--100.
+\item \textbf{Perfil de qualidade (radar)} --- cada combo num polígono
+nos sete critérios da tabela \ref{tab:flags}. Quanto mais externo,
+melhor.
+\item \textbf{Latência (p50 vs.\ p95)} --- barras agrupadas; revela
+combos com \emph{long tail}.
+\item \textbf{Por categoria} --- barras agrupadas mostrando em que tipo
+de pergunta o pipeline falha.
+\end{enumerate}
+
+% =============================================================================
+\section{Reprodução}
+
+\subsection{One-click}
+
+Pelo navegador, em \url{http://127.0.0.1:8000/benchmark/}, basta
+clicar no botão \emph{\texttt{Iniciar benchmark automático}}. Ele cria
+um \code{BenchmarkRun} com defaults \emph{qwen3:8b $\times$ chronos2} e
+redireciona para a tela de status com \emph{progress bar} ao vivo.
+
+\subsection{Customizado}
+
+Em \url{http://127.0.0.1:8000/benchmark/nova/integrado/}:
+
+\begin{enumerate}[leftmargin=*]
+\item Selecionar 1 ou mais orquestradores (Ollama local ou APIs
+externas cadastradas).
+\item Selecionar 1 ou mais \emph{forecasters} (locais ou remotos).
+\item Definir \emph{label}, \emph{temperature}.
+\item Submeter --- a execução roda em \emph{background} numa thread
+\emph{daemon}.
+\end{enumerate}
+
+\subsection{Linha de comando}
+
+\begin{lstlisting}[language=bash]
+# Linux / macOS
+source venv/bin/activate
+python tests/benchmark/runners/run_orquestrador.py
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+python tests\benchmark\runners\run_orquestrador.py
+\end{lstlisting}
+
+% =============================================================================
+\section{Limitações e trabalho futuro}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Eval humano ausente.} O protocolo prescritivo
+(\file{docs/benchmark\_protocol.md}, §3.1) recomenda Bradley--Terry com
+dois avaliadores. Nesta execução, só métricas automáticas foram
+computadas.
+
+\item \textbf{Sem \emph{confidence interval}.} O score é pontual; um
+\emph{bootstrap} de 1000 amostras daria IC 95\% e permitiria declarar
+vencedores com significância estatística.
+
+\item \textbf{Gold-set ainda pequeno.} 20 perguntas (10 retrospectivas + 10 jurídicas) são suficientes para
+\emph{sanity check} mas insuficientes para conclusão de produção.
+Recomenda-se expandir para $\ge$ 50 cobrindo mais combinações de UF $\times$
+tipo de violência $\times$ horizonte temporal.
+
+\item \textbf{Acoplamento das categorias.} A tabela
+\ref{tab:by-cat-result} está desequilibrada (5 \code{forecast\_uf},
+2 outras, 1 \code{combo}). Balancear o gold-set por categoria.
+
+\item \textbf{Gatilho de adoção formal.} O documento prescritivo (§7)
+define quando \emph{trocar} o modelo em produção; o pipeline atual
+calcula o score mas não aplica o gatilho automaticamente.
+\end{itemize}
+
+% =============================================================================
+\section{Conclusão}
+
+O Benchmark Integrado Retrospectivo dá uma resposta \emph{conjunta}
+sobre a qualidade da cadeia para o caso de uso real do produto ---
+análise de tendência do passado --- com sete checagens objetivas e um
+\emph{score} ponderado interpretável. A execução em
+\code{2026-06-05\_integ\_run3} mostrou que o gargalo do par
+\code{qwen3:8b $\times$ chattime} \emph{não é qualidade} (acurácia 74\%,
+\code{chain\_ok} 100\%) mas \emph{latência}: p95 = 329\,s, 100\% dos
+casos extrapolam o teto de 180\,s. Em \emph{chat} retrospectivo
+interativo, esse tempo é proibitivo. A recomendação prática é manter
+\code{chronos2} como \emph{forecaster} padrão (resposta sub-segundo,
+qualidade equivalente em retrospectivo) e usar ChatTime apenas em
+contextos \emph{batch} --- relatórios noturnos, exportações --- onde o
+tempo de execução não pesa.
+
+\bigskip\hrule\smallskip
+\noindent\textit{Documento gerado a partir do código em
+\code{commit}\textsuperscript{HEAD} do branch \code{main}.
+Para a versão prescritiva completa, ver
+\file{docs/benchmark\_protocol.md}.}
+
+\end{document}

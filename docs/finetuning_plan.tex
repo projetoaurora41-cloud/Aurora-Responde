@@ -1,0 +1,928 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Encoding & language -----------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+
+% --- Layout ------------------------------------------------------------------
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parskip}{0.6em}
+
+% --- Tabelas e listas --------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{multirow}
+
+% --- Cor, código, gráficos, caixas ------------------------------------------
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc,backgrounds}
+\usepackage[most]{tcolorbox}
+
+% --- Hyperref no final --------------------------------------------------------
+\usepackage[
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue!60!black,
+    citecolor=black
+]{hyperref}
+
+% --- Estilo de código -------------------------------------------------------
+\definecolor{codebg}{rgb}{0.96,0.96,0.97}
+\definecolor{codekw}{rgb}{0.16,0.30,0.65}
+\definecolor{codestr}{rgb}{0.10,0.45,0.20}
+\definecolor{codecomment}{rgb}{0.50,0.50,0.55}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    commentstyle=\color{codecomment}\itshape,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black!10},
+    framesep=4pt,
+    xleftmargin=4pt,
+    captionpos=b,
+}
+
+% --- Caixas de informação ----------------------------------------------------
+\newtcolorbox{infobox}[1]{
+    colback=blue!4, colframe=blue!50!black,
+    fonttitle=\bfseries, title=#1,
+    sharp corners=south, rounded corners=north,
+    boxrule=0.5pt, top=4pt, bottom=4pt, left=6pt, right=6pt
+}
+\newtcolorbox{analogia}[1]{
+    colback=orange!6, colframe=orange!70!black,
+    fonttitle=\bfseries, title={Analogia: #1},
+    sharp corners=south, rounded corners=north,
+    boxrule=0.5pt, top=4pt, bottom=4pt, left=6pt, right=6pt
+}
+\newtcolorbox{passo}[1]{
+    colback=green!4, colframe=green!50!black,
+    fonttitle=\bfseries, title={Passo: #1},
+    sharp corners=south, rounded corners=north,
+    boxrule=0.5pt, top=4pt, bottom=4pt, left=6pt, right=6pt
+}
+\newtcolorbox{atencao}[1]{
+    colback=red!4, colframe=red!60!black,
+    fonttitle=\bfseries, title={Atenção: #1},
+    sharp corners=south, rounded corners=north,
+    boxrule=0.5pt, top=4pt, bottom=4pt, left=6pt, right=6pt
+}
+
+% --- Atalhos -----------------------------------------------------------------
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\file}[1]{\texttt{\small\color{black!75} #1}}
+\newcommand{\ok}{{\color{green!50!black}\textbf{\textsc{sim}}}}
+\newcommand{\nope}{{\color{red!60!black}\textbf{\textsc{não}}}}
+\newcommand{\maybe}{{\color{orange!70!black}\textbf{\textsc{talvez}}}}
+
+% --- Meta --------------------------------------------------------------------
+\title{\textbf{Planejamento de Ajuste Fino dos Modelos}\\
+  \large Pipeline SINAM + ChatTime --- guia explicativo passo a passo}
+\author{Projeto SINAM/VIOLBR \\ \small \texttt{hernandison@gmail.com}}
+\date{Junho de 2026}
+
+% =============================================================================
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este documento é um \textbf{guia explicativo} do plano de \emph{ajuste
+fino} (\emph{fine-tuning}) dos modelos do pipeline SINAM + ChatTime.
+Escrito de forma didática: começa explicando \textbf{o que cada modelo
+é}, depois \textbf{o que cada técnica significa} e só então entra no
+plano de execução passo a passo. Pressupõe leitor com conhecimento
+geral de programação mas \emph{não} de \emph{machine learning} avançado.
+Os números de partida vêm do \emph{Benchmark Integrado Retrospectivo}
+de junho/26 (ver \file{docs/benchmark.tex}).
+\end{abstract}
+
+\tableofcontents
+\vspace{1em}
+
+% =============================================================================
+\section{Antes de começar: o pipeline em uma página}
+
+O sistema SINAM + ChatTime tem \textbf{dois tipos de modelo trabalhando
+juntos}:
+
+\begin{enumerate}[leftmargin=*]
+\item Um \textbf{LLM orquestrador} (Qwen3) que \emph{lê a pergunta do
+usuário em português} e decide \emph{qual ferramenta} usar.
+\item Um \textbf{forecaster} (Chronos--2 / ChatTime / ETS / etc.) que
+recebe uma série temporal de notificações e devolve previsões e
+diagnóstico.
+\end{enumerate}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=0.4cm and 0.7cm,
+    box/.style={
+        rectangle, draw=black!40, rounded corners=2pt,
+        minimum width=3.2cm, minimum height=1.5cm, align=center,
+        font=\small
+    },
+    bigbox/.style={
+        rectangle, draw=black!40, rounded corners=2pt,
+        minimum width=3.6cm, minimum height=1.7cm, align=center,
+        font=\small, fill=blue!8
+    },
+    arrow/.style={-{Stealth[length=2mm]}, thick, black!60}
+]
+\node[box, fill=gray!8]                  (user)  {\textbf{Usuário}\\``Como evoluiu a\\violência sexual em SE?''};
+\node[bigbox, right=of user]             (orq)   {\textbf{Orquestrador}\\Qwen3-8B\\\emph{interpreta + roteia}};
+\node[box, fill=green!8, right=of orq]   (fc)    {\textbf{Forecaster}\\Chronos-2 ou ChatTime\\\emph{prevê / diagnostica}};
+\node[box, fill=gray!8, below=of fc]     (db)    {\textbf{Banco SINAM}\\séries temporais\\(VIOLBR)};
+\node[box, fill=gray!8, right=of fc]     (ans)   {\textbf{Resposta}\\narrativa em PT-BR\\com análise};
+\draw[arrow] (user) -- (orq);
+\draw[arrow] (orq) -- (fc);
+\draw[arrow] (db) -- (fc);
+\draw[arrow] (fc) -- (ans);
+\end{tikzpicture}
+\caption{O fluxo completo de uma pergunta. O \emph{orquestrador}
+entende; o \emph{forecaster} calcula; a resposta volta em texto.}
+\end{figure}
+
+\textbf{Por que ajustar?} Os \emph{benchmarks} de junho mostraram que
+cada peça tem um problema diferente. O resto do documento explica o
+que ajustar em cada uma e por quê.
+
+% =============================================================================
+\section{Conhecendo os modelos do pipeline}
+
+Esta seção é puramente explicativa. Se você já conhece todos eles,
+pode pular para a §\ref{sec:tecnicas}.
+
+\subsection{Qwen3-8B (o orquestrador)}
+
+\begin{infobox}{Em uma frase}
+\emph{Qwen3-8B é um modelo de linguagem grande (LLM) de 8 bilhões de
+parâmetros desenvolvido pela Alibaba, especializado em entender
+instruções em vários idiomas e chamar ``ferramentas'' externas.}
+\end{infobox}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{O que é:} um \emph{transformer} que aprendeu a prever a
+próxima palavra de um texto, treinado em trilhões de tokens
+multilíngues incluindo bastante português.
+
+\item \textbf{Por que ele neste projeto:} ele suporta \emph{tool
+calling} no formato OpenAI --- ou seja, sabe responder não só com
+texto, mas com uma chamada estruturada do tipo
+\code{relatorio\_uf(uf="SE", violencia\_sexual=true)}.
+
+\item \textbf{Tamanho prático:} 8 bilhões de parâmetros $\approx$
+$\sim$16\,GB em FP16 (\emph{half precision}). Roda local em GPU
+moderna ou em CPU com perda de velocidade.
+
+\item \textbf{Hospedagem:} via \href{https://ollama.com}{Ollama}
+(\code{ollama run qwen3:8b}). O Django se comunica com ele via HTTP
+local na porta 11434.
+\end{itemize}
+
+\begin{analogia}{LLM como assistente que fala várias línguas}
+Imagine um estagiário brilhante que leu praticamente tudo que existe
+na internet e fala 30 idiomas. Ele \emph{não conhece} o seu projeto
+SINAM em particular, mas tem boa intuição linguística. Quando você
+diz ``violência sexual em Sergipe'', ele entende --- mas precisa
+aprender exatamente \emph{qual} função do seu sistema chamar.
+\end{analogia}
+
+\subsection{Chronos--2 (forecaster padrão)}
+
+\begin{infobox}{Em uma frase}
+\emph{Chronos--2 é um modelo \emph{foundation} de série temporal da
+Amazon (120\,M parâmetros), tipo ``GPT pra séries'', extremamente
+rápido (sub-segundo) e estatisticamente forte.}
+\end{infobox}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{O que é:} um \emph{transformer} treinado em milhões de
+séries temporais públicas (M4, Monash, ETT). Aprendeu padrões
+genéricos --- sazonalidade, tendência, ciclos.
+
+\item \textbf{Como funciona:} discretiza valores numéricos em
+\emph{tokens} via \emph{patch encoding} e gera uma distribuição de
+valores futuros num único \emph{forward pass} (não autoregressivo).
+
+\item \textbf{Tamanho:} 120 milhões de parâmetros $\approx$ 250\,MB.
+
+\item \textbf{Velocidade real medida:} \textbf{0,19\,s} por série
+(p50) na bateria SINAM.
+
+\item \textbf{Status:} é o \emph{forecaster padrão} (\code{REGISTRY}
+no \code{src/series_models/}). Bate quase tudo \emph{out-of-the-box}.
+\end{itemize}
+
+\subsection{ChatTime-1-7B (o forecaster lento mas conversacional)}
+
+\begin{infobox}{Em uma frase}
+\emph{ChatTime é um LLM de 7\,B parâmetros adaptado para fazer
+previsão de série temporal \emph{e} responder perguntas em linguagem
+natural sobre ela. Caro e lento, mas único na sua categoria.}
+\end{infobox}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{O que é:} um LLM (parecido com LLaMA) onde os valores
+numéricos da série foram codificados em \emph{tokens} especiais.
+Diferentemente do Chronos, ele \emph{também} responde perguntas
+sobre a série em PT-BR.
+
+\item \textbf{Como funciona:} \emph{autoregressivo} --- gera um
+\emph{token} de previsão por vez. Para 6 meses de horizonte com 48 de
+contexto, são muitos passos sequenciais.
+
+\item \textbf{Tamanho:} 7 bilhões de parâmetros $\approx$ 13\,GB
+(modelo) + memória dinâmica.
+
+\item \textbf{Velocidade real medida:} \textbf{333\,s} por série
+(p50). 1.750$\times$ mais lento que o Chronos.
+
+\item \textbf{Status:} fora do fluxo padrão (latência inaceitável em
+\emph{chat} interativo). Mantido para QA de múltipla escolha.
+\end{itemize}
+
+\begin{atencao}{Por que ChatTime é tão lento}
+O modelo gera token-a-token (autoregressivo), e a complexidade cresce
+com (\code{horizon} $\times$ \code{context}). Nenhum \emph{fine-tuning}
+muda essa estrutura. Pra ficar rápido, o caminho é \emph{outro modelo
+menor} (veja \emph{destilação}, §\ref{sec:tecnicas}).
+\end{atencao}
+
+\subsection{Os baselines clássicos (ETS, Naive, Drift)}
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{ETS} (Exponential Smoothing): modelo estatístico
+clássico. Decompõe a série em tendência + sazonalidade + ruído via
+fórmula fechada. Sem ``parâmetros treináveis'' no sentido de IA ---
+o que se ``ajusta'' são opções como \code{trend="add"} ou
+\code{seasonal="mul"}.
+
+\item \textbf{Seasonal Naive}: prevê que o próximo valor é igual ao
+mesmo mês do ano passado. \emph{Sanity check}: se um modelo
+sofisticado não bate Seasonal Naive, ele tem bug.
+
+\item \textbf{Drift}: prevê uma reta passando pelo primeiro e último
+ponto da série. Ainda mais simples.
+\end{itemize}
+
+\subsection{Random Forest}
+
+Modelo de \emph{tabular machine learning}. Não é um \emph{transformer}.
+Recebe \emph{features} (mês, ano, lag-1, lag-12, etc.) e prediz o
+próximo valor via floresta de árvores de decisão. ``Ajustar''
+significa \emph{re-treinar} com mais ou outras \emph{features} ---
+não é \emph{fine-tuning} no sentido moderno.
+
+% =============================================================================
+\section{Glossário técnico: o que é \emph{fine-tuning}, LoRA, destilação}
+\label{sec:tecnicas}
+
+\subsection{Fine-tuning (ajuste fino)}
+
+\begin{infobox}{Em uma frase}
+\emph{Fine-tuning é continuar treinando um modelo pré-existente em um
+conjunto de dados específico do seu problema, pra ele aprender padrões
+do seu domínio.}
+\end{infobox}
+
+\begin{analogia}{Estagiário brilhante recebendo treinamento corporativo}
+O Qwen3 saiu da fábrica falando 30 idiomas e sabendo nomear capitais.
+\emph{Fine-tuning} é como passar 2 semanas treinando esse estagiário
+no \emph{onboarding} corporativo: as 1.000 perguntas mais comuns do
+suporte, os nomes corretos das ferramentas internas, o jeito da
+empresa de escrever. Não muda quem ele é --- afia exatamente onde ele
+precisa.
+\end{analogia}
+
+\textbf{Por que não treinar do zero?} Porque você não tem trilhões
+de \emph{tokens}, dezenas de GPUs e meses livres. \emph{Fine-tuning}
+aproveita tudo que o modelo já aprendeu e ajusta só uma camada fina.
+
+\subsection{LoRA --- Low-Rank Adaptation}
+
+\begin{infobox}{Em uma frase}
+\emph{LoRA é uma técnica que \emph{adiciona} pequenos ``adaptadores''
+ao modelo em vez de mexer nos pesos originais. Treina 0,5\% dos
+parâmetros e mantém os outros 99,5\% congelados.}
+\end{infobox}
+
+\paragraph{Por que LoRA existe.} Full \emph{fine-tune} de um modelo de
+8\,B parâmetros exige guardar em memória: os pesos ($\sim$16\,GB), os
+gradientes ($\sim$16\,GB) e o otimizador AdamW ($\sim$32\,GB) ---
+total $\sim$64\,GB de VRAM. Só GPUs caras (A100 80\,GB+) aguentam.
+
+\paragraph{O truque do LoRA.} Em vez de mexer numa matriz de pesos
+$W$ ($d \times d$), você adiciona uma decomposição de baixo posto
+$\Delta W = AB$ onde $A$ é $d \times r$ e $B$ é $r \times d$ com
+$r \ll d$ (tipicamente $r \in \{8, 16, 32, 64\}$).
+
+\begin{equation}
+W_\text{efetivo} \;=\; W_\text{original} \;+\; AB
+\end{equation}
+
+Só $A$ e $B$ são treinados. Para $d=4096$ e $r=16$, $AB$ tem
+$\sim$130\,k parâmetros (vs.\ $\sim$17\,M na matriz cheia)
+--- redução de \textbf{130$\times$}.
+
+\begin{analogia}{Adaptador na tomada}
+O modelo original é a tomada da parede --- você não pode mexer nela
+(perde garantia, risco de queimar tudo). LoRA é um adaptador
+removível que você pluga: muda o comportamento sem alterar a tomada.
+Se der errado, você desconecta e tudo volta ao normal.
+\end{analogia}
+
+\subsection{QLoRA --- LoRA com quantização}
+
+LoRA + \textbf{quantização 4-bit} do modelo base. O modelo de 7\,B
+parâmetros em \emph{normal float 4-bit} (\code{nf4}) ocupa $\sim$4\,GB
+em vez de 14\,GB. Permite \emph{fine-tune} de modelos que de outra
+forma não caberiam.
+
+\textbf{Trade-off:} um pouco mais lento e $\sim$1--2\% pior em
+qualidade vs.\ LoRA normal. Vale quando VRAM é o limite.
+
+\subsection{Full fine-tune (ajuste completo)}
+
+Treina \emph{todos} os parâmetros do modelo. Resultado normalmente
+melhor que LoRA por \mbox{1--3\,pontos}, mas:
+
+\begin{itemize}[leftmargin=*]
+\item Exige 3--4$\times$ mais VRAM.
+\item Risco maior de \emph{catastrophic forgetting} (o modelo
+``esquece'' coisas que sabia antes).
+\item Artefato final é o modelo completo (16\,GB) e não um adapter
+de 200\,MB.
+\end{itemize}
+
+\subsection{Destilação de conhecimento (\emph{knowledge distillation})}
+
+\begin{infobox}{Em uma frase}
+\emph{Treinar um modelo pequeno (``aluno'') a imitar um modelo grande
+(``professor''), preservando $\sim$90\% da qualidade com $1/20$ do
+tamanho.}
+\end{infobox}
+
+\begin{analogia}{Resumo de aula gravada}
+O professor é uma aula de 2h cheia de detalhes (modelo gigante).
+O aluno é um resumo de 10 minutos que pega os pontos essenciais
+(modelo pequeno). Não substitui a aula em todos os contextos, mas
+para 90\% dos casos resolve em 1/12 do tempo.
+\end{analogia}
+
+\paragraph{Como funciona, em 3 passos:}
+
+\begin{passo}{1 --- Roda o professor em muitos exemplos}
+Para cada série temporal de treino, registra não só a previsão final
+do professor, mas a \emph{distribuição} sobre os valores possíveis
+(``soft labels'').
+\end{passo}
+
+\begin{passo}{2 --- Treina o aluno a imitar as soft labels}
+Em vez de só prever o valor real $y$, o aluno minimiza a divergência
+entre sua distribuição $\pi_\text{aluno}$ e a do professor
+$\pi_\text{prof}$.
+\end{passo}
+
+\begin{passo}{3 --- Mistura sinais (loss combinada)}
+\begin{equation}
+\mathcal{L}_\text{KD} \;=\;
+\underbrace{\alpha\,\mathcal{L}_\text{KL}(\pi_\text{aluno}\|\pi_\text{prof})}_\text{soft labels}
++ \underbrace{\beta\,\mathcal{L}_\text{MSE}(\hat{y},y)}_\text{hard targets}
++ \underbrace{\gamma\,\mathcal{L}_\text{feature}(h_\text{aluno},h_\text{prof})}_\text{hint loss}
+\end{equation}
+Pesos típicos: $\alpha=0{,}5$, $\beta=0{,}3$, $\gamma=0{,}2$.
+\end{passo}
+
+% =============================================================================
+\section{O que o benchmark mostrou (diagnóstico em números)}
+
+Os três \emph{runs} de \code{2026-06-05} (em
+\file{tests/benchmark/results/}):
+
+\subsection{Comparação direta: Chronos vs.\ ChatTime (8 séries)}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+\textbf{Modelo} & \textbf{WAPE\,mean} & \textbf{WAPE\,median} & \textbf{WAPE\,p90}
+                & \textbf{p50\,latência} & \textbf{vitórias} \\
+\midrule
+Chronos-2 & \textbf{14,41\,\%} & \textbf{13,79\,\%} & \textbf{19,73\,\%} & \textbf{0,19\,s} & \textbf{5/8} \\
+ChatTime  & 16,05\,\%          & 15,59\,\%          & 21,82\,\%          & 333,34\,s        & 3/8 \\
+\midrule
+\emph{Gap} & +11,4\,\%        & +13,1\,\%          & +10,6\,\%          & \textbf{1.754$\times$} & --- \\
+\bottomrule
+\end{tabular}
+\caption{\code{retro\_chattime\_chronos2}. ChatTime perde por pouco em
+qualidade, mas é absurdamente mais lento.}
+\end{table}
+
+\subsection{Cadeia ponta a ponta (qwen3 $\times$ chattime, 10 prompts)}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l r l@{}}
+\toprule
+\textbf{Métrica} & \textbf{Valor} & \textbf{O que significa} \\
+\midrule
+\code{chain\_ok}        &  90\,\%  & LLM escolhe a \emph{tool} certa quase sempre \\
+\code{args\_ok}         &  90\,\%  & Tira a UF/município certo na maioria \\
+\code{filter\_keys\_ok} &  70\,\%  & \textbf{Erra o tipo de violência em 3/10} \\
+\code{within\_time}     &   0\,\%  & \textbf{Estoura 180\,s em 100\% dos casos} \\
+p50 latência            & 303\,s   & Inviável em \emph{chat} \\
+\bottomrule
+\end{tabular}
+\caption{\code{integ\_run3}. A patologia é dupla: qualidade do LLM no
+filtro semântico + latência do forecaster.}
+\end{table}
+
+\subsection{Síntese: as duas patologias}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Qwen erra o tipo de violência em 30\% das perguntas.}
+Solução clássica: \emph{fine-tuning} com mais exemplos.
+
+\item \textbf{ChatTime é 1.750$\times$ mais lento que Chronos sem ser
+significativamente melhor.} Solução não-clássica: precisamos de um
+\emph{modelo menor} (destilação).
+\end{enumerate}
+
+% =============================================================================
+\section{Matriz de decisão: o que ajustar em cada modelo}
+
+\begin{table}[h!]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{}l c c l X@{}}
+\toprule
+\textbf{Modelo} & \textbf{Pos.} & \textbf{Ajustar?} & \textbf{Técnica} & \textbf{Por quê / por que não} \\
+\midrule
+Qwen3-8B & P1 & \ok & LoRA r=64 \emph{ou} full FT
+& Esforço pequeno, retorno alto: melhora \code{filter\_keys\_ok}. \\
+\midrule
+ChatTime-7B & P2/P3 & \ok & Full FT \emph{e} destilação
+& Frente A: fechar gap de qualidade. Frente B: criar aluno rápido. \\
+\midrule
+Chronos-2 & P2/P3 & \maybe & Fork comunitário
+& Já é estado da arte \emph{out-of-the-box}; FT só se sobrar tempo. \\
+\midrule
+\textbf{Aluno destilado} & P2/P3 (novo) & \ok & Destilação
+& Resolve o problema da latência. Aposta arquitetural. \\
+\midrule
+ETS / Naive / Drift & P2 & \nope & ---
+& Não tem o que ajustar. São baselines. \\
+\midrule
+Random Forest & P2 & \nope & ---
+& ``Ajuste'' é \emph{feature engineering} --- escopo separado. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =============================================================================
+\section{Plano P1: ajustar o Qwen3-8B (passo a passo)}
+\label{sec:qwen}
+
+\subsection{Objetivo numérico}
+
+Subir três métricas sem regredir as outras:
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l r r@{}}
+\toprule
+\textbf{Métrica} & \textbf{Hoje} & \textbf{Alvo} \\
+\midrule
+\code{correct\_chain}    & 100\,\% & manter $\ge$ 95\,\% \\
+\code{args\_ok}          &  90\,\% & $\ge$ 95\,\% \\
+\code{filter\_keys\_ok}  &  70\,\% & \textbf{$\ge$ 92\,\%} \\
+Fluência PT-BR (humano) & --- & manter \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Passo 1 --- Coletar 10.000 exemplos de treino}
+
+Construir o arquivo
+\file{tests/finetune/qwen3\_train.jsonl}. Cada linha é um JSON com
+três campos: \code{messages} (a conversa), \code{tools} (as
+ferramentas disponíveis), e \code{expected\_tool\_calls} (o que o
+modelo deveria responder).
+
+\begin{lstlisting}[language=Python,caption={Schema de um exemplo de treino.}]
+{
+  "messages": [
+    {"role": "system", "content": "Voce e um analista do SINAM..."},
+    {"role": "user", "content": "Tendencia de tortura no Rio nos ultimos anos?"}
+  ],
+  "tools": [
+    {"type": "function", "function": {"name": "relatorio_uf",
+      "parameters": {"properties": {"uf": {"type":"string"},
+                                     "tortura": {"type":"boolean"}}}}}
+  ],
+  "expected_tool_calls": [
+    {"name": "relatorio_uf", "arguments": {"uf": "RJ", "tortura": true}}
+  ]
+}
+\end{lstlisting}
+
+\paragraph{Distribuição por categoria.}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l r l@{}}
+\toprule
+\textbf{Categoria} & \textbf{N} & \textbf{O que cobre} \\
+\midrule
+Roteamento UF              & 3.000 & ``Casos em SE/PE/MG ...'' \\
+Roteamento municipal       & 2.000 & ``Em Aracaju'', ``Em Bom Jesus de SE'' \\
+Roteamento Brasil          & 1.500 & ``No Brasil'', ``Total nacional'' \\
+Cruzamento filtros         & 1.800 & ``Violência sexual em SP'' (geo + tipo) \\
+Multi-turno                &   700 & ``E em 2024?'' como follow-up \\
+Edge cases                 &   700 & Perguntas ambíguas, fora de escopo, vazias \\
+Reforço PT-BR genérico     &   300 & ``Anti-forgetting'' (conversas comuns) \\
+\midrule
+\textbf{Total}             & \textbf{10.000} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{De onde vêm os exemplos:}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Bootstrap} (250 ex.): pega as 25 perguntas do gold-set
+existente e gera 10 paráfrases de cada via prompt num modelo grande
+(GPT-4 ou Claude).
+\item \textbf{Threads reais} ($\sim$5.000 ex.): coleta conversas do
+banco do chat (\code{webapp/chat/models.py:Thread}), anonimiza e
+anota o \code{expected\_tool\_calls}.
+\item \textbf{Geração sintética} ($\sim$5.000 ex.): combina dicionário
+de filtros + lista IBGE de municípios para gerar exemplos canônicos
+de todas as UFs e filtros.
+\end{enumerate}
+
+\subsection{Passo 2 --- Adversarial mining (essencial)}
+
+Pega \emph{exatamente} os casos onde o Qwen baseline falhou no
+\code{integ\_run3} (os 3 prompts onde \code{filter\_keys\_ok=False})
+e gera 30--50 paráfrases de cada. O modelo aprende exatamente onde
+ele falha hoje.
+
+\begin{atencao}{Não vaze o gold-set para o treino}
+As 10 perguntas do \emph{benchmark} \textbf{nunca} entram no dataset
+de treino (nem como paráfrase). Senão a avaliação fica viciada e
+você não sabe se melhorou de verdade.
+\end{atencao}
+
+\subsection{Passo 3 --- Treinar a LoRA r=64 (faixa A, recomendada)}
+
+Em A100 80\,GB cabe LoRA com posto $r=64$ (adapter grande,
+aproveita melhor o hardware).
+
+\begin{lstlisting}[language=Python,caption={Config LoRA via PEFT.}]
+from peft import LoraConfig
+lora = LoraConfig(
+    r=64,                        # posto do adapter
+    lora_alpha=128,              # escala (regra: 2*r)
+    target_modules=[             # camadas atingidas (atenção + FFN)
+        "q_proj", "k_proj", "v_proj", "o_proj",
+        "gate_proj", "up_proj", "down_proj",
+    ],
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM",
+)
+\end{lstlisting}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Hyperparâmetro} & \textbf{Valor} \\
+\midrule
+\code{learning\_rate}                  & $3 \times 10^{-4}$ (warmup 5\%) \\
+\code{per\_device\_train\_batch\_size} & 8 \\
+\code{gradient\_accumulation\_steps}   & 4 (\emph{effective batch}=32) \\
+\code{num\_train\_epochs}              & 3 \\
+\code{max\_seq\_length}                & 8192 \\
+\code{optim}                           & \code{adamw\_torch\_fused} \\
+\code{lr\_scheduler\_type}             & \code{cosine\_with\_min\_lr} \\
+\code{bf16}                            & \code{true} \\
+\code{flash\_attn}                     & \code{flash\_attention\_2} \\
+\bottomrule
+\end{tabular}
+\caption{Hiperparâmetros da Faixa A. Tempo total estimado: 4--6\,h em
+A100 80\,GB.}
+\end{table}
+
+\subsection{Passo 4 --- (opcional) Full FT na Faixa B}
+
+Vale a pena \emph{apenas} para comparar contra a Faixa A. Custo
+$\sim$3$\times$ maior. Único parâmetro diferente: \code{learning\_rate}
+$= 5 \times 10^{-5}$ (full FT precisa de \emph{lr} mais conservador).
+
+\subsection{Passo 5 --- Exportar para o Ollama}
+
+\begin{enumerate}[leftmargin=*]
+\item \emph{Merge} dos pesos LoRA no modelo base:\\
+\code{python -m peft.merge -{}-input lora-out -{}-output qwen3-sinam-merged}
+\item Converter para GGUF (formato do Ollama):\\
+\code{python llama.cpp/convert.py qwen3-sinam-merged}
+\item Quantizar para Q4\_K\_M (menor VRAM):\\
+\code{llama.cpp/quantize ... Q4\_K\_M}
+\item Criar Modelfile e subir no Ollama:\\
+\code{ollama create qwen3-sinam:v1 -f Modelfile}
+\end{enumerate}
+
+\subsection{Passo 6 --- Re-rodar o benchmark}
+
+Aponta \code{OLLAMA\_MODEL=qwen3-sinam:v1} no \code{.env} e dispara o
+\emph{benchmark integrado retrospectivo} pela UI
+(\url{/benchmark/nova/integrado/}). Compara as 7 métricas com o
+baseline usando IC 95\% (\emph{bootstrap} de 1.000 amostras).
+
+\subsection{Passo 7 --- Decidir adoção}
+
+\begin{infobox}{Gatilho de adoção do Qwen ajustado}
+Adota se:
+\begin{itemize}[leftmargin=*]
+\item \code{score} ajustado $\ge$ baseline + 10 pontos, E
+\item IC 95\% inferior do ajustado $>$ IC 95\% superior do baseline, E
+\item \code{filter\_keys\_ok} $\ge$ 92\%, E
+\item Qualidade humana não regride.
+\end{itemize}
+\textbf{Caso contrário, mantém o baseline.}
+\end{infobox}
+
+% =============================================================================
+\section{Plano P2: melhorar o ChatTime --- duas frentes}
+\label{sec:chattime}
+
+\subsection{Frente A: Full FT do ChatTime}
+
+\textbf{Pergunta a responder:} Se eu treinar o ChatTime nas séries
+SINAM, ele melhora a qualidade o suficiente pra fechar o gap com o
+Chronos?
+
+\subsubsection{Passo 1 --- Extrair o corpus}
+
+\begin{passo}{Gerar 120.000 pares (contexto, horizonte)}
+\begin{enumerate}[leftmargin=*]
+\item Conecta no Postgres \emph{Aurola}.
+\item Para cada UF $\times$ tipo de violência (2014--2024), monta a
+série mensal completa.
+\item Janela móvel: pega 48 meses como \emph{contexto} e os 6 meses
+seguintes como \emph{horizonte}.
+\item Por série de 132 meses, sobram $\sim$60 pares. Com $\sim$2.000
+séries, $\sim$120.000 pares totais.
+\end{enumerate}
+\end{passo}
+
+\paragraph{Holdout estrito.} Os últimos 12 meses de cada série,
+\emph{mais} 5 UFs ``raras'' (e.g.\ AP, RR, TO, AC, RO), nunca entram
+no treino. Servem só pra avaliar generalização.
+
+\subsubsection{Passo 2 --- Treinar com DeepSpeed ZeRO-2}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Param} & \textbf{Valor} \\
+\midrule
+\code{learning\_rate}    & $1 \times 10^{-5}$ \\
+\code{batch\_size}       & 16 séries (efetivo 64) \\
+\code{num\_train\_epochs}& 2 \\
+\code{bf16}              & \code{true} \\
+\code{deepspeed}         & ZeRO Stage 2 \\
+\code{gradient\_checkpointing} & \code{true} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Passo 3 --- Gatilho de promoção da Frente A}
+
+\begin{infobox}{Promove se TODAS as três condições baterem}
+\begin{itemize}[leftmargin=*]
+\item WAPE médio $\le$ 14,41\% (bate Chronos baseline).
+\item p50 latência $\le$ 30\,s.
+\item Cobertura p10--p90 $\in [75\%, 85\%]$.
+\end{itemize}
+Se não, a Frente A vira insumo da Frente B: o ChatTime ajustado
+vira o \emph{professor} da destilação.
+\end{infobox}
+
+\subsection{Frente B: destilar ChatTime em um aluno rápido}
+
+\textbf{Pergunta a responder:} Eu consigo treinar um modelo pequeno
+($\sim$300\,M parâmetros) que mantém 90\% da qualidade do ChatTime
+sendo 60$\times$ mais rápido?
+
+\subsubsection{Passo 1 --- Escolher a arquitetura do aluno}
+
+Duas opções:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Encoder-decoder leve} (300\,M parâmetros): 8 camadas
+encoder + 4 decoder, \emph{hidden}=768, 12 cabeças. Inspirado em
+Chronos-Bolt. Latência esperada $\le$ 1\,s em CPU.
+\item \textbf{Chronos-Small re-treinado} (50\,M parâmetros):
+aproveita o tokenizador de \emph{patch} oficial.
+\end{enumerate}
+
+\subsubsection{Passo 2 --- Coletar soft labels do professor}
+
+\begin{passo}{Para cada par (ctx, horizon) do corpus de 120k pares}
+\begin{enumerate}[leftmargin=*]
+\item Roda o ChatTime no modo \code{eval} (sem treinar).
+\item Salva \emph{(a)} a previsão pontual $\hat{y}_\text{prof}$ e
+\emph{(b)} a distribuição completa sobre os possíveis valores
+($\pi_\text{prof}$).
+\item Guarda também \emph{features} intermediárias do penúltimo
+\emph{layer} ($h_\text{prof}$) para o \emph{hint loss}.
+\end{enumerate}
+\end{passo}
+
+\subsubsection{Passo 3 --- Treinar o aluno com KD loss}
+
+\begin{equation}
+\mathcal{L} \;=\; 0{,}5\,\mathcal{L}_\text{KL}(\pi_\text{aluno}\|\pi_\text{prof})
+              \;+\; 0{,}3\,\mathcal{L}_\text{MSE}(\hat{y}_\text{aluno},y)
+              \;+\; 0{,}2\,\mathcal{L}_\text{feature}(h_\text{aluno},h_\text{prof})
+\end{equation}
+
+\subsubsection{Passo 4 --- Gatilho de promoção da Frente B}
+
+\begin{infobox}{Promove o aluno destilado se TODAS as três condições}
+\begin{itemize}[leftmargin=*]
+\item WAPE relativo ao professor $\le$ +10\% (mantém 90\%+ da qualidade).
+\item p50 latência $\le$ 5\,s.
+\item Cobertura p10--p90 $\in [70\%, 90\%]$.
+\end{itemize}
+``Manter 90\% da qualidade pagando 1/60 do tempo'' é a tese central da
+destilação. Se essa condição não bate, o aluno não justifica o
+investimento.
+\end{infobox}
+
+% =============================================================================
+\section{Infraestrutura na nuvem}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{Recurso} & \textbf{Detalhe} \\
+\midrule
+\textbf{GPU para Qwen LoRA}  & 1$\times$ A100 80\,GB --- $\sim$5\,h de treino \\
+\textbf{GPU para ChatTime FT}& 2$\times$ A100 80\,GB (DeepSpeed ZeRO-2) --- $\sim$48\,h \\
+\textbf{GPU para destilação} & 1$\times$ A100 40\,GB --- $\sim$24\,h (aluno é pequeno) \\
+\textbf{RAM}                 & 128\,GB (data loaders + checkpoints) \\
+\textbf{Disco}               & 500\,GB SSD \\
+\textbf{Provedor de cloud}   & Lambda Cloud, Modal, RunPod (spot $\sim$50\,\% mais barato) \\
+\textbf{Custo total estimado}& \$\,400--800 para o plano inteiro \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Bibliotecas Python necessárias (\file{requirements.finetune.txt}).}
+\code{transformers 4.46+}, \code{peft 0.13+}, \code{trl 0.12},
+\code{accelerate 1.0}, \code{deepspeed 0.15}, \code{flash-attn 2.7},
+\code{datasets 3.1}, \code{unsloth 2024.11} (acelera Qwen $\sim$2$\times$).
+
+% =============================================================================
+\section{Cronograma proposto}
+
+\begin{table}[h!]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{Semana} & \textbf{Marco} & \textbf{Entregáveis} \\
+\midrule
+1  & \textbf{Dados Qwen}      & Pipeline de coleta de threads; 5.000 exemplos limpos \\
+2  & \textbf{Qwen LoRA v1}    & Treino LoRA r=64; export GGUF; benchmark v1 \\
+2$\dagger$ & \textbf{Corpus ChatTime} & 120k pares extraídos; \emph{holdout} marcado \\
+3  & \textbf{Qwen LoRA v2}    & Adversarial mining + retreino; benchmark v2 \\
+3$\dagger$ & \textbf{ChatTime Full FT} & Treino multi-GPU; benchmark Frente A \\
+4  & \textbf{Decisão Qwen}    & Adotar v2 ou descartar \\
+4$\dagger$ & \textbf{Aluno destilado v1} & Arquitetura definida; primeiro treino com KD \\
+5  & \textbf{Iteração aluno}  & Ajuste de $\alpha,\beta,\gamma$; v2 \\
+6  & \textbf{Decisão ChatTime/aluno} & Promover melhor frente; arquivar perdedora \\
+7  & \textbf{Chronos-2 FT (stretch)} & Só se necessário \\
+8  & \textbf{Consolidação}    & Docs atualizadas; release \\
+\bottomrule
+\end{tabularx}
+\caption{$\dagger$ = trilhas paralelas. Caminho crítico passa pela
+coleta de dados (semana 1).}
+\end{table}
+
+% =============================================================================
+\section{Riscos e mitigações}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l c X@{}}
+\toprule
+\textbf{Risco} & \textbf{Sev.} & \textbf{Mitigação} \\
+\midrule
+\emph{Catastrophic forgetting} no Qwen (PT-BR regride) & alta &
+300 exemplos PT-BR genérico no \emph{mix-in}; avaliação humana antes de adotar \\
+\midrule
+Aluno destilado não generaliza para UFs raras & alta &
+\emph{Holdout} estrito de 5 UFs ``raras''; reportar WAPE separado \\
+\midrule
+Full FT do ChatTime \emph{overfit} no corpus & média &
+\emph{Early stop} agressivo (\code{patience=200}); LR menor; validação fora do corpus \\
+\midrule
+Aluno fica abaixo de 90\% do professor & média &
+Aumentar capacidade ($\to$ 500\,M); ajustar $\alpha$ pra valorizar \emph{soft labels} \\
+\midrule
+Adversarial mining vira overfit ao gold-set & média &
+Gold-set \textbf{nunca} entra no mining \\
+\midrule
+Custos cloud estouram orçamento & baixa &
+\emph{Spot instances}; \emph{checkpoint} frequente; treinos noturnos \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =============================================================================
+\section{Arquivos a criar}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{Arquivo} & \textbf{Papel} \\
+\midrule
+\file{requirements.finetune.txt}                                & Dependências de treino \\
+\file{tests/finetune/build\_qwen\_dataset.py}                   & Coleta threads + paráfrases + adversarial mining \\
+\file{tests/finetune/qwen3\_train.jsonl, qwen3\_val.jsonl}      & Datasets do Qwen \\
+\file{tests/finetune/train\_qwen\_lora.py}                      & Treino LoRA r=64 \\
+\file{tests/finetune/train\_qwen\_full.py}                      & (opcional) Full FT \\
+\file{tests/finetune/extract\_sinam\_corpus.py}                 & 120k pares do Postgres \\
+\file{tests/finetune/train\_chattime\_full.py}                  & Full FT ChatTime \\
+\file{tests/finetune/train\_student\_distill.py}                & Treino do aluno com KD loss \\
+\file{tests/finetune/eval\_finetuned.py}                        & Wrapper que dispara o benchmark com modelo ajustado \\
+\file{src/series_models/distilled\_student\_adapter.py}           & Adapter do aluno no \code{REGISTRY} \\
+\file{models/qwen3-sinam-v\{1,2\}/}                             & Pesos LoRA (gitignore) \\
+\file{models/chattime-sinam-full-v1/}                           & Se promovido \\
+\file{models/student-distilled-v1/}                             & Aluno compacto \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =============================================================================
+\section{Conclusão e próximos passos}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Comece pela coleta de dados (semana 1).} É o caminho
+crítico. Sem 5.000+ exemplos de qualidade, nada decola.
+
+\item \textbf{Qwen LoRA é a aposta mais segura.} Custo baixo, retorno
+provável. Comece por ele.
+
+\item \textbf{Destilação é a aposta de maior impacto.} Se funcionar,
+resolve \emph{o} gargalo de latência do produto.
+
+\item \textbf{Mantém o critério rígido de adoção.} Empate ou ganho
+marginal $\Rightarrow$ mantém o baseline. Hardware caro não vira
+desculpa pra flexibilizar qualidade.
+
+\item \textbf{Atualize este documento a cada experimento.} Versão 1
+($\sim$08 jun): plano \emph{a priori}. Versão 2 ($\sim$22 jun):
+incorpora resultados Qwen v1. Versão 3 ($\sim$05 jul): resultados
+do aluno destilado.
+\end{enumerate}
+
+\bigskip\hrule\smallskip
+\noindent\textit{Documento vivo, versão didática (junho 2026).
+Companion técnico de \file{docs/benchmark.tex}.}
+
+\end{document}

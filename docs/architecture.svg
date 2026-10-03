@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 1620" font-family="Inter, system-ui, sans-serif">
+
+  <defs>
+    <linearGradient id="accentGrad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+
+    <marker id="aGray" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#94a3b8"/></marker>
+    <marker id="aIndigo" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#818cf8"/></marker>
+    <marker id="aAmber" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#fbbf24"/></marker>
+    <marker id="aPink" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#ec4899"/></marker>
+    <marker id="aTeal" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#14b8a6"/></marker>
+    <marker id="aEmer" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#10b981"/></marker>
+    <marker id="aViolet" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#a78bfa"/></marker>
+    <marker id="aGreen" markerWidth="12" markerHeight="12" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L11,4 z" fill="#22c55e"/></marker>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="1480" height="1620" fill="#0f1115"/>
+  <circle cx="200" cy="100" r="320" fill="#14b8a6" opacity="0.04"/>
+  <circle cx="1280" cy="1500" r="380" fill="#ec4899" opacity="0.04"/>
+
+
+  <!-- ====================== TITLE ====================== -->
+  <g transform="translate(40, 40)">
+    <rect width="40" height="40" rx="10" fill="url(#accentGrad)"/>
+    <text x="20" y="27" font-size="18" font-weight="700" fill="white" text-anchor="middle">A</text>
+    <text x="54" y="22" font-size="24" font-weight="600" fill="#e6e8eb">Aurora · Séries Temporais (SINAM)</text>
+    <text x="54" y="44" font-size="13" fill="#94a3b8">Plataforma local: ingestão DBC/Postgres → camada semântica → chat + análise de séries temporais com auto-seleção</text>
+  </g>
+  <text x="1440" y="40" font-size="13" fill="#94a3b8" text-anchor="end" font-weight="500">100% local · CPU+GPU</text>
+  <text x="1440" y="58" font-size="11" fill="#5e6472" text-anchor="end">RTX 5060 Ti 17 GB · Windows · Python 3.14</text>
+
+
+  <!-- ============================================================
+       ZONE 1 — INGESTÃO (top, teal)
+       ============================================================ -->
+  <g transform="translate(40, 95)">
+    <rect width="1400" height="430" rx="18" fill="rgba(20,184,166,0.04)" stroke="rgba(20,184,166,0.3)" stroke-dasharray="6,4"/>
+    <rect x="20" y="14" width="170" height="22" rx="11" fill="rgba(20,184,166,.15)"/>
+    <text x="105" y="29" font-size="12" font-weight="700" fill="#5eead4" text-anchor="middle">① INGESTÃO DE DADOS</text>
+    <text x="1380" y="29" font-size="11" fill="#94a3b8" text-anchor="end">do DataSUS até o PostgreSQL limpo</text>
+  </g>
+
+  <!-- DataSUS website (external) -->
+  <g transform="translate(80, 150)">
+    <rect width="220" height="80" rx="12" fill="#1c2030" stroke="#475569" filter="url(#shadow)"/>
+    <text x="14" y="22" font-size="11" font-weight="700" fill="#94a3b8">EXTERNO</text>
+    <text x="14" y="44" font-size="14" font-weight="600" fill="#e6e8eb">DataSUS</text>
+    <text x="14" y="60" font-size="10.5" fill="#94a3b8">datasus.saude.gov.br</text>
+    <text x="14" y="74" font-size="10" fill="#5e6472">download manual do .dbc anual</text>
+  </g>
+
+  <!-- Local DBC file -->
+  <g transform="translate(330, 150)">
+    <rect width="220" height="80" rx="12" fill="#1c2030" stroke="#14b8a6" filter="url(#shadow)"/>
+    <text x="14" y="22" font-size="11" font-weight="700" fill="#5eead4">ARQUIVO LOCAL</text>
+    <text x="14" y="44" font-size="14" font-weight="600" fill="#e6e8eb">VIOLBR25.dbc</text>
+    <text x="14" y="60" font-size="10.5" fill="#94a3b8">~/Downloads · ~40 MB</text>
+    <text x="14" y="74" font-size="10" fill="#5e6472">DBF comprimido (BLAST/PKWare)</text>
+  </g>
+
+  <!-- Upload UI -->
+  <g transform="translate(590, 150)">
+    <rect width="260" height="80" rx="12" fill="rgba(20,184,166,.12)" stroke="#14b8a6" stroke-width="2" filter="url(#shadow)"/>
+    <text x="14" y="22" font-size="11" font-weight="700" fill="#5eead4">UI</text>
+    <text x="14" y="44" font-size="14" font-weight="600" fill="#e6e8eb">/sinam/importar/</text>
+    <text x="14" y="60" font-size="10.5" fill="#94a3b8">form Django + thread background</text>
+    <text x="14" y="74" font-size="10" fill="#5e6472">progress auto-refresh 3s · histórico</text>
+  </g>
+
+  <!-- Postgres Aurola (raw) -->
+  <g transform="translate(870, 150)">
+    <rect width="290" height="80" rx="12" fill="#1c2030" stroke="#475569" filter="url(#shadow)"/>
+    <text x="14" y="22" font-size="11" font-weight="700" fill="#94a3b8">ALTERNATIVO</text>
+    <text x="14" y="44" font-size="14" font-weight="600" fill="#e6e8eb">Postgres "Aurola" (raw)</text>
+    <text x="14" y="60" font-size="10.5" fill="#94a3b8">VIOLBR20..VIOLBR24 já carregados</text>
+    <text x="14" y="74" font-size="10" fill="#5e6472">~3.1M linhas · 150+ colunas TEXT</text>
+  </g>
+
+  <!-- arrows: DataSUS -> DBC -->
+  <line x1="300" y1="190" x2="328" y2="190" stroke="#94a3b8" stroke-width="2" marker-end="url(#aGray)"/>
+  <text x="305" y="183" font-size="9" fill="#5e6472">baixar</text>
+
+  <!-- DBC -> Upload UI -->
+  <line x1="550" y1="190" x2="588" y2="190" stroke="#14b8a6" stroke-width="2.5" marker-end="url(#aTeal)"/>
+  <text x="555" y="183" font-size="9" fill="#5eead4">upload</text>
+
+  <!-- ── ETL middle: two parallel pipelines converge ── -->
+
+  <!-- DBC pipeline -->
+  <g transform="translate(290, 260)">
+    <rect width="560" height="110" rx="12" fill="#161922" stroke="#14b8a6" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="560" height="28" rx="12" fill="rgba(20,184,166,.15)"/>
+    <rect x="0" y="14" width="560" height="14" fill="rgba(20,184,166,.15)"/>
+    <text x="14" y="20" font-size="11" font-weight="600" fill="#5eead4">PIPELINE A · upload .dbc → Notificacao</text>
+
+    <g transform="translate(14, 40)">
+      <rect width="170" height="58" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="12" y="20" font-size="11.5" font-weight="600" fill="#e6e8eb">1. Descompressão</text>
+      <text x="12" y="35" font-size="9.5" fill="#94a3b8">dbctodbf (pure-python)</text>
+      <text x="12" y="50" font-size="9.5" fill="#5e6472">~3-5 min · DBC → DBF</text>
+    </g>
+    <line x1="186" y1="68" x2="206" y2="68" stroke="#14b8a6" stroke-width="2" marker-end="url(#aTeal)"/>
+
+    <g transform="translate(208, 40)">
+      <rect width="170" height="58" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="12" y="20" font-size="11.5" font-weight="600" fill="#e6e8eb">2. Leitura DBF</text>
+      <text x="12" y="35" font-size="9.5" fill="#94a3b8">dbfread · streaming</text>
+      <text x="12" y="50" font-size="9.5" fill="#5e6472">~660k linhas · 160 cols</text>
+    </g>
+    <line x1="380" y1="68" x2="400" y2="68" stroke="#14b8a6" stroke-width="2" marker-end="url(#aTeal)"/>
+
+    <g transform="translate(402, 40)">
+      <rect width="144" height="58" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="12" y="20" font-size="11.5" font-weight="600" fill="#e6e8eb">3. row_to_</text>
+      <text x="12" y="35" font-size="11.5" font-weight="600" fill="#e6e8eb">notificacao</text>
+      <text x="12" y="50" font-size="9.5" fill="#94a3b8">traduz + bulk_create</text>
+    </g>
+  </g>
+
+  <!-- Postgres pipeline -->
+  <g transform="translate(870, 260)">
+    <rect width="290" height="110" rx="12" fill="#161922" stroke="#475569" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="290" height="28" rx="12" fill="#1e293b"/>
+    <rect x="0" y="14" width="290" height="14" fill="#1e293b"/>
+    <text x="14" y="20" font-size="11" font-weight="600" fill="#cbd5e1">PIPELINE B · etl_violbr (CLI)</text>
+
+    <g transform="translate(14, 40)">
+      <rect width="262" height="58" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="12" y="20" font-size="11.5" font-weight="600" fill="#e6e8eb">cursor.fetchmany(5000)</text>
+      <text x="12" y="35" font-size="9.5" fill="#94a3b8">→ row_to_notificacao → bulk_create</text>
+      <text x="12" y="50" font-size="9.5" fill="#5e6472">re-importa quando schema muda</text>
+    </g>
+  </g>
+
+  <!-- arrows from sources to pipelines -->
+  <line x1="715" y1="230" x2="568" y2="258" stroke="#14b8a6" stroke-width="2" marker-end="url(#aTeal)"/>
+  <line x1="1015" y1="230" x2="1015" y2="258" stroke="#94a3b8" stroke-width="2" marker-end="url(#aGray)"/>
+
+  <!-- Lookups helper box (right side, supporting both pipelines) -->
+  <g transform="translate(1180, 260)">
+    <rect width="260" height="110" rx="12" fill="#161922" stroke="#10b981" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="260" height="28" rx="12" fill="rgba(16,185,129,.15)"/>
+    <rect x="0" y="14" width="260" height="14" fill="rgba(16,185,129,.15)"/>
+    <text x="14" y="20" font-size="11" font-weight="600" fill="#6ee7b7">lookups.py · tradução</text>
+
+    <text x="14" y="48" font-size="10" font-family="ui-monospace" fill="#cbd5e1">SG_UF='28' → uf='SE'</text>
+    <text x="14" y="64" font-size="10" font-family="ui-monospace" fill="#cbd5e1">CS_RACA='4' → 'Parda'</text>
+    <text x="14" y="80" font-size="10" font-family="ui-monospace" fill="#cbd5e1">NU_IDADE_N='4012' → 12</text>
+    <text x="14" y="96" font-size="10" font-family="ui-monospace" fill="#cbd5e1">VIOL_FISIC='1' → True</text>
+  </g>
+
+  <line x1="850" y1="315" x2="876" y2="315" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="1160" y1="315" x2="1180" y2="315" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+  <!-- arrows converging to Notificacao -->
+  <path d="M 560 370 Q 560 410 730 430" stroke="#14b8a6" stroke-width="2.5" fill="none" marker-end="url(#aTeal)"/>
+  <path d="M 1015 370 Q 1015 410 770 430" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#aGray)"/>
+
+  <!-- Notificacao box (the converging point of zone 1) -->
+  <g transform="translate(440, 432)">
+    <rect width="600" height="80" rx="12" fill="rgba(16,185,129,.10)" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="14" y="14" width="36" height="52" rx="9" fill="#10b981"/>
+    <text x="32" y="40" font-size="14" font-weight="800" fill="#0f1115" text-anchor="middle">📦</text>
+    <text x="32" y="60" font-size="9" font-weight="700" fill="#0f1115" text-anchor="middle">Postgres</text>
+
+    <text x="62" y="32" font-size="16" font-weight="600" fill="#e6e8eb">sinam.Notificacao</text>
+    <text x="62" y="50" font-size="11" fill="#6ee7b7">2.393.636 notificações limpas · 5 anos (2020-2024)</text>
+    <text x="62" y="66" font-size="10" fill="#94a3b8">25 campos legíveis · indexes em uf · ano · sexo · idade · violências</text>
+  </g>
+
+
+  <!-- ============================================================
+       ZONE 2 — INTELIGÊNCIA (middle, indigo+pink)
+       ============================================================ -->
+  <g transform="translate(40, 545)">
+    <rect width="1400" height="690" rx="18" fill="rgba(99,102,241,0.03)" stroke="rgba(129,140,248,0.3)" stroke-dasharray="6,4"/>
+    <rect x="20" y="14" width="170" height="22" rx="11" fill="rgba(129,140,248,.15)"/>
+    <text x="105" y="29" font-size="12" font-weight="700" fill="#a5b4fc" text-anchor="middle">② INTELIGÊNCIA</text>
+    <text x="1380" y="29" font-size="11" fill="#94a3b8" text-anchor="end">LLM orquestrador + tools + analytics + forecasters</text>
+  </g>
+
+  <!-- Ollama Qwen3 -->
+  <g transform="translate(80, 595)">
+    <rect width="480" height="110" rx="14" fill="#161922" stroke="#818cf8" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="480" height="34" rx="14" fill="rgba(129,140,248,.15)"/>
+    <rect x="0" y="20" width="480" height="14" fill="rgba(129,140,248,.15)"/>
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#a5b4fc">OLLAMA · LLM ORQUESTRADOR · 127.0.0.1:11434</text>
+
+    <g transform="translate(20, 48)">
+      <rect width="60" height="56" rx="14" fill="url(#accentGrad)"/>
+      <text x="30" y="38" font-size="22" font-weight="800" fill="white" text-anchor="middle">Q</text>
+    </g>
+    <text x="100" y="70" font-size="16" font-weight="600" fill="#e6e8eb">Qwen3-8B-Instruct (Q4)</text>
+    <text x="100" y="88" font-size="11" fill="#94a3b8">5.2 GB · tool calling robusto · PT-BR · think=False</text>
+    <text x="100" y="103" font-size="10" fill="#5e6472">Não executa SQL nem forecast · só orquestra</text>
+  </g>
+
+  <!-- System prompt highlight -->
+  <g transform="translate(590, 595)">
+    <rect width="290" height="110" rx="14" fill="#161922" stroke="#475569" filter="url(#shadow)"/>
+    <text x="14" y="22" font-size="11" font-weight="700" fill="#94a3b8">SYSTEM PROMPT</text>
+    <text x="14" y="44" font-size="12" fill="#e6e8eb">Vocabulário do modelo limpo</text>
+    <text x="14" y="62" font-size="10" font-family="ui-monospace" fill="#cbd5e1">uf="SE"  ano=2023</text>
+    <text x="14" y="78" font-size="10" font-family="ui-monospace" fill="#cbd5e1">idade_anos__lt=13</text>
+    <text x="14" y="94" font-size="10" font-family="ui-monospace" fill="#cbd5e1">violencia_sexual=true</text>
+  </g>
+
+  <!-- Tools box -->
+  <g transform="translate(910, 595)">
+    <rect width="510" height="110" rx="14" fill="#161922" stroke="#fbbf24" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="510" height="34" rx="14" fill="rgba(251,191,36,.12)"/>
+    <rect x="0" y="20" width="510" height="14" fill="rgba(251,191,36,.12)"/>
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#fbbf24">TOOLS · 13 disponíveis · JSON schema</text>
+
+    <g transform="translate(20, 46)">
+      <rect width="220" height="50" rx="8" fill="rgba(16,185,129,.10)" stroke="#10b981"/>
+      <text x="12" y="20" font-size="11" font-weight="700" fill="#6ee7b7">⚡ ORM (preferidas)</text>
+      <text x="12" y="36" font-size="9" fill="#94a3b8">consultar · contar · serie_temporal</text>
+      <text x="12" y="48" font-size="9" fill="#94a3b8">previsao_automatica  ← recomendada</text>
+    </g>
+    <g transform="translate(260, 46)">
+      <rect width="220" height="50" rx="8" fill="#1c2030" stroke="#475569"/>
+      <text x="12" y="20" font-size="11" font-weight="600" fill="#fde68a">SQL / catálogo (legado)</text>
+      <text x="12" y="36" font-size="9" fill="#94a3b8">run_sql · peek_table · auto_quote</text>
+      <text x="12" y="48" font-size="9" fill="#94a3b8">forecast · qa · forecast_from_sql</text>
+    </g>
+  </g>
+
+  <!-- Arrows LLM ↔ Tools -->
+  <path d="M 560 660 Q 700 660 910 660" stroke="#fbbf24" stroke-width="2.5" fill="none" marker-end="url(#aAmber)"/>
+  <text x="720" y="655" font-size="10" fill="#fbbf24">tool_calls</text>
+
+
+  <!-- Semantic layer (queries.py helpers) -->
+  <g transform="translate(80, 730)">
+    <rect width="1340" height="120" rx="14" fill="#161922" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="1340" height="34" rx="14" fill="rgba(16,185,129,.15)"/>
+    <rect x="0" y="20" width="1340" height="14" fill="rgba(16,185,129,.15)"/>
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#6ee7b7">CAMADA SEMÂNTICA · sinam/queries.py · Django ORM</text>
+
+    <g transform="translate(20, 50)">
+      <rect width="260" height="60" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#e6e8eb">query(filters, limit)</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">lista linhas com whitelist de filtros</text>
+      <text x="14" y="52" font-size="9.5" fill="#5e6472">~30 filtros aceitos · ORM seguro</text>
+    </g>
+    <g transform="translate(296, 50)">
+      <rect width="260" height="60" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#e6e8eb">aggregate(filters, group_by)</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">contagem por grupo (uf, ano, ...)</text>
+      <text x="14" y="52" font-size="9.5" fill="#5e6472">group_by em qualquer campo válido</text>
+    </g>
+    <g transform="translate(572, 50)">
+      <rect width="260" height="60" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#e6e8eb">time_series(filters, freq)</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">série pronta para forecast/plot</text>
+      <text x="14" y="52" font-size="9.5" fill="#5e6472">D · W · ME · QE · YE</text>
+    </g>
+    <g transform="translate(848, 50)">
+      <rect width="260" height="60" rx="9" fill="rgba(16,185,129,.10)" stroke="#10b981"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#6ee7b7">series_for_forecast</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">filters → (array, idx) p/ pipeline</text>
+      <text x="14" y="52" font-size="9.5" fill="#5e6472">usado por previsao_automatica</text>
+    </g>
+    <g transform="translate(1124, 50)">
+      <rect width="200" height="60" rx="9" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="11" font-weight="600" fill="#e6e8eb">ALLOWED_FILTERS</text>
+      <text x="14" y="38" font-size="9.5" fill="#94a3b8">whitelist de chaves</text>
+      <text x="14" y="52" font-size="9.5" fill="#5e6472">protege contra injection</text>
+    </g>
+  </g>
+
+  <!-- arrow Tools → semantic -->
+  <line x1="1170" y1="705" x2="1170" y2="728" stroke="#10b981" stroke-width="2" marker-end="url(#aEmer)"/>
+  <text x="1180" y="722" font-size="9" fill="#6ee7b7">ORM call</text>
+
+  <!-- semantic → Notificacao (arrow up to zone 1) -->
+  <path d="M 740 728 Q 740 600 740 512" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="5,4" opacity="0.5"/>
+
+
+  <!-- Analytics + Forecasters row -->
+  <g transform="translate(80, 870)">
+    <rect width="700" height="180" rx="14" fill="#161922" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="700" height="34" rx="14" fill="rgba(167,139,250,.15)"/>
+    <rect x="0" y="20" width="700" height="14" fill="rgba(167,139,250,.15)"/>
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#c4b5fd">ANALYTICS · src/analytics/</text>
+
+    <g transform="translate(20, 50)">
+      <rect width="320" height="116" rx="10" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="13" font-weight="600" fill="#e6e8eb">analysis.py · SeriesProfile</text>
+      <text x="14" y="40" font-size="10.5" fill="#94a3b8">length · freq · sazonalidade (ACF)</text>
+      <text x="14" y="56" font-size="10.5" fill="#94a3b8">tendência (slope) · outliers (IQR)</text>
+      <text x="14" y="86" font-size="11" fill="#c4b5fd" font-weight="600">Output:</text>
+      <text x="14" y="102" font-size="9.5" font-family="ui-monospace" fill="#cbd5e1">{seasonality_lag: 7, trend: +0.6}</text>
+    </g>
+
+    <g transform="translate(360, 50)">
+      <rect width="320" height="116" rx="10" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="13" font-weight="600" fill="#e6e8eb">metrics.py · walk-forward</text>
+      <text x="14" y="40" font-size="10.5" fill="#94a3b8">MAE · RMSE · MAPE · sMAPE · WAPE</text>
+      <text x="14" y="56" font-size="10.5" fill="#94a3b8">rolling-origin · 2-3 folds</text>
+      <text x="14" y="86" font-size="11" fill="#c4b5fd" font-weight="600">Comitê de modelos:</text>
+      <text x="14" y="102" font-size="9.5" fill="#cbd5e1">escolhe vencedor por menor WAPE</text>
+    </g>
+  </g>
+
+  <g transform="translate(800, 870)">
+    <rect width="620" height="180" rx="14" fill="#161922" stroke="#ec4899" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="620" height="34" rx="14" fill="rgba(236,72,153,.15)"/>
+    <rect x="0" y="20" width="620" height="14" fill="rgba(236,72,153,.15)"/>
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#f9a8d4">MODELOS DE SÉRIE · src/series_models/ · 5 modelos</text>
+
+    <g transform="translate(20, 50)">
+      <rect width="180" height="56" rx="9" fill="rgba(236,72,153,.10)" stroke="#ec4899"/>
+      <rect x="10" y="10" width="36" height="36" rx="9" fill="#ec4899"/>
+      <text x="28" y="32" font-size="13" font-weight="800" fill="white" text-anchor="middle">C2</text>
+      <text x="54" y="22" font-size="11.5" font-weight="600" fill="#e6e8eb">Chronos-2</text>
+      <text x="54" y="36" font-size="9" fill="#fbcfe8">120M · GPU · p10/50/90</text>
+      <text x="54" y="48" font-size="9" fill="#5e6472">SOTA zero-shot · default</text>
+    </g>
+    <g transform="translate(210, 50)">
+      <rect width="180" height="56" rx="9" fill="#1c2030" stroke="#475569"/>
+      <rect x="10" y="10" width="36" height="36" rx="9" fill="#374151"/>
+      <text x="28" y="32" font-size="11" font-weight="700" fill="#e6e8eb" text-anchor="middle">CT</text>
+      <text x="54" y="22" font-size="11.5" font-weight="600" fill="#e6e8eb">ChatTime-1-7B</text>
+      <text x="54" y="36" font-size="9" fill="#94a3b8">7B · GPU · suporta QA</text>
+      <text x="54" y="48" font-size="9" fill="#5e6472">vendored · LLM-based</text>
+    </g>
+    <g transform="translate(400, 50)">
+      <rect width="200" height="56" rx="9" fill="#1c2030" stroke="#475569"/>
+      <rect x="10" y="10" width="36" height="36" rx="9" fill="#0891b2"/>
+      <text x="28" y="34" font-size="14" font-weight="700" fill="white" text-anchor="middle">📈</text>
+      <text x="54" y="22" font-size="11.5" font-weight="600" fill="#e6e8eb">ETS · Seasonal Naive</text>
+      <text x="54" y="36" font-size="11.5" font-weight="600" fill="#e6e8eb">Drift</text>
+      <text x="54" y="48" font-size="9" fill="#5e6472">CPU · &lt;1s · 3 baselines</text>
+    </g>
+
+    <g transform="translate(20, 120)">
+      <rect width="580" height="40" rx="9" fill="rgba(236,72,153,.05)" stroke="#475569" stroke-dasharray="3,3"/>
+      <text x="14" y="18" font-size="11" font-weight="600" fill="#c4b5fd">Pluggable: implementa src.forecasters.base.Forecaster (Protocol)</text>
+      <text x="14" y="32" font-size="10" fill="#94a3b8">novos modelos = 1 arquivo + registro em REGISTRY · ex: TimesFM, Moirai, Prophet</text>
+    </g>
+  </g>
+
+  <!-- previsao_automatica pipeline arrow -->
+  <path d="M 880 850 Q 880 870 200 870" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity="0.5" stroke-dasharray="4,3"/>
+  <path d="M 880 850 Q 880 870 1100 870" stroke="#ec4899" stroke-width="1.5" fill="none" opacity="0.5" stroke-dasharray="4,3"/>
+
+  <!-- Pipeline box explaining auto_forecast flow -->
+  <g transform="translate(80, 1070)">
+    <rect width="1340" height="148" rx="14" fill="rgba(99,102,241,0.06)" stroke="#6366f1" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="20" y="26" font-size="12" font-weight="700" fill="#a5b4fc">PIPELINE  previsao_automatica</text>
+
+    <!-- 4 stages in a row with arrows -->
+    <g transform="translate(20, 50)">
+      <rect width="200" height="80" rx="10" fill="#1c2030" stroke="#a78bfa"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#c4b5fd">1. série</text>
+      <text x="14" y="40" font-size="10" fill="#cbd5e1">filtros ORM → array</text>
+      <text x="14" y="56" font-size="10" fill="#94a3b8">time_series(filters, freq)</text>
+      <text x="14" y="70" font-size="9" fill="#5e6472">vem da camada semântica</text>
+    </g>
+    <line x1="222" y1="90" x2="262" y2="90" stroke="#6366f1" stroke-width="2.5" marker-end="url(#aIndigo)"/>
+
+    <g transform="translate(264, 50)">
+      <rect width="200" height="80" rx="10" fill="#1c2030" stroke="#a78bfa"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#c4b5fd">2. analyze</text>
+      <text x="14" y="40" font-size="10" fill="#cbd5e1">profile estrutural</text>
+      <text x="14" y="56" font-size="10" fill="#94a3b8">sazonalidade, trend, ...</text>
+      <text x="14" y="70" font-size="9" fill="#5e6472">notes em PT-BR</text>
+    </g>
+    <line x1="466" y1="90" x2="506" y2="90" stroke="#6366f1" stroke-width="2.5" marker-end="url(#aIndigo)"/>
+
+    <g transform="translate(508, 50)">
+      <rect width="280" height="80" rx="10" fill="rgba(167,139,250,.10)" stroke="#a78bfa" stroke-width="2"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#c4b5fd">3. comitê (backtest)</text>
+      <text x="14" y="40" font-size="10" fill="#cbd5e1">Chronos-2 vs ETS vs SeasonalNaive</text>
+      <text x="14" y="56" font-size="10" fill="#94a3b8">walk-forward · 2 folds</text>
+      <text x="14" y="70" font-size="9" fill="#5e6472">vencedor = argmin(WAPE)</text>
+    </g>
+    <line x1="790" y1="90" x2="830" y2="90" stroke="#ec4899" stroke-width="2.5" marker-end="url(#aPink)"/>
+
+    <g transform="translate(832, 50)">
+      <rect width="220" height="80" rx="10" fill="rgba(236,72,153,.12)" stroke="#ec4899" stroke-width="2"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#f9a8d4">4. forecast final</text>
+      <text x="14" y="40" font-size="10" fill="#fbcfe8">com o vencedor</text>
+      <text x="14" y="56" font-size="10" fill="#94a3b8">p10 · p50 · p90</text>
+      <text x="14" y="70" font-size="9" fill="#5e6472">contexto PT-BR opcional</text>
+    </g>
+    <line x1="1054" y1="90" x2="1094" y2="90" stroke="#818cf8" stroke-width="2.5" marker-end="url(#aIndigo)"/>
+
+    <g transform="translate(1096, 50)">
+      <rect width="220" height="80" rx="10" fill="rgba(129,140,248,.10)" stroke="#818cf8"/>
+      <text x="14" y="22" font-size="11" font-weight="700" fill="#a5b4fc">5. Qwen3 sintetiza</text>
+      <text x="14" y="40" font-size="10" fill="#cbd5e1">resposta em prosa PT-BR</text>
+      <text x="14" y="56" font-size="10" fill="#94a3b8">profile + winner + previsão</text>
+      <text x="14" y="70" font-size="9" fill="#5e6472">interpretação dos cenários</text>
+    </g>
+  </g>
+
+
+  <!-- ============================================================
+       ZONE 3 — CONSUMO (bottom, gray+pink)
+       ============================================================ -->
+  <g transform="translate(40, 1245)">
+    <rect width="1400" height="240" rx="18" fill="rgba(148,163,184,0.03)" stroke="rgba(148,163,184,0.3)" stroke-dasharray="6,4"/>
+    <rect x="20" y="14" width="170" height="22" rx="11" fill="rgba(148,163,184,.15)"/>
+    <text x="105" y="29" font-size="12" font-weight="700" fill="#cbd5e1" text-anchor="middle">③ CONSUMO</text>
+    <text x="1380" y="29" font-size="11" fill="#94a3b8" text-anchor="end">browser + Django + GPU</text>
+  </g>
+
+  <!-- Browser -->
+  <g transform="translate(80, 1295)">
+    <rect width="380" height="80" rx="12" fill="#1c2030" stroke="#475569" stroke-width="1.5" filter="url(#shadow)"/>
+    <circle cx="32" cy="42" r="10" fill="#22c55e"/>
+    <circle cx="32" cy="42" r="4" fill="#0f1115"/>
+    <text x="60" y="36" font-size="14" font-weight="600" fill="#e6e8eb">Browser</text>
+    <text x="60" y="54" font-size="11" fill="#94a3b8">Chat conversacional · catálogo · upload</text>
+    <text x="60" y="70" font-size="10" fill="#5e6472">Bootstrap-free · CSS próprio · Chart.js</text>
+  </g>
+
+  <!-- Django shell -->
+  <g transform="translate(490, 1295)">
+    <rect width="480" height="80" rx="12" fill="#161922" stroke="#6366f1" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="14" y="24" font-size="11" font-weight="700" fill="#a5b4fc">DJANGO · webapp/  ·  3 apps</text>
+
+    <g transform="translate(14, 34)">
+      <rect width="140" height="40" rx="7" fill="#1c2030" stroke="#374151"/>
+      <text x="10" y="16" font-size="11" font-weight="600" fill="#e6e8eb">orquestrador/</text>
+      <text x="10" y="32" font-size="9" fill="#94a3b8">orchestrator + tools</text>
+    </g>
+    <g transform="translate(160, 34)">
+      <rect width="140" height="40" rx="7" fill="#1c2030" stroke="#374151"/>
+      <text x="10" y="16" font-size="11" font-weight="600" fill="#e6e8eb">analise/</text>
+      <text x="10" y="32" font-size="9" fill="#94a3b8">catálogo SavedQuery</text>
+    </g>
+    <g transform="translate(306, 34)">
+      <rect width="160" height="40" rx="7" fill="rgba(16,185,129,.10)" stroke="#10b981"/>
+      <text x="10" y="16" font-size="11" font-weight="600" fill="#6ee7b7">sinam/</text>
+      <text x="10" y="32" font-size="9" fill="#94a3b8">modelo + ETL + upload</text>
+    </g>
+  </g>
+
+  <!-- GPU -->
+  <g transform="translate(1000, 1295)">
+    <rect width="420" height="80" rx="12" fill="#161922" stroke="#22c55e" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="14" y="18" width="44" height="44" rx="10" fill="#22c55e"/>
+    <text x="36" y="46" font-size="20" font-weight="700" fill="#0f1115" text-anchor="middle">⚡</text>
+    <text x="70" y="32" font-size="14" font-weight="600" fill="#e6e8eb">GPU · CUDA 12.8</text>
+    <text x="70" y="50" font-size="11" fill="#94a3b8">RTX 5060 Ti · 17 GB · PyTorch 2.11</text>
+    <text x="70" y="66" font-size="10" fill="#5e6472">Qwen3 (5GB) + Chronos-2 (1GB) + ChatTime (13GB) compartilham</text>
+  </g>
+
+  <!-- Browser → Django -->
+  <line x1="460" y1="1335" x2="488" y2="1335" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#aGray)"/>
+  <text x="465" y="1328" font-size="9" fill="#94a3b8">HTTP</text>
+
+  <!-- Django → GPU (indirect, via forecasters) -->
+  <line x1="970" y1="1335" x2="998" y2="1335" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#aGreen)"/>
+  <text x="975" y="1328" font-size="9" fill="#86efac">forecast</text>
+
+  <!-- Footer note -->
+  <g transform="translate(80, 1405)">
+    <text x="0" y="0" font-size="11" font-weight="600" fill="#94a3b8">DOIS CAMINHOS PARA O USUÁRIO:</text>
+    <text x="0" y="20" font-size="11" fill="#cbd5e1">▸ Conversar:  pergunta em PT-BR → Qwen3 escolhe tool → camada semântica responde → previsão_automatica se for forecast</text>
+    <text x="0" y="38" font-size="11" fill="#cbd5e1">▸ Atualizar:  baixa .dbc do DataSUS → /sinam/importar/ → background descomprime e ingere → disponível imediatamente no chat</text>
+  </g>
+
+  <!-- ============================================================
+       LEGEND
+       ============================================================ -->
+  <g transform="translate(80, 1515)">
+    <text x="0" y="0" font-size="11" font-weight="700" fill="#94a3b8">LEGENDA  ·  zonas →</text>
+    <g transform="translate(120, -4)">
+      <rect width="14" height="10" fill="rgba(20,184,166,.5)"/>
+      <text x="22" y="10" font-size="10" fill="#cbd5e1">ingestão de dados</text>
+    </g>
+    <g transform="translate(280, -4)">
+      <rect width="14" height="10" fill="rgba(129,140,248,.5)"/>
+      <text x="22" y="10" font-size="10" fill="#cbd5e1">inteligência (LLM/tools/analytics/forecasters)</text>
+    </g>
+    <g transform="translate(580, -4)">
+      <rect width="14" height="10" fill="rgba(148,163,184,.5)"/>
+      <text x="22" y="10" font-size="10" fill="#cbd5e1">consumo (browser+Django+GPU)</text>
+    </g>
+
+    <text x="800" y="10" font-size="10" font-weight="600" fill="#94a3b8">setas →</text>
+
+    <line x1="850" y1="4" x2="880" y2="4" stroke="#14b8a6" stroke-width="2.5" marker-end="url(#aTeal)"/>
+    <text x="886" y="9" font-size="10" fill="#cbd5e1">ingestão</text>
+
+    <line x1="950" y1="4" x2="980" y2="4" stroke="#10b981" stroke-width="2.5" marker-end="url(#aEmer)"/>
+    <text x="986" y="9" font-size="10" fill="#cbd5e1">ORM</text>
+
+    <line x1="1030" y1="4" x2="1060" y2="4" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#aAmber)"/>
+    <text x="1066" y="9" font-size="10" fill="#cbd5e1">tool call</text>
+
+    <line x1="1130" y1="4" x2="1160" y2="4" stroke="#ec4899" stroke-width="2.5" marker-end="url(#aPink)"/>
+    <text x="1166" y="9" font-size="10" fill="#cbd5e1">inferência</text>
+
+    <line x1="1240" y1="4" x2="1270" y2="4" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#aViolet)"/>
+    <text x="1276" y="9" font-size="10" fill="#cbd5e1">analytics</text>
+  </g>
+
+</svg>

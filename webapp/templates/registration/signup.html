@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Criar conta · SINAM ChatTime{% endblock %}
+{% block body %}
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div class="brand-mark">S</div>
+            <div class="brand-name">SINAM · ChatTime</div>
+        </div>
+
+        <h1 class="auth-title">Criar conta</h1>
+        <p class="auth-sub">Cadastre-se para salvar consultas e histórico de execuções.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    <input type="{% if 'password' in field.name %}password{% elif field.name == 'email' %}email{% else %}text{% endif %}"
+                           name="{{ field.name }}"
+                           class="form-input"
+                           {% if field.field.required %}required{% endif %}>
+                    {% if field.help_text %}<div class="form-help">{{ field.help_text|safe }}</div>{% endif %}
+                    {% for err in field.errors %}<div class="form-error">{{ err }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Criar conta</button>
+        </form>
+
+        <p class="auth-foot">
+            Já tem conta? <a href="{% url 'login' %}">Entrar</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

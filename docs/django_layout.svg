@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1440" font-family="Inter, system-ui, sans-serif">
+
+  <defs>
+    <linearGradient id="bgG" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f1115"/>
+      <stop offset="100%" stop-color="#13161c"/>
+    </linearGradient>
+    <linearGradient id="accentG" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <marker id="arrGray" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+    <marker id="arrIndigo" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#818cf8"/></marker>
+    <marker id="arrEmer" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#10b981"/></marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1440" fill="url(#bgG)"/>
+  <circle cx="200" cy="100" r="280" fill="#6366f1" opacity="0.05"/>
+  <circle cx="1400" cy="1340" r="320" fill="#10b981" opacity="0.05"/>
+
+  <!-- TITLE -->
+  <g transform="translate(40, 40)">
+    <rect width="40" height="40" rx="10" fill="url(#accentG)"/>
+    <text x="20" y="27" font-size="18" font-weight="700" fill="white" text-anchor="middle">A</text>
+    <text x="54" y="22" font-size="24" font-weight="600" fill="#e6e8eb">Aurora · estrutura do webapp/</text>
+    <text x="54" y="44" font-size="13" fill="#94a3b8">1 projeto Django · apps compartilhados (core, sinam) · um app de chat por pesquisador em chats/</text>
+  </g>
+  <text x="1560" y="40" font-size="13" fill="#94a3b8" text-anchor="end" font-weight="500">Aurora · plataforma multi-chat</text>
+
+  <!-- ====================== TIER 1: projeto aurora/ ====================== -->
+  <g transform="translate(40, 100)">
+    <rect width="1520" height="120" rx="14" fill="#161922" stroke="#475569" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="1520" height="32" rx="14" fill="#1e293b"/>
+    <rect x="0" y="18" width="1520" height="14" fill="#1e293b"/>
+    <rect x="20" y="8" width="180" height="20" rx="10" fill="rgba(148,163,184,.2)"/>
+    <text x="110" y="23" font-size="11" font-weight="600" fill="#cbd5e1" text-anchor="middle">webapp/  (projeto Django)</text>
+
+    <g transform="translate(20, 48)">
+      <rect width="300" height="60" rx="8" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#e6e8eb">manage.py</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">runserver · migrate · etl_violbr ·</text>
+      <text x="14" y="52" font-size="10" fill="#94a3b8">seed_queries · seed_municipios · createsuperuser</text>
+    </g>
+
+    <g transform="translate(340, 48)">
+      <rect width="470" height="60" rx="8" fill="rgba(148,163,184,.10)" stroke="#94a3b8"/>
+      <text x="14" y="20" font-size="12" font-weight="700" fill="#cbd5e1">aurora/  (módulo do projeto · ex-sinamweb)</text>
+      <text x="14" y="36" font-size="10" fill="#94a3b8">settings.py — INSTALLED_APPS, DB, context_processor, .env</text>
+      <text x="14" y="50" font-size="10" fill="#94a3b8">urls.py — /, /login, /signup, /series-temporais/…, /sinam/, /admin</text>
+    </g>
+
+    <g transform="translate(830, 48)">
+      <rect width="300" height="60" rx="8" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#e6e8eb">static/css/app.css</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">Design system · dark mode · composer</text>
+      <text x="14" y="52" font-size="10" fill="#94a3b8">thinking overlay · charts (Chart.js)</text>
+    </g>
+
+    <g transform="translate(1150, 48)">
+      <rect width="350" height="60" rx="8" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#e6e8eb">templates/  (globais)</text>
+      <text x="14" y="38" font-size="10" fill="#94a3b8">base.html · sidebar · registration/login.html</text>
+      <text x="14" y="52" font-size="10" fill="#94a3b8">+ subpastas por app (analise/, benchmark/, chat/, sinam/)</text>
+    </g>
+  </g>
+
+  <!-- ====================== TIER 2: APPS COMPARTILHADOS ====================== -->
+  <g transform="translate(40, 244)">
+    <rect width="1520" height="300" rx="16" fill="rgba(16,185,129,0.04)" stroke="rgba(16,185,129,0.35)" stroke-dasharray="6,4"/>
+    <rect x="20" y="14" width="430" height="24" rx="12" fill="rgba(16,185,129,.15)"/>
+    <text x="34" y="31" font-size="12" font-weight="700" fill="#6ee7b7">COMPARTILHADO — todos os chats dependem destes</text>
+    <text x="1500" y="31" font-size="11" fill="#94a3b8" text-anchor="end">combine no grupo antes de alterar</text>
+  </g>
+
+  <!-- core/ -->
+  <g transform="translate(60, 296)">
+    <rect width="730" height="232" rx="14" fill="rgba(99,102,241,0.05)" stroke="#6366f1" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="730" height="38" rx="14" fill="rgba(99,102,241,.18)"/>
+    <rect x="0" y="24" width="730" height="14" fill="rgba(99,102,241,.18)"/>
+    <text x="20" y="25" font-size="14" font-weight="700" fill="#a5b4fc">🧩 core/  (base comum dos chats)</text>
+
+    <g transform="translate(20, 56)">
+      <rect width="690" height="40" rx="8" fill="rgba(99,102,241,.10)" stroke="#6366f1"/>
+      <text x="12" y="18" font-size="12" font-weight="700" fill="#a5b4fc">registry.py  ⭐</text>
+      <text x="12" y="34" font-size="10.5" fill="#cbd5e1">ChatType + register() — cada chat se registra; a home lista todos</text>
+    </g>
+    <g transform="translate(20, 102)">
+      <rect width="690" height="40" rx="8" fill="rgba(99,102,241,.10)" stroke="#6366f1"/>
+      <text x="12" y="18" font-size="12" font-weight="700" fill="#a5b4fc">models.py</text>
+      <text x="12" y="34" font-size="10.5" fill="#cbd5e1">BaseChatThread · BaseChatMessage (abstratos — moldes p/ herdar)</text>
+    </g>
+    <g transform="translate(20, 148)">
+      <rect width="335" height="40" rx="6" fill="#1c2030" stroke="#374151"/>
+      <text x="12" y="18" font-size="12" font-weight="600" fill="#fde68a">views.py + forms.py</text>
+      <text x="12" y="33" font-size="10" fill="#94a3b8">home (landing /) · signup/login</text>
+    </g>
+    <g transform="translate(375, 148)">
+      <rect width="335" height="40" rx="6" fill="rgba(251,191,36,.10)" stroke="#fbbf24"/>
+      <text x="12" y="18" font-size="12" font-weight="600" fill="#fde68a">templates/core/home.html</text>
+      <text x="12" y="33" font-size="10" fill="#fef3c7">cards dos tipos de chat registrados</text>
+    </g>
+    <g transform="translate(20, 194)">
+      <rect width="690" height="26" rx="6" fill="rgba(34,197,94,.05)" stroke="rgba(34,197,94,.4)" stroke-dasharray="3,3"/>
+      <text x="12" y="18" font-size="10" font-family="ui-monospace" fill="#cbd5e1">URLs:  /  (home)  ·  /login/  ·  /signup/  ·  /logout/</text>
+    </g>
+  </g>
+
+  <!-- sinam/ -->
+  <g transform="translate(810, 296)">
+    <rect width="730" height="232" rx="14" fill="rgba(16,185,129,0.05)" stroke="#10b981" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="730" height="38" rx="14" fill="rgba(16,185,129,.18)"/>
+    <rect x="0" y="24" width="730" height="14" fill="rgba(16,185,129,.18)"/>
+    <text x="20" y="25" font-size="14" font-weight="700" fill="#6ee7b7">🗄 sinam/  (camada de dados VIOLBR + ETL)</text>
+
+    <g transform="translate(20, 56)">
+      <rect width="690" height="40" rx="8" fill="rgba(16,185,129,.10)" stroke="#10b981"/>
+      <text x="12" y="18" font-size="12" font-weight="700" fill="#6ee7b7">models.py  ⭐</text>
+      <text x="12" y="34" font-size="10.5" fill="#cbd5e1">Notificacao (25 campos) · ImportacaoDBC · Municipio (IBGE)</text>
+    </g>
+    <g transform="translate(20, 102)">
+      <rect width="335" height="40" rx="8" fill="rgba(16,185,129,.10)" stroke="#10b981"/>
+      <text x="12" y="18" font-size="12" font-weight="700" fill="#6ee7b7">queries.py · lookups.py</text>
+      <text x="12" y="34" font-size="10" fill="#cbd5e1">time_series · series_for_forecast · UF/raça/escol</text>
+    </g>
+    <g transform="translate(375, 102)">
+      <rect width="335" height="40" rx="8" fill="rgba(16,185,129,.10)" stroke="#10b981"/>
+      <text x="12" y="18" font-size="12" font-weight="700" fill="#6ee7b7">etl.py</text>
+      <text x="12" y="34" font-size="10" fill="#cbd5e1">DBC → DBF → bulk_create Notificacao</text>
+    </g>
+    <g transform="translate(20, 148)">
+      <rect width="690" height="40" rx="6" fill="#1c2030" stroke="#374151"/>
+      <text x="12" y="18" font-size="12" font-weight="600" fill="#fde68a">management/commands/  ·  views + templates/sinam/</text>
+      <text x="12" y="33" font-size="10" fill="#94a3b8">etl_violbr (→ PostgreSQL) · seed_municipios (IBGE) · importar .dbc</text>
+    </g>
+    <g transform="translate(20, 194)">
+      <rect width="690" height="26" rx="6" fill="rgba(34,197,94,.05)" stroke="rgba(34,197,94,.4)" stroke-dasharray="3,3"/>
+      <text x="12" y="18" font-size="10" font-family="ui-monospace" fill="#cbd5e1">URLs:  /sinam/importar/  ·  /sinam/importacoes/&lt;id&gt;/</text>
+    </g>
+  </g>
+
+  <!-- ====================== TIER 3: chats/ — um app por pesquisador ====================== -->
+  <g transform="translate(40, 568)">
+    <rect width="1520" height="540" rx="16" fill="rgba(129,140,248,0.04)" stroke="rgba(129,140,248,0.35)" stroke-dasharray="6,4"/>
+    <rect x="20" y="14" width="520" height="24" rx="12" fill="rgba(129,140,248,.15)"/>
+    <text x="34" y="31" font-size="12" font-weight="700" fill="#a5b4fc">chats/  —  UM APP (OU PACOTE) POR PESQUISADOR · trabalhe só na sua pasta</text>
+  </g>
+
+  <!-- series_temporais package -->
+  <g transform="translate(60, 620)">
+    <rect width="1200" height="468" rx="14" fill="rgba(129,140,248,0.05)" stroke="#818cf8" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="1200" height="38" rx="14" fill="rgba(129,140,248,.18)"/>
+    <rect x="0" y="24" width="1200" height="14" fill="rgba(129,140,248,.18)"/>
+    <text x="20" y="25" font-size="14" font-weight="700" fill="#a5b4fc">📈 chats/series_temporais/  —  Séries Temporais Retrospectiva  ·  Hernandison</text>
+    <text x="1180" y="25" font-size="11" fill="#94a3b8" text-anchor="end">tudo sob /series-temporais/…</text>
+
+    <!-- orquestrador -->
+    <g transform="translate(20, 52)">
+      <rect width="380" height="396" rx="12" fill="rgba(129,140,248,0.06)" stroke="#818cf8"/>
+      <text x="16" y="28" font-size="13" font-weight="700" fill="#a5b4fc">💬 orquestrador/  (ex-chat)</text>
+      <text x="16" y="44" font-size="10" fill="#94a3b8">namespace url: chat  ·  /series-temporais/chat/</text>
+
+      <g transform="translate(16, 58)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">models.py</text>
+        <text x="98" y="22" font-size="10" fill="#94a3b8">ChatThread · ChatMessage</text>
+      </g>
+      <g transform="translate(16, 98)">
+        <rect width="348" height="64" rx="8" fill="rgba(129,140,248,.10)" stroke="#818cf8"/>
+        <text x="10" y="20" font-size="12" font-weight="700" fill="#a5b4fc">orchestrator.py  ⭐</text>
+        <text x="10" y="36" font-size="9.5" fill="#cbd5e1">loop de tool-calling (Ollama + Qwen3-8B)</text>
+        <text x="10" y="50" font-size="9.5" fill="#cbd5e1">enforcement geo · humanize p/ o LLM</text>
+      </g>
+      <g transform="translate(16, 168)">
+        <rect width="348" height="64" rx="8" fill="rgba(129,140,248,.10)" stroke="#818cf8"/>
+        <text x="10" y="20" font-size="12" font-weight="700" fill="#a5b4fc">tools.py  ⭐ (~16 tools)</text>
+        <text x="10" y="36" font-size="9.5" fill="#cbd5e1">consultar · serie_temporal · previsao_automatica</text>
+        <text x="10" y="50" font-size="9.5" fill="#cbd5e1">relatorio_uf/brasil/municipio · backtest</text>
+      </g>
+      <g transform="translate(16, 238)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">external_llm.py</text>
+        <text x="120" y="22" font-size="10" fill="#94a3b8">cliente p/ LLMs externos (API)</text>
+      </g>
+      <g transform="translate(16, 278)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">schema_cache.py</text>
+        <text x="120" y="22" font-size="10" fill="#94a3b8">schema SINAM no system prompt</text>
+      </g>
+      <g transform="translate(16, 318)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">views · urls · admin · templatetags</text>
+      </g>
+      <g transform="translate(16, 358)">
+        <rect width="348" height="26" rx="6" fill="rgba(251,191,36,.10)" stroke="#fbbf24"/>
+        <text x="10" y="18" font-size="9.5" fill="#fef3c7">templates/chat/ · thread · thread_list · relatorio</text>
+      </g>
+    </g>
+
+    <!-- analise -->
+    <g transform="translate(410, 52)">
+      <rect width="380" height="396" rx="12" fill="rgba(167,139,250,0.06)" stroke="#a78bfa"/>
+      <text x="16" y="28" font-size="13" font-weight="700" fill="#c4b5fd">📊 analise/  (ex-forecasts)</text>
+      <text x="16" y="44" font-size="10" fill="#94a3b8">namespace url: queries  ·  /series-temporais/</text>
+
+      <g transform="translate(16, 58)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">models.py</text>
+        <text x="98" y="22" font-size="10" fill="#94a3b8">SavedQuery · ForecastRun · QARun</text>
+      </g>
+      <g transform="translate(16, 98)">
+        <rect width="348" height="50" rx="8" fill="rgba(167,139,250,.10)" stroke="#a78bfa"/>
+        <text x="10" y="20" font-size="12" font-weight="700" fill="#c4b5fd">services.py  ⭐</text>
+        <text x="10" y="38" font-size="9.5" fill="#cbd5e1">load_series · run_forecast · run_qa → src/series_models</text>
+      </g>
+      <g transform="translate(16, 156)">
+        <rect width="348" height="50" rx="8" fill="rgba(167,139,250,.10)" stroke="#a78bfa"/>
+        <text x="10" y="20" font-size="12" font-weight="700" fill="#c4b5fd">context_processors.py</text>
+        <text x="10" y="38" font-size="9.5" fill="#cbd5e1">sidebar() — injeta consultas/threads em todo template</text>
+      </g>
+      <g transform="translate(16, 214)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">views · urls · forms · admin</text>
+      </g>
+      <g transform="translate(16, 254)">
+        <rect width="348" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11" font-weight="600" fill="#fde68a">management/commands/seed_queries</text>
+      </g>
+      <g transform="translate(16, 294)">
+        <rect width="348" height="58" rx="6" fill="rgba(251,191,36,.10)" stroke="#fbbf24"/>
+        <text x="10" y="18" font-size="10" font-weight="600" fill="#fde68a">templates/analise/  (ex-forecasts/)</text>
+        <text x="10" y="33" font-size="9" fill="#fef3c7">query_list · query_detail · query_form</text>
+        <text x="10" y="47" font-size="9" fill="#fef3c7">forecast_detail · qa_detail · history</text>
+      </g>
+      <g transform="translate(16, 358)">
+        <rect width="348" height="26" rx="6" fill="rgba(34,197,94,.05)" stroke="rgba(34,197,94,.4)" stroke-dasharray="3,3"/>
+        <text x="10" y="18" font-size="9.5" font-family="ui-monospace" fill="#cbd5e1">catálogo de consultas + análise retrospectiva + QA</text>
+      </g>
+    </g>
+
+    <!-- benchmark -->
+    <g transform="translate(800, 52)">
+      <rect width="384" height="396" rx="12" fill="rgba(236,72,153,0.06)" stroke="#ec4899"/>
+      <text x="16" y="28" font-size="13" font-weight="700" fill="#f9a8d4">⚖ benchmark/</text>
+      <text x="16" y="44" font-size="10" fill="#94a3b8">namespace url: benchmark  ·  /series-temporais/benchmark/</text>
+
+      <g transform="translate(16, 58)">
+        <rect width="352" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">models.py</text>
+        <text x="98" y="22" font-size="10" fill="#94a3b8">BenchmarkRun · ExternalModel</text>
+      </g>
+      <g transform="translate(16, 98)">
+        <rect width="352" height="64" rx="8" fill="rgba(236,72,153,.10)" stroke="#ec4899"/>
+        <text x="10" y="20" font-size="12" font-weight="700" fill="#f9a8d4">worker.py  ⭐</text>
+        <text x="10" y="36" font-size="9.5" fill="#cbd5e1">executa runs em background:</text>
+        <text x="10" y="50" font-size="9.5" fill="#cbd5e1">orquestradores LLM × modelos de série temporal</text>
+      </g>
+      <g transform="translate(16, 168)">
+        <rect width="352" height="34" rx="6" fill="#1c2030" stroke="#374151"/>
+        <text x="10" y="22" font-size="11.5" font-weight="600" fill="#fde68a">views · urls · forms · signals · admin</text>
+      </g>
+      <g transform="translate(16, 208)">
+        <rect width="352" height="44" rx="8" fill="rgba(236,72,153,.10)" stroke="#ec4899"/>
+        <text x="10" y="20" font-size="11" font-weight="700" fill="#f9a8d4">depende de:</text>
+        <text x="10" y="36" font-size="9.5" fill="#cbd5e1">orquestrador.external_llm · src.series_models</text>
+      </g>
+      <g transform="translate(16, 294)">
+        <rect width="352" height="58" rx="6" fill="rgba(251,191,36,.10)" stroke="#fbbf24"/>
+        <text x="10" y="18" font-size="10" font-weight="600" fill="#fde68a">templates/benchmark/</text>
+        <text x="10" y="33" font-size="9" fill="#fef3c7">index · run_new · run_detail · run_status</text>
+        <text x="10" y="47" font-size="9" fill="#fef3c7">series · dataset · external_form/list</text>
+      </g>
+      <g transform="translate(16, 358)">
+        <rect width="352" height="26" rx="6" fill="rgba(34,197,94,.05)" stroke="rgba(34,197,94,.4)" stroke-dasharray="3,3"/>
+        <text x="10" y="18" font-size="9.5" font-family="ui-monospace" fill="#cbd5e1">comparação reproduzível de modelos</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- chats/dados_sinam — segundo chat (Marcelo West) -->
+  <g transform="translate(1280, 620)">
+    <rect width="260" height="468" rx="14" fill="rgba(96,165,250,0.05)" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="130" y="40" font-size="13" font-weight="700" fill="#bfdbfe" text-anchor="middle">🩺 chats/dados_sinam/</text>
+    <text x="130" y="60" font-size="11" fill="#94a3b8" text-anchor="middle">Chat Dados SINAN · Marcelo West</text>
+    <g transform="translate(20, 90)">
+      <rect width="220" height="120" rx="10" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="24" font-size="11" font-weight="600" fill="#e6e8eb">RAG + SQL (linguagem natural):</text>
+      <text x="14" y="44" font-size="10" fill="#94a3b8">services.py — gera/valida SQL</text>
+      <text x="14" y="60" font-size="10" fill="#94a3b8">GPT/Gemini/Perplexity ou regras</text>
+      <text x="14" y="76" font-size="10" fill="#94a3b8">embeddings.py — busca vetorial</text>
+      <text x="14" y="92" font-size="10" fill="#94a3b8">SentencaEmbedding (pgvector)</text>
+      <text x="14" y="108" font-size="10" fill="#94a3b8">namespace url: dados_sinam</text>
+    </g>
+    <g transform="translate(20, 226)">
+      <rect width="220" height="86" rx="10" fill="rgba(99,102,241,.08)" stroke="#6366f1"/>
+      <text x="14" y="22" font-size="10.5" fill="#a5b4fc">→ usa core (base + home + embeddings)</text>
+      <text x="14" y="42" font-size="10.5" fill="#6ee7b7">→ Postgres único (Aurola)</text>
+      <text x="14" y="68" font-size="10" fill="#94a3b8">aparece sozinho na home</text>
+      <text x="14" y="82" font-size="10" fill="#94a3b8">via o registry</text>
+    </g>
+    <g transform="translate(20, 328)">
+      <rect width="220" height="120" rx="10" fill="rgba(34,197,94,.05)" stroke="rgba(34,197,94,.4)" stroke-dasharray="3,3"/>
+      <text x="14" y="24" font-size="10.5" font-weight="600" fill="#86efac">novos chats: 1 app por pesquisador</text>
+      <text x="14" y="46" font-size="10" fill="#cbd5e1">criar app em chats/, registrar</text>
+      <text x="14" y="62" font-size="10" fill="#cbd5e1">no ready() via core.registry,</text>
+      <text x="14" y="84" font-size="10" fill="#cbd5e1">tocar só INSTALLED_APPS + urls.</text>
+      <text x="14" y="100" font-size="10" fill="#cbd5e1">não edite o app de outro.</text>
+    </g>
+  </g>
+
+  <!-- ====================== TIER 4: src/ + serviços externos ====================== -->
+  <g transform="translate(40, 1132)">
+    <rect width="1520" height="270" rx="14" fill="#161922" stroke="#475569" stroke-width="1.5" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="1520" height="32" rx="14" fill="#1e293b"/>
+    <rect x="0" y="18" width="1520" height="14" fill="#1e293b"/>
+    <text x="20" y="22" font-size="13" font-weight="600" fill="#cbd5e1">NÚCLEO Python (fora do Django) e SERVIÇOS EXTERNOS</text>
+
+    <!-- src/ -->
+    <g transform="translate(20, 48)">
+      <rect width="720" height="100" rx="10" fill="rgba(167,139,250,.10)" stroke="#a78bfa"/>
+      <text x="14" y="24" font-size="13" font-weight="700" fill="#c4b5fd">src/  (núcleo Python, importado via PROJECT_ROOT no sys.path)</text>
+      <text x="14" y="44" font-size="10.5" fill="#cbd5e1">src/series_models/ — Chronos2 · ChatTime · RandomForest · baselines · API remota</text>
+      <text x="14" y="60" font-size="10.5" fill="#cbd5e1">src/analytics/ — analyze_series · walk_forward_backtest</text>
+      <text x="14" y="76" font-size="10.5" fill="#cbd5e1">src/db.py — psycopg → Postgres "Aurola"  ·  src/main.py — CLI</text>
+      <text x="14" y="92" font-size="10" fill="#94a3b8">usado por: orquestrador/tools.py · analise/services.py · benchmark/worker.py</text>
+    </g>
+
+    <!-- ChatTime vendored -->
+    <g transform="translate(760, 48)">
+      <rect width="240" height="100" rx="10" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="24" font-size="12" font-weight="700" fill="#e6e8eb">ChatTime/  (vendored)</text>
+      <text x="14" y="44" font-size="10" fill="#94a3b8">modelo upstream (model/, utils/,</text>
+      <text x="14" y="58" font-size="10" fill="#94a3b8">training/) — usado por</text>
+      <text x="14" y="72" font-size="10" fill="#94a3b8">src/series_models/chattime_adapter</text>
+    </g>
+
+    <!-- PostgreSQL Aurola — banco único -->
+    <g transform="translate(1020, 48)">
+      <rect width="480" height="100" rx="10" fill="#1c2030" stroke="#374151"/>
+      <text x="14" y="24" font-size="12" font-weight="700" fill="#e6e8eb">PostgreSQL "Aurola"  (banco ÚNICO do projeto)</text>
+      <text x="14" y="44" font-size="10" fill="#94a3b8">VIOLBR20..24 (brutos) · sinam_notificacao ~3.1M · municípios · usuários</text>
+      <text x="14" y="58" font-size="10" fill="#94a3b8">orquestrador_* · analise_* (+embedding pgvector) · benchmark_* · dados_sinam_*</text>
+      <text x="14" y="74" font-size="10" fill="#94a3b8">CLI lê via src/db.py · Django lê/grava via ORM (DATABASES default)</text>
+      <text x="14" y="90" font-size="10" fill="#5e6472">pgvector habilitado (embeddings) · SQLite é só backup legado</text>
+    </g>
+
+    <!-- external services row -->
+    <g transform="translate(20, 162)">
+      <rect width="290" height="92" rx="8" fill="#1c2030" stroke="#14b8a6"/>
+      <text x="14" y="22" font-size="11.5" font-weight="600" fill="#5eead4">PostgreSQL "Aurola"</text>
+      <text x="14" y="40" font-size="10" fill="#94a3b8">VIOLBR20..24 — source-of-truth</text>
+      <text x="14" y="54" font-size="10" fill="#94a3b8">read-only via src/db.py</text>
+    </g>
+    <g transform="translate(330, 162)">
+      <rect width="290" height="92" rx="8" fill="#1c2030" stroke="#818cf8"/>
+      <text x="14" y="22" font-size="11.5" font-weight="600" fill="#a5b4fc">Ollama (localhost:11434)</text>
+      <text x="14" y="40" font-size="10" fill="#94a3b8">Qwen3-8B orquestrador via HTTP</text>
+      <text x="14" y="54" font-size="10" fill="#94a3b8">100% local</text>
+    </g>
+    <g transform="translate(640, 162)">
+      <rect width="290" height="92" rx="8" fill="#1c2030" stroke="#ec4899"/>
+      <text x="14" y="22" font-size="11.5" font-weight="600" fill="#f9a8d4">HuggingFace (cache local)</text>
+      <text x="14" y="40" font-size="10" fill="#94a3b8">Chronos-2 (~1GB) · ChatTime (~13GB)</text>
+      <text x="14" y="54" font-size="10" fill="#94a3b8">CPU-only suportado (CUDA opcional)</text>
+    </g>
+    <g transform="translate(950, 162)">
+      <rect width="290" height="92" rx="8" fill="#1c2030" stroke="#fbbf24"/>
+      <text x="14" y="22" font-size="11.5" font-weight="600" fill="#fde68a">IBGE API (público)</text>
+      <text x="14" y="40" font-size="10" fill="#94a3b8">/localidades/municipios</text>
+      <text x="14" y="54" font-size="10" fill="#94a3b8">usado 1× pelo seed_municipios</text>
+    </g>
+    <g transform="translate(1260, 162)">
+      <rect width="240" height="92" rx="8" fill="#1c2030" stroke="#22c55e"/>
+      <text x="14" y="22" font-size="11.5" font-weight="600" fill="#86efac">GPU CUDA (opcional)</text>
+      <text x="14" y="40" font-size="10" fill="#94a3b8">acelera Chronos-2 + ChatTime</text>
+      <text x="14" y="54" font-size="10" fill="#94a3b8">+ Qwen3</text>
+    </g>
+  </g>
+
+</svg>

@@ -1,0 +1,359 @@
+{% load static chat_extras %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aurora responde · Assistente de proteção à criança e ao adolescente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/govbr.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=9">
+  <style>
+    /* ===== Aurora responde — shell do chat (visual gov.br) ===== */
+    body.govbr { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    /* Selo de versão interna (beta) ao lado do título */
+    .ar-beta { display:inline-block; vertical-align:middle; margin-left:9px;
+               font-size:10.5px; font-weight:800; letter-spacing:.03em;
+               background:var(--gov-yellow); color:#33270a; border-radius:20px;
+               padding:2px 9px; box-shadow:0 1px 2px rgba(0,0,0,.12); }
+    .ar-shell { flex: 1; display: grid; grid-template-columns: 264px 1fr; min-height: 0;
+                max-width: 1220px; width: 100%; margin: 0 auto; }
+    @media (max-width: 880px){ .ar-shell{ grid-template-columns: 1fr; } .ar-rail{ display:none; } }
+
+    /* Trilho de conversas */
+    .ar-rail { border-right: 1px solid var(--gov-border); background: var(--gov-card);
+               display: flex; flex-direction: column; min-height: 0; }
+    .ar-rail-top { padding: 14px 14px 8px; }
+    .ar-newbtn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+                 background: var(--gov-blue); color:#fff; border:0; border-radius:8px;
+                 padding:10px; font-weight:700; font-size:13.5px; cursor:pointer; text-decoration:none; }
+    .ar-newbtn:hover { filter: brightness(.96); }
+    .ar-rail-list { flex:1; overflow-y:auto; padding: 6px 8px 12px; }
+    .ar-rail-lbl { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--gov-muted);
+                   font-weight:700; padding: 8px 8px 4px; }
+    .ar-conv { display:block; padding:9px 10px; border-radius:8px; color:var(--gov-text);
+               text-decoration:none; font-size:13.5px; white-space:nowrap; overflow:hidden;
+               text-overflow:ellipsis; }
+    .ar-conv:hover { background:#eef3fb; }
+    .ar-conv.active { background:#e6eefc; color:var(--gov-blue-600); font-weight:600; }
+
+    /* Coluna principal */
+    .ar-main { display:flex; flex-direction:column; min-height:0; }
+    .ar-thread { flex:1; overflow-y:auto; padding: 22px 18px 8px; }
+    .ar-inner { max-width: 820px; margin: 0 auto; }
+
+    .ar-hello { text-align:center; color:var(--gov-muted); padding: 48px 12px; }
+    .ar-hello .big { font-size:22px; font-weight:800; color:var(--gov-text); margin-bottom:6px; }
+    .ar-chips { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:18px; }
+    .ar-chip { background:#eef3fb; border:1px solid var(--gov-border); color:var(--gov-blue-600);
+               border-radius:20px; padding:7px 13px; font-size:12.5px; cursor:pointer; }
+    .ar-chip:hover { background:#e2ecfb; }
+
+    /* Mensagens */
+    .ar-msg { display:flex; gap:12px; margin: 0 0 18px; }
+    .ar-msg .av { width:32px; height:32px; border-radius:8px; flex:0 0 32px; display:grid;
+                  place-items:center; font-weight:800; font-size:13px; }
+    .ar-msg.user .av { background: var(--gov-blue); color:#fff; }
+    .ar-msg.assistant .av { background: var(--gov-green); color:#fff; }
+    .ar-body { flex:1; min-width:0; }
+    .ar-name { font-size:12.5px; font-weight:700; color:var(--gov-text); margin-bottom:3px; }
+    .ar-name .when { font-weight:500; color:var(--gov-muted); }
+    .ar-bubble { background: var(--gov-card); border:1px solid var(--gov-border);
+                 border-radius: 12px; padding: 12px 14px; box-shadow: var(--gov-shadow); }
+    .ar-msg.user .ar-bubble { background:#eef3fb; border-color:#d6e2f5; }
+    .ar-bubble .markdown-prose > *:first-child { margin-top:0; }
+    .ar-bubble .markdown-prose > *:last-child { margin-bottom:0; }
+
+    /* Rodapé de metadados (tokens / tempo) */
+    .ar-meta { display:flex; gap:10px; flex-wrap:wrap; margin-top:7px; font-size:11.5px; color:var(--gov-muted); }
+    .ar-tag { display:inline-flex; align-items:center; gap:5px; background:#f0f3f8;
+              border:1px solid var(--gov-border); border-radius:6px; padding:2px 8px; }
+
+    /* Trilha de "pensamento" (ferramentas consultadas) */
+    .ar-trace { margin: 2px 0 14px 44px; }
+    .ar-step { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--gov-muted);
+               padding:4px 0; }
+    .ar-step .dot { width:7px; height:7px; border-radius:50%; background:var(--gov-green); flex:0 0 7px; }
+    .ar-step .dot.err { background:var(--gov-red); }
+    .ar-step code { font-size:11.5px; }
+    .ar-step details { display:inline; }
+    .ar-step summary { cursor:pointer; color:var(--gov-blue); list-style:none; }
+    .ar-trace pre.sql-block { margin:6px 0 4px; max-height:260px; }
+
+    /* Composer */
+    .ar-composer-wrap { border-top:1px solid var(--gov-border); background:var(--gov-card); padding: 12px 18px 16px; }
+    .ar-composer { max-width:820px; margin:0 auto; border:1px solid var(--gov-border);
+                   border-radius:14px; padding:10px 12px; box-shadow: var(--gov-shadow); background:#fff; }
+    .ar-composer textarea { width:100%; border:0; outline:0; resize:none; font: inherit;
+                            font-size:15px; color:var(--gov-text); background:transparent; max-height:200px; }
+    .ar-composer-row { display:flex; align-items:center; gap:8px; margin-top:8px; }
+    /* Botão de anexo estilo Claude: ícone de clipe discreto, input nativo oculto */
+    .ar-attach { width:36px; height:36px; border-radius:9px; border:1px solid var(--gov-border);
+                 background:#fff; color:var(--gov-muted); display:grid; place-items:center;
+                 cursor:pointer; transition:background .15s, color .15s, border-color .15s; }
+    .ar-attach:hover { background:#eef3fb; color:var(--gov-blue); border-color:#c9d7ee; }
+    .ar-attach svg { width:18px; height:18px; }
+    .ar-files { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
+    .ar-fchip { display:inline-flex; align-items:center; gap:7px; background:#eef3fb;
+                border:1px solid #d6e2f5; border-radius:16px; padding:4px 6px 4px 10px;
+                font-size:12px; color:var(--gov-blue-600); max-width:220px; }
+    .ar-fchip .nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .ar-fchip .x { cursor:pointer; font-weight:700; opacity:.55; padding:0 2px; }
+    .ar-fchip .x:hover { opacity:1; color:var(--gov-red); }
+    .ar-send { background:var(--gov-blue); color:#fff; border:0; border-radius:9px; padding:9px 18px;
+               font-weight:700; font-size:14px; cursor:pointer; }
+    .ar-send:hover { filter:brightness(.96); }
+    .ar-hint { max-width:820px; margin:6px auto 0; font-size:11px; color:var(--gov-muted); text-align:center; }
+
+    /* Overlay "pensando" */
+    .ar-thinking { display:flex; gap:12px; margin: 0 0 18px; }
+    .ar-thinking .av { width:32px;height:32px;border-radius:8px;background:var(--gov-green);color:#fff;
+                       display:grid;place-items:center;font-weight:800; }
+    .ar-think-card { background:var(--gov-card); border:1px solid var(--gov-border); border-radius:12px;
+                     padding:12px 14px; box-shadow:var(--gov-shadow); min-width:260px; }
+    .ar-think-stage { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--gov-muted); padding:3px 0; }
+    .ar-think-stage.done { color:var(--gov-text); }
+    .ar-think-stage .sp { width:14px;height:14px;border:2px solid #cdd8e8;border-top-color:var(--gov-blue);
+                          border-radius:50%; animation: arspin .7s linear infinite; flex:0 0 14px; }
+    .ar-think-stage.done .sp { border:2px solid var(--gov-green); border-top-color:var(--gov-green); animation:none; }
+    @keyframes arspin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="govbr">
+
+<!-- Faixa gov.br -->
+<div class="gov-faixa">
+  <div class="gov-wrap"><b>gov.br</b><span class="sep">|</span>
+    <span class="min">Ministério dos Direitos Humanos e da Cidadania</span></div>
+</div>
+
+<!-- Header -->
+<header class="gov-header">
+  <div class="gov-wrap">
+    <div class="gov-brand">
+      <div class="gov-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <h1 class="gov-h1">Aurora responde
+          <span class="ar-beta" title="Versão interna (beta) do assistente">BETA v{{ aurora_versao }}</span>
+        </h1>
+        <p class="gov-sub">Assistente de dados de violência contra crianças e adolescentes (SINAN · SIPIA-CT · leis)</p>
+      </div>
+    </div>
+    <div class="gov-actions">
+      <a href="tel:100" class="gov-btn gov-btn-yellow gov-btn-sm">☎ Disque 100</a>
+      {% if user.is_authenticated %}
+        {% if user.is_staff %}<a href="/admin/" class="gov-btn gov-btn-ghost gov-btn-sm">Admin</a>{% endif %}
+        <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}
+          <button class="gov-btn gov-btn-ghost gov-btn-sm" type="submit">Sair ({{ user.username }})</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="gov-btn gov-btn-blue gov-btn-sm">Entrar</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<div class="ar-shell">
+  <!-- Trilho de conversas -->
+  <aside class="ar-rail">
+    <div class="ar-rail-top">
+      <form method="post" action="{% url 'chat:new' %}" style="margin:0">{% csrf_token %}
+        <button class="ar-newbtn" type="submit">＋ Nova conversa</button>
+      </form>
+    </div>
+    <div class="ar-rail-list">
+      <div class="ar-rail-lbl">Conversas</div>
+      {% for t in sidebar_chat_threads %}
+        <a class="ar-conv {% if t.pk == thread.pk %}active{% endif %}" href="{% url 'chat:thread' t.pk %}">
+          {{ t.title|default:"Nova conversa" }}
+        </a>
+      {% empty %}
+        <div style="padding:8px 10px;font-size:12.5px;color:var(--gov-muted)">Nenhuma conversa ainda.</div>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <!-- Chat -->
+  <main class="ar-main">
+    <div class="ar-thread" id="ar-thread">
+      <div class="ar-inner">
+
+        {% if not ollama_ok %}
+        <div class="alert alert-warning" style="margin-bottom:16px">
+          <strong>Ollama offline.</strong> {{ ollama_status }} — inicie o Ollama e o modelo <code>{{ thread.model }}</code>.
+        </div>
+        {% endif %}
+
+        {% if not messages_list %}
+        <div class="ar-hello">
+          <div class="big">Como posso ajudar?</div>
+          <div>Pergunte sobre notificações de violência (SINAN), Conselho Tutelar (SIPIA-CT) ou a base legal.</div>
+          <div class="ar-chips" id="ar-suggest">
+            <button class="ar-chip" type="button">Evolução da violência sexual em Sergipe</button>
+            <button class="ar-chip" type="button">O que o ECA diz sobre negligência?</button>
+            <button class="ar-chip" type="button">Cidades com mais notificações na Bahia</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% for m in messages_list %}
+          {% if m.role == "user" %}
+            <div class="ar-msg user">
+              <div class="av">{% if thread.user %}{{ thread.user.username|first|upper }}{% else %}V{% endif %}</div>
+              <div class="ar-body">
+                <div class="ar-name">Você <span class="when">· {{ m.created_at|date:"H:i" }}</span></div>
+                <div class="ar-bubble">{{ m.content|linebreaksbr }}</div>
+              </div>
+            </div>
+          {% elif m.role == "assistant" %}
+            <div class="ar-msg assistant">
+              <div class="av">A</div>
+              <div class="ar-body">
+                <div class="ar-name">Aurora <span class="when">· {{ m.created_at|date:"H:i" }}</span></div>
+                <div class="ar-bubble"><div class="markdown-prose">{{ m.content|render_markdown }}</div></div>
+                <div class="ar-meta">
+                  {% if m.elapsed_seconds %}<span class="ar-tag">⏱ {{ m.elapsed_seconds|floatformat:1 }}s</span>{% endif %}
+                  {% if m.tokens_completion %}<span class="ar-tag" title="tokens do orquestrador (prompt + resposta)">🔤 {{ m.tokens_prompt|default:0 }} + {{ m.tokens_completion }} tokens</span>{% endif %}
+                  <span class="ar-tag" title="modelo roteador (principal)">🧠 {{ thread.model }}</span>
+                  {% if m.forecaster_used %}<span class="ar-tag" title="modelo de série vencedor do comitê retrospectivo">📈 {{ m.forecaster_used }}</span>{% endif %}
+                </div>
+              </div>
+            </div>
+          {% elif m.role == "tool" %}
+            {% with res=m.tool_payload.result %}
+            <div class="ar-trace">
+              <div class="ar-step">
+                <span class="dot {% if res.error %}err{% endif %}"></span>
+                <span>Consultou <strong>{{ m.tool_name|tool_label }}</strong></span>
+                <code>{{ m.tool_name }}</code>
+                {% if m.elapsed_seconds %}· {{ m.elapsed_seconds|floatformat:1 }}s{% endif %}
+                {% if res.fonte %}· fonte: {{ res.fonte }}{% endif %}
+                {% if res.error %}· <span style="color:var(--gov-red)">erro</span>{% endif %}
+                · <details><summary>detalhes</summary></details>
+              </div>
+              <div style="display:none" data-tool-details>
+                <pre class="sql-block">{{ m.tool_payload.result|jsonpretty:6000 }}</pre>
+              </div>
+            </div>
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Composer (sem seletor de forecast/temp — decisão automática) -->
+    <div class="ar-composer-wrap">
+      <form method="post" action="{% url 'chat:send' thread.pk %}" class="ar-composer" id="composer"
+            enctype="multipart/form-data">
+        {% csrf_token %}
+        <textarea name="message" id="msg-input" rows="1" maxlength="{{ max_input_chars }}"
+                  placeholder="Pergunte sobre dados (SINAN/SIPIA-CT), leis, ou anexe um arquivo…  (Ctrl+Enter envia)"
+                  autofocus></textarea>
+        <div class="ar-composer-row">
+          <button type="button" class="ar-attach" id="attach-btn"
+                  title="Anexar PDF, imagem ou texto (até {{ max_attachments }} arquivos)"
+                  aria-label="Anexar arquivo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <input type="file" name="files" id="file-input" multiple hidden
+                 accept=".pdf,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.bmp,.gif,.tif,.tiff,image/*">
+          <div class="ar-files" id="ar-files"></div>
+          <button type="submit" class="ar-send" id="send-btn">Enviar →</button>
+        </div>
+      </form>
+      <div class="ar-hint">O Qwen3 orquestra e escolhe a fonte; séries temporais usam o Chronos-2 automaticamente. Análise retrospectiva (SINAN 2014–2024) · respostas podem conter imprecisões — confira as fontes.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const input = document.getElementById('msg-input');
+  const thread = document.getElementById('ar-thread');
+  const composer = document.getElementById('composer');
+
+  // Autosize + Ctrl/Cmd+Enter envia
+  if (input) {
+    const grow = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 200) + 'px'; };
+    input.addEventListener('input', grow);
+    input.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { composer.requestSubmit(); }
+    });
+  }
+  // Sugestões preenchem o campo
+  document.querySelectorAll('#ar-suggest .ar-chip').forEach(c => c.addEventListener('click', () => {
+    input.value = c.textContent.trim(); input.focus();
+    input.dispatchEvent(new Event('input'));
+  }));
+  // Anexos (estilo Claude): clipe abre o seletor; chips removíveis via DataTransfer
+  (function () {
+    const fileInput = document.getElementById('file-input');
+    const attachBtn = document.getElementById('attach-btn');
+    const filesBox = document.getElementById('ar-files');
+    if (!fileInput || !attachBtn) return;
+    const MAXF = {{ max_attachments }};
+    const dt = new DataTransfer();
+    attachBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      for (const f of fileInput.files) {
+        if (dt.items.length >= MAXF) break;
+        if (![...dt.files].some(g => g.name === f.name && g.size === f.size)) dt.items.add(f);
+      }
+      fileInput.files = dt.files; render();
+    });
+    function render() {
+      filesBox.innerHTML = '';
+      [...dt.files].forEach((f, i) => {
+        const kb = f.size < 1024*1024 ? (f.size/1024).toFixed(0)+' KB' : (f.size/1048576).toFixed(1)+' MB';
+        const c = document.createElement('span'); c.className = 'ar-fchip';
+        const nm = f.name.length > 26 ? f.name.slice(0, 24) + '…' : f.name;
+        c.innerHTML = '📄 <span class="nm">'+nm+'</span> <span class="sz" style="opacity:.6">'+kb+'</span> <span class="x" title="remover">✕</span>';
+        c.querySelector('.x').addEventListener('click', () => { dt.items.remove(i); fileInput.files = dt.files; render(); });
+        filesBox.appendChild(c);
+      });
+    }
+  })();
+
+  // Abrir/fechar detalhes de ferramenta
+  document.querySelectorAll('.ar-step details').forEach(d => {
+    d.addEventListener('toggle', () => {
+      const box = d.closest('.ar-trace').querySelector('[data-tool-details]');
+      if (box) box.style.display = d.open ? 'block' : 'none';
+    });
+  });
+  // Scroll para o fim
+  if (thread) thread.scrollTop = thread.scrollHeight;
+
+  // Overlay "pensando" ao enviar (o servidor processa e recarrega a página)
+  const STAGES = ['Lendo a pergunta','Qwen3 escolhendo a fonte certa','Consultando dados / leis',
+                  'Analisando (Chronos-2 se for série temporal)','Redigindo a resposta em português'];
+  function thinkingOverlay(text) {
+    const inner = thread.querySelector('.ar-inner');
+    const hello = inner.querySelector('.ar-hello'); if (hello) hello.remove();
+    const u = document.createElement('div'); u.className = 'ar-msg user';
+    u.innerHTML = '<div class="av">V</div><div class="ar-body"><div class="ar-name">Você · agora</div><div class="ar-bubble"></div></div>';
+    u.querySelector('.ar-bubble').textContent = text; inner.appendChild(u);
+    const t = document.createElement('div'); t.className = 'ar-thinking';
+    t.innerHTML = '<div class="av">A</div><div class="ar-think-card" id="ar-stages"></div>';
+    inner.appendChild(t);
+    const box = t.querySelector('#ar-stages');
+    STAGES.forEach((s,i) => { const el=document.createElement('div'); el.className='ar-think-stage';
+      el.innerHTML='<span class="sp"></span><span>'+s+'</span>'; box.appendChild(el); });
+    let i = 0; const els = box.querySelectorAll('.ar-think-stage');
+    const tick = () => { if (i>0) els[i-1].classList.add('done'); if (i<els.length){ i++; setTimeout(tick, 1400+Math.min(i,3)*900); } };
+    tick();
+    thread.scrollTop = thread.scrollHeight;
+  }
+  if (composer) composer.addEventListener('submit', () => {
+    const text = (input.value||'').trim();
+    if (text) { thinkingOverlay(text); }
+    document.getElementById('send-btn').textContent = 'Enviando…';
+  });
+})();
+</script>
+</body>
+</html>

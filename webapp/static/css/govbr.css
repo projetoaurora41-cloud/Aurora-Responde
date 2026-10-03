@@ -1,0 +1,130 @@
+/* ==========================================================================
+   Aurora — Padronização visual inspirada no Design System gov.br
+   Paleta: azul #1351B4, azul escuro #071D41, amarelo #FFCD07, verde #168821,
+   vermelho #E52207. Tema claro. Fonte Rawline/Raleway.
+   ========================================================================== */
+:root {
+  --gov-blue: #1351B4;
+  --gov-blue-dark: #071D41;
+  --gov-blue-600: #0c326f;
+  --gov-yellow: #FFCD07;
+  --gov-green: #168821;
+  --gov-red: #E52207;
+  --gov-bg: #f4f6fb;
+  --gov-card: #ffffff;
+  --gov-text: #1b2a3a;
+  --gov-muted: #5b6b7b;
+  --gov-border: #dce3ec;
+  --gov-radius: 10px;
+  --gov-shadow: 0 1px 2px rgba(16,42,80,.06), 0 6px 18px rgba(16,42,80,.06);
+}
+
+* { box-sizing: border-box; }
+body.govbr {
+  margin: 0; background: var(--gov-bg); color: var(--gov-text);
+  font-family: "Rawline", "Raleway", "Inter", system-ui, -apple-system, Segoe UI, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+/* Cor de link só para links de PROSA, não para botões: `.gov-btn-blue` etc.
+   definem a própria cor de texto e a regra genérica (mais específica que a
+   classe do botão) deixava, p.ex., o "Entrar" com texto azul sobre fundo azul
+   (invisível). O :not(.gov-btn) preserva a cor de link do texto corrido. */
+.govbr a:not(.gov-btn) { color: var(--gov-blue); }
+.gov-wrap { max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+
+/* Faixa gov.br */
+.gov-faixa { background: var(--gov-blue-dark); color: #fff; font-size: 12.5px; }
+.gov-faixa .gov-wrap { display: flex; align-items: center; gap: 10px; padding: 7px 20px; }
+.gov-faixa b { font-weight: 800; letter-spacing: .3px; }
+.gov-faixa .sep { opacity: .5; }
+.gov-faixa .min { opacity: .92; }
+
+/* Header */
+.gov-header { background: var(--gov-card); border-bottom: 1px solid var(--gov-border); }
+.gov-header .gov-wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; flex-wrap: wrap; }
+.gov-brand { display: flex; align-items: center; gap: 14px; }
+.gov-mark { width: 46px; height: 46px; border-radius: 10px; background: var(--gov-blue);
+            color: #fff; display: flex; align-items: center; justify-content: center; }
+.gov-mark svg { width: 24px; height: 24px; }
+.gov-h1 { font-size: 20px; font-weight: 800; line-height: 1.15; margin: 0; }
+.gov-sub { font-size: 13px; color: var(--gov-muted); margin: 2px 0 0; }
+.gov-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* Botões */
+.gov-btn { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700;
+           border: 1px solid transparent; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+           text-decoration: none; transition: filter .15s, background .15s, border-color .15s; }
+.gov-btn svg { width: 15px; height: 15px; }
+.gov-btn:hover { filter: brightness(.97); }
+.gov-btn-yellow { background: var(--gov-yellow); color: #33270a; }
+.gov-btn-red { background: var(--gov-red); color: #fff; }
+.gov-btn-blue { background: var(--gov-blue); color: #fff; }
+.gov-btn-ghost { background: transparent; border-color: var(--gov-border); color: var(--gov-text); }
+.gov-btn-sm { padding: 6px 11px; font-size: 12px; }
+
+/* Aviso / info banner */
+.gov-note { background: #fff7e0; border-bottom: 1px solid #f0e2b6; }
+.gov-note .gov-wrap { display: flex; gap: 8px; align-items: flex-start; padding: 8px 20px; font-size: 12.5px; }
+.gov-note svg { width: 16px; height: 16px; color: #b8860b; flex: 0 0 16px; margin-top: 1px; }
+
+/* Seções */
+.gov-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .07em;
+                     color: var(--gov-muted); font-weight: 700; margin: 28px 0 12px; }
+
+/* KPIs */
+.gov-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+.gov-kpi { background: var(--gov-card); border: 1px solid var(--gov-border); border-radius: var(--gov-radius);
+           padding: 16px 18px; box-shadow: var(--gov-shadow); }
+.gov-kpi .ico { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.gov-kpi .ico svg { width: 19px; height: 19px; }
+.gov-kpi .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--gov-muted); margin: 12px 0 2px; }
+.gov-kpi .val { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.gov-kpi .pct { font-size: 11.5px; color: var(--gov-green); font-weight: 700; }
+.ico-blue { background: rgba(19,81,180,.10); color: var(--gov-blue); }
+.ico-red { background: rgba(229,34,7,.10); color: var(--gov-red); }
+.ico-green { background: rgba(22,136,33,.12); color: var(--gov-green); }
+.ico-amber { background: rgba(255,205,7,.20); color: #9a7400; }
+
+/* Janelas de chat */
+.gov-windows { display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 16px; }
+@media (max-width: 720px) { .gov-windows { grid-template-columns: 1fr; } }
+.gov-win { background: var(--gov-card); border: 1px solid var(--gov-border); border-radius: 12px;
+           overflow: hidden; box-shadow: var(--gov-shadow); display: flex; flex-direction: column; }
+.gov-win-bar { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--gov-blue);
+               color: #fff; }
+.gov-win-dots { display: flex; gap: 6px; }
+.gov-win-dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.45); }
+.gov-win-title { font-size: 13px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gov-win-title em { font-style: normal; font-weight: 500; opacity: .8; }
+.gov-win-btn { background: rgba(255,255,255,.16); border: 0; color: #fff; width: 26px; height: 26px;
+               border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+               text-decoration: none; font-size: 14px; line-height: 1; }
+.gov-win-btn:hover { background: rgba(255,255,255,.30); }
+.gov-win-body { position: relative; height: 340px; background: #eef2f7; }
+.gov-win-body iframe { width: 100%; height: 100%; border: 0; display: block; }
+.gov-win-ph { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+              justify-content: center; gap: 10px; color: var(--gov-muted); font-size: 13px; text-align: center; padding: 20px; }
+.gov-win-ph .owner { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gov-blue); font-weight: 700; }
+.gov-win-desc { font-size: 12px; color: var(--gov-muted); padding: 9px 12px; border-top: 1px solid var(--gov-border); }
+.gov-win.soon .gov-win-bar { background: #6b7a8b; }
+
+/* Janela maximizada */
+.gov-win.maximized { position: fixed; inset: 0; z-index: 9999; border-radius: 0; height: 100vh; box-shadow: none; }
+.gov-win.maximized .gov-win-body { flex: 1; height: auto; }
+.gov-win.maximized .gov-win-desc { display: none; }
+body.win-locked { overflow: hidden; }
+
+/* Cards de explorar (mapas/dashboards) */
+.gov-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.gov-explore { display: flex; gap: 12px; align-items: flex-start; text-decoration: none; color: inherit;
+               background: var(--gov-card); border: 1px solid var(--gov-border); border-radius: var(--gov-radius);
+               padding: 16px; box-shadow: var(--gov-shadow); transition: transform .12s, border-color .12s; }
+.gov-explore:hover { transform: translateY(-2px); border-color: var(--gov-blue); }
+.gov-explore .ico { width: 40px; height: 40px; border-radius: 9px; flex: 0 0 40px; display: flex;
+                    align-items: center; justify-content: center; font-size: 20px; background: rgba(19,81,180,.10); }
+.gov-explore h3 { margin: 0 0 3px; font-size: 15px; font-weight: 700; }
+.gov-explore p { margin: 0; font-size: 12.5px; color: var(--gov-muted); }
+
+/* Footer */
+.gov-footer { border-top: 1px solid var(--gov-border); background: var(--gov-card); margin-top: 36px; }
+.gov-footer .gov-wrap { padding: 18px 20px; font-size: 12px; color: var(--gov-muted); }

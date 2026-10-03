@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load chat_extras %}
+{% block title %}Relatório de previsões · Chat{% endblock %}
+
+{% block topbar %}
+<div class="crumb">
+    <a href="{% url 'chat:list' %}">Chat</a>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-current">Relatório de previsões</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Relatório de previsões</h1>
+    <p class="page-subtitle">Todas as previsões executadas em todas as suas conversas — com acurácia (WAPE), modelo vencedor e tempo. WAPE menor = previsão mais confiável.</p>
+</div>
+
+<div class="card mb-4 card-pad">
+    <h3 class="card-title">Como interpretar a acurácia (WAPE)</h3>
+    <p class="card-subtitle">WAPE = soma(erros absolutos) / soma(valores reais), em %. É calculado no backtest walk-forward (treino histórico → previsão → comparação com o que aconteceu).</p>
+    <div class="flex gap-2 mt-3">
+        <span class="badge badge-success">alta · &lt; 10%</span>
+        <span class="badge badge-accent">boa · 10–25%</span>
+        <span class="badge badge-warning">média · 25–50%</span>
+        <span class="badge badge-danger">baixa · &gt; 50%</span>
+    </div>
+</div>
+
+{% if rows %}
+<div class="card">
+    <table class="table">
+        <thead><tr>
+            <th>Data</th>
+            <th>Assunto</th>
+            <th>Tool</th>
+            <th>Modelo vencedor</th>
+            <th>Acurácia</th>
+            <th>Horizonte</th>
+            <th>Tempo</th>
+            <th></th>
+        </tr></thead>
+        <tbody>
+            {% for r in rows %}
+                {% with grade=r.wape|wape_grade %}
+                <tr>
+                    <td class="text-mono text-sm">{{ r.when|date:"d/m H:i" }}</td>
+                    <td><strong>{{ r.subject|truncatechars:60 }}</strong></td>
+                    <td><code class="text-sm">{{ r.tool }}</code></td>
+                    <td><span class="badge badge-accent">{{ r.winner }}</span></td>
+                    <td><span class="badge badge-{{ grade.color }}">{{ grade.label }}</span></td>
+                    <td>{{ r.horizon|default:"—" }}</td>
+                    <td class="text-muted">{% if r.elapsed %}{{ r.elapsed|floatformat:0 }}s{% else %}—{% endif %}</td>
+                    <td><a href="{% url 'chat:thread' r.thread_id %}" class="btn btn-sm">Abrir thread</a></td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card card-pad">
+    <div class="empty">
+        <div class="empty-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="empty-title">Nenhuma previsão ainda</div>
+        <p>Abra <a href="{% url 'chat:list' %}">uma conversa</a> e peça previsões — vão aparecer aqui com acurácia.</p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

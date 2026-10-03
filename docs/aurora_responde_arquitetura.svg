@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="712" viewBox="0 0 1060 712" font-family="Raleway, Inter, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#8a97a8"/>
+    </marker>
+    <style>
+      .title { font-size: 26px; font-weight: 800; fill: #071D41; }
+      .sub   { font-size: 13.5px; fill: #5b6b7b; }
+      .boxt  { font-size: 17px; font-weight: 700; }
+      .boxs  { font-size: 12.5px; }
+      .flow  { stroke: #8a97a8; stroke-width: 2; fill: none; }
+      .loop  { font-size: 14px; font-weight: 600; fill: #0c326f; }
+      .note  { font-size: 12.5px; fill: #33270a; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1060" height="712" fill="#f4f6fb"/>
+
+  <!-- Título -->
+  <text x="530" y="42" text-anchor="middle" class="title">Aurora responde — arquitetura do chat único</text>
+  <text x="530" y="64" text-anchor="middle" class="sub">Um chat no front; por baixo, o Qwen3 roteia entre as fontes e sintetiza citando a origem</text>
+
+  <!-- Chat único -->
+  <rect x="410" y="86" width="240" height="60" rx="12" fill="#ffffff" stroke="#dce3ec" stroke-width="1.5"/>
+  <text x="530" y="112" text-anchor="middle" class="boxt" fill="#1b2a3a">Chat único</text>
+  <text x="530" y="132" text-anchor="middle" class="boxs" fill="#5b6b7b">gov.br · aberto · anexa PDF/imagem/texto</text>
+
+  <!-- seta chat -> qwen -->
+  <path class="flow" d="M530,146 L530,182" marker-end="url(#arrow)"/>
+
+  <!-- Qwen3 orquestrador -->
+  <rect x="330" y="184" width="400" height="82" rx="12" fill="#eef0ff" stroke="#6b5cff" stroke-width="1.8"/>
+  <text x="530" y="214" text-anchor="middle" class="boxt" fill="#3b2fb0">Qwen3-8B · Orquestrador (principal)</text>
+  <text x="530" y="236" text-anchor="middle" class="boxs" fill="#4a3fb0">roteia · monta · interpreta · cita a fonte</text>
+  <text x="530" y="254" text-anchor="middle" class="boxs" fill="#6a6aa0">escopo estrito · trava anti-alucinação de UF</text>
+
+  <!-- setas qwen -> fontes (fan-out) -->
+  <path class="flow" d="M530,266 C300,300 140,300 110,330" marker-end="url(#arrow)"/>
+  <path class="flow" d="M530,266 C420,300 320,306 315,330" marker-end="url(#arrow)"/>
+  <path class="flow" d="M530,266 L530,330" marker-end="url(#arrow)"/>
+  <path class="flow" d="M530,266 C640,300 740,306 745,330" marker-end="url(#arrow)"/>
+  <path class="flow" d="M530,266 C760,300 920,300 950,330" marker-end="url(#arrow)"/>
+
+  <!-- Fontes (5) -->
+  <!-- 1 SQL SINAN -->
+  <rect x="18" y="332" width="194" height="104" rx="12" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="115" y="360" text-anchor="middle" class="boxt" fill="#0f5c1a">Consulta SQL</text>
+  <text x="115" y="382" text-anchor="middle" class="boxs" fill="#2f6b3a">SINAN · ~3 mi registros</text>
+  <text x="115" y="401" text-anchor="middle" class="boxs" fill="#2f6b3a">contagem · ranking</text>
+  <text x="115" y="419" text-anchor="middle" class="boxs" fill="#0f5c1a">chats: Marcelo · Rafael</text>
+
+  <!-- 2 Chronos -->
+  <rect x="226" y="332" width="194" height="104" rx="12" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="323" y="360" text-anchor="middle" class="boxt" fill="#0f5c1a">Chronos-2</text>
+  <text x="323" y="382" text-anchor="middle" class="boxs" fill="#2f6b3a">séries temporais (retrospectiva)</text>
+  <text x="323" y="401" text-anchor="middle" class="boxs" fill="#2f6b3a">só quando é série</text>
+  <text x="323" y="419" text-anchor="middle" class="boxs" fill="#0f5c1a">chat: Hernandison</text>
+
+  <!-- 3 Jurema -->
+  <rect x="434" y="332" width="194" height="104" rx="12" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="531" y="360" text-anchor="middle" class="boxt" fill="#0f5c1a">Jurema-7B</text>
+  <text x="531" y="382" text-anchor="middle" class="boxs" fill="#2f6b3a">RAG jurídico · leis/ECA/normas</text>
+  <text x="531" y="401" text-anchor="middle" class="boxs" fill="#2f6b3a">parecer citado</text>
+  <text x="531" y="419" text-anchor="middle" class="boxs" fill="#0f5c1a">chat: Eduardo</text>
+
+  <!-- 4 RAG interno -->
+  <rect x="642" y="332" width="194" height="104" rx="12" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="739" y="360" text-anchor="middle" class="boxt" fill="#0f5c1a">RAG interno</text>
+  <text x="739" y="382" text-anchor="middle" class="boxs" fill="#2f6b3a">documentação</text>
+  <text x="739" y="401" text-anchor="middle" class="boxs" fill="#2f6b3a">do produto Aurora</text>
+
+  <!-- 5 SIPIA-CT -->
+  <rect x="850" y="332" width="194" height="104" rx="12" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="947" y="360" text-anchor="middle" class="boxt" fill="#0f5c1a">SIPIA-CT</text>
+  <text x="947" y="382" text-anchor="middle" class="boxs" fill="#2f6b3a">Conselho Tutelar</text>
+  <text x="947" y="401" text-anchor="middle" class="boxs" fill="#2f6b3a">SQL · por UF/ano</text>
+
+  <!-- retorno -->
+  <path class="flow" d="M115,436 C115,480 480,486 520,470" marker-end="url(#arrow)" stroke-dasharray="5 4"/>
+  <path class="flow" d="M947,436 C947,480 580,486 540,470" marker-end="url(#arrow)" stroke-dasharray="5 4"/>
+  <text x="530" y="486" text-anchor="middle" class="loop">&#8635; todo retorno volta ao Qwen3 para síntese e citação da fonte</text>
+
+  <!-- rodapé: garantias -->
+  <rect x="150" y="520" width="760" height="70" rx="10" fill="#fff7e0" stroke="#f0e2b6" stroke-width="1.5"/>
+  <text x="530" y="546" text-anchor="middle" class="note" font-weight="700">Garantias da plataforma</text>
+  <text x="530" y="567" text-anchor="middle" class="note">Escopo estrito (recusa código/HTML/temas fora do domínio) · limites de input e contexto</text>
+  <text x="530" y="584" text-anchor="middle" class="note">Feedback de tokens e de "pensamento" · modelo de série mostrado só nos detalhes (nunca na prosa)</text>
+
+  <!-- Legenda: chats individuais unificados -->
+  <rect x="90" y="606" width="880" height="84" rx="10" fill="#ffffff" stroke="#dce3ec" stroke-width="1.5"/>
+  <text x="530" y="632" text-anchor="middle" class="boxt" fill="#071D41" font-size="15">Chats individuais unificados no Aurora responde</text>
+  <text x="530" y="655" text-anchor="middle" class="boxs" fill="#33475e" font-size="12.5">Hernandison — Séries temporais (Chronos-2)  ·  Marcelo — Dados SINAN (SQL)</text>
+  <text x="530" y="674" text-anchor="middle" class="boxs" fill="#33475e" font-size="12.5">Rafael — Chatbot geral VIOLBR/SINAM  ·  Eduardo — Dados Jurídicos (Jurema)</text>
+</svg>

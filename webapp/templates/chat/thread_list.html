@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Conversas · Aurora Responde{% endblock %}
+
+{% block topbar %}<span class="jur-chat-title">Conversas</span>{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'home' %}" class="btn btn-sm btn-ghost">← Voltar ao chat</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Conversas</h1>
+    <p class="page-subtitle">Faça perguntas em linguagem natural — o Aurora Responde busca os dados (SINAM/SIPIA), a legislação e a documentação, e o Jurema redige a resposta.</p>
+</div>
+
+<div class="card card-pad mb-4">
+    <form method="post" action="{% url 'chat:new' %}" class="flex gap-2" style="align-items:center; flex-wrap:wrap">
+        {% csrf_token %}
+        <div style="flex:1; min-width:240px">
+            <label class="form-label">Nova conversa</label>
+            <p class="text-faint text-sm" style="margin:2px 0 0">Começa uma conversa nova com o assistente.</p>
+        </div>
+        <div>
+            <label class="form-label">&nbsp;</label>
+            <button type="submit" class="btn btn-primary">+ Nova conversa</button>
+        </div>
+    </form>
+</div>
+
+{% if threads %}
+<div class="card">
+    <table class="table">
+        <thead><tr><th>Título</th><th>Mensagens</th><th>Atualizada</th></tr></thead>
+        <tbody>
+            {% for t in threads %}
+                <tr>
+                    <td><a href="{% url 'chat:thread' t.pk %}" style="color:var(--text); font-weight:500">{{ t.title|default:"Nova conversa" }}</a></td>
+                    <td class="text-muted">{{ t.messages.count }}</td>
+                    <td class="text-muted">{{ t.updated_at|date:"d/m H:i" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card card-pad">
+    <div class="empty">
+        <div class="empty-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="empty-title">Nenhuma conversa ainda</div>
+        <p>Inicie a primeira acima.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

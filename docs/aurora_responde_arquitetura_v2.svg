@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="1112" viewBox="0 0 1160 1112" font-family="Raleway, Inter, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#8a97a8"/>
+    </marker>
+    <style>
+      .title{font-size:25px;font-weight:800;fill:#071D41}
+      .sub{font-size:13px;fill:#5b6b7b}
+      .cap{font-size:14px;font-weight:700}
+      .cs{font-size:11.5px}
+      .lbl{font-size:11.5px;font-weight:700;fill:#0c326f}
+      .flow{stroke:#8a97a8;stroke-width:2;fill:none}
+      .join{stroke:#8a97a8;stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+    </style>
+  </defs>
+  <rect width="1160" height="1112" fill="#f4f6fb"/>
+  <text x="580" y="40" text-anchor="middle" class="title">Aurora responde — fluxo de execução (roteamento if/elif/else)</text>
+  <text x="580" y="62" text-anchor="middle" class="sub">Ordem em que o orquestrador processa cada mensagem</text>
+
+  <!-- START -->
+  <rect x="210" y="78" width="320" height="50" rx="10" fill="#ffffff" stroke="#dce3ec" stroke-width="1.5"/>
+  <text x="370" y="108" text-anchor="middle" class="cap" fill="#1b2a3a">Mensagem do usuário (chat único)</text>
+  <path class="flow" d="M370,128 L370,150" marker-end="url(#a)"/>
+
+  <!-- D1 escopo -->
+  <rect x="210" y="150" width="320" height="60" rx="10" fill="#fff7e0" stroke="#d9a406" stroke-width="1.6"/>
+  <text x="370" y="176" text-anchor="middle" class="cap" fill="#8a6d08">Fora de escopo?</text>
+  <text x="370" y="196" text-anchor="middle" class="cs" fill="#8a6d08">código / HTML / tema fora do domínio</text>
+  <!-- sim -> recusa -->
+  <path class="flow" d="M530,180 L740,180" marker-end="url(#a)"/>
+  <text x="600" y="172" text-anchor="middle" class="lbl">SIM</text>
+  <rect x="740" y="152" width="360" height="56" rx="10" fill="#fde8e6" stroke="#E52207" stroke-width="1.6"/>
+  <text x="920" y="176" text-anchor="middle" class="cap" fill="#a8180b">Recusa educada — FIM</text>
+  <text x="920" y="195" text-anchor="middle" class="cs" fill="#a8180b">sem chamar o LLM / ferramentas</text>
+  <!-- nao -->
+  <path class="flow" d="M370,210 L370,238" marker-end="url(#a)"/>
+  <text x="388" y="228" class="lbl">NÃO</text>
+
+  <!-- PRE -->
+  <rect x="210" y="238" width="320" height="58" rx="10" fill="#eef3fb" stroke="#1351B4" stroke-width="1.4"/>
+  <text x="370" y="263" text-anchor="middle" class="cap" fill="#0c326f">Pré-processa</text>
+  <text x="370" y="282" text-anchor="middle" class="cs" fill="#3b5b86">limita contexto · detecta UF/ano/tipo · anti-alucinação</text>
+  <path class="flow" d="M370,296 L370,322" marker-end="url(#a)"/>
+
+  <!-- D2 juridico -->
+  <rect x="210" y="322" width="320" height="58" rx="10" fill="#fff7e0" stroke="#d9a406" stroke-width="1.6"/>
+  <text x="370" y="347" text-anchor="middle" class="cap" fill="#8a6d08">É jurídico?</text>
+  <text x="370" y="366" text-anchor="middle" class="cs" fill="#8a6d08">lei · ECA · artigo · norma</text>
+  <path class="flow" d="M530,351 L740,351" marker-end="url(#a)"/>
+  <text x="600" y="343" text-anchor="middle" class="lbl">SIM</text>
+  <rect x="740" y="323" width="360" height="56" rx="10" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="920" y="347" text-anchor="middle" class="cap" fill="#0f5c1a">Jurema-7B · RAG jurídico</text>
+  <text x="920" y="366" text-anchor="middle" class="cs" fill="#2f6b3a">parecer citado · chat de Eduardo (Jurídico)</text>
+  <path class="flow" d="M370,380 L370,406" marker-end="url(#a)"/>
+  <text x="388" y="398" class="lbl">NÃO</text>
+
+  <!-- D3 produto -->
+  <rect x="210" y="406" width="320" height="58" rx="10" fill="#fff7e0" stroke="#d9a406" stroke-width="1.6"/>
+  <text x="370" y="431" text-anchor="middle" class="cap" fill="#8a6d08">É sobre o produto?</text>
+  <text x="370" y="450" text-anchor="middle" class="cs" fill="#8a6d08">como funciona · metodologia</text>
+  <path class="flow" d="M530,435 L740,435" marker-end="url(#a)"/>
+  <text x="600" y="427" text-anchor="middle" class="lbl">SIM</text>
+  <rect x="740" y="407" width="360" height="56" rx="10" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="920" y="431" text-anchor="middle" class="cap" fill="#0f5c1a">RAG interno</text>
+  <text x="920" y="450" text-anchor="middle" class="cs" fill="#2f6b3a">documentação do produto (docs/)</text>
+  <path class="flow" d="M370,464 L370,490" marker-end="url(#a)"/>
+  <text x="388" y="482" class="lbl">NÃO</text>
+
+  <!-- D4 sipia -->
+  <rect x="210" y="490" width="320" height="58" rx="10" fill="#fff7e0" stroke="#d9a406" stroke-width="1.6"/>
+  <text x="370" y="515" text-anchor="middle" class="cap" fill="#8a6d08">Conselho Tutelar / SIPIA-CT?</text>
+  <text x="370" y="534" text-anchor="middle" class="cs" fill="#8a6d08">medidas · atendimentos do CT</text>
+  <path class="flow" d="M530,519 L740,519" marker-end="url(#a)"/>
+  <text x="600" y="511" text-anchor="middle" class="lbl">SIM</text>
+  <rect x="740" y="491" width="360" height="56" rx="10" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="920" y="515" text-anchor="middle" class="cap" fill="#0f5c1a">consulta_sipia_ct · SQL</text>
+  <text x="920" y="534" text-anchor="middle" class="cs" fill="#2f6b3a">por UF / ano / indicador</text>
+  <path class="flow" d="M370,548 L370,574" marker-end="url(#a)"/>
+  <text x="388" y="566" class="lbl">NÃO</text>
+
+  <!-- D5 serie (else: dados SINAN) -->
+  <rect x="210" y="574" width="320" height="64" rx="10" fill="#fff7e0" stroke="#d9a406" stroke-width="1.6"/>
+  <text x="370" y="600" text-anchor="middle" class="cap" fill="#8a6d08">ELSE — dados SINAN. É série temporal?</text>
+  <text x="370" y="620" text-anchor="middle" class="cs" fill="#8a6d08">evolução / ao longo do tempo?</text>
+
+  <!-- sim serie -> chronos -->
+  <path class="flow" d="M530,596 C620,596 660,583 740,583" marker-end="url(#a)"/>
+  <text x="605" y="579" text-anchor="middle" class="lbl">SIM</text>
+  <rect x="740" y="555" width="360" height="56" rx="10" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="920" y="579" text-anchor="middle" class="cap" fill="#0f5c1a">Chronos-2 · série retrospectiva</text>
+  <text x="920" y="598" text-anchor="middle" class="cs" fill="#2f6b3a">comitê WAPE · chat de Hernandison (Séries)</text>
+
+  <!-- nao -> sql sinan -->
+  <path class="flow" d="M530,616 C620,616 660,649 740,649" marker-end="url(#a)"/>
+  <text x="605" y="663" text-anchor="middle" class="lbl">NÃO</text>
+  <rect x="740" y="621" width="360" height="56" rx="10" fill="#e8f5ee" stroke="#168821" stroke-width="1.5"/>
+  <text x="920" y="645" text-anchor="middle" class="cap" fill="#0f5c1a">SQL SINAN · ORM</text>
+  <text x="920" y="664" text-anchor="middle" class="cs" fill="#2f6b3a">contar · ranking · relatório · chats de Marcelo e Rafael</text>
+
+  <!-- convergência (join) das ferramentas -> Qwen3 -->
+  <path class="join" d="M740,351 C690,351 660,700 590,742"/>
+  <path class="join" d="M740,435 C700,435 660,700 590,745"/>
+  <path class="join" d="M740,519 C700,519 660,705 590,748"/>
+  <path class="join" d="M740,583 C700,583 660,710 592,752"/>
+  <path class="join" d="M740,649 C700,649 665,715 594,754" marker-end="url(#a)"/>
+
+  <!-- MERGE Qwen3 sintese -->
+  <rect x="330" y="758" width="500" height="60" rx="10" fill="#eef0ff" stroke="#6b5cff" stroke-width="1.8"/>
+  <text x="580" y="783" text-anchor="middle" class="cap" fill="#3b2fb0">&#8635; Resultado volta ao Qwen3-8B</text>
+  <text x="580" y="803" text-anchor="middle" class="cs" fill="#4a3fb0">síntese em PT-BR + citação da fonte</text>
+  <path class="flow" d="M580,818 L580,844" marker-end="url(#a)"/>
+
+  <!-- SANITIZA -->
+  <rect x="330" y="844" width="500" height="52" rx="10" fill="#eef3fb" stroke="#1351B4" stroke-width="1.4"/>
+  <text x="580" y="869" text-anchor="middle" class="cap" fill="#0c326f">Sanitiza a resposta</text>
+  <text x="580" y="887" text-anchor="middle" class="cs" fill="#3b5b86">remove HTML · tira o nome do modelo da prosa</text>
+  <path class="flow" d="M580,896 L580,922" marker-end="url(#a)"/>
+
+  <!-- RESPOSTA -->
+  <rect x="300" y="922" width="560" height="58" rx="10" fill="#ffffff" stroke="#168821" stroke-width="1.8"/>
+  <text x="580" y="947" text-anchor="middle" class="cap" fill="#0f5c1a">Resposta ao usuário + badges</text>
+  <text x="580" y="966" text-anchor="middle" class="cs" fill="#2f6b3a">⏱ tempo · 🔤 tokens · 🧠 qwen3:8b · 📈 modelo de série (nos detalhes)</text>
+
+  <!-- Legenda: chats individuais unificados -->
+  <rect x="120" y="1004" width="920" height="86" rx="10" fill="#ffffff" stroke="#dce3ec" stroke-width="1.5"/>
+  <text x="580" y="1030" text-anchor="middle" class="cap" fill="#071D41">Chats individuais unificados no Aurora responde</text>
+  <text x="580" y="1053" text-anchor="middle" class="cs" fill="#33475e">Hernandison — Séries temporais (Chronos-2)  ·  Marcelo — Dados SINAN (SQL)</text>
+  <text x="580" y="1072" text-anchor="middle" class="cs" fill="#33475e">Rafael — Chatbot geral VIOLBR/SINAM  ·  Eduardo — Dados Jurídicos (Jurema)</text>
+</svg>
