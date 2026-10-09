@@ -53,3 +53,5 @@ webapp/staticfiles/
 govbr-ds-wbc-next/
 node_modules/
 aurora-docker/
+
+prototype/
