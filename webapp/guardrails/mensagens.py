@@ -1,27 +1,33 @@
 """Mensagens canônicas do pipeline de guardrails."""
 
+_BO = (
+    "**Procure imediatamente uma delegacia** (de preferência a Delegacia de "
+    "Proteção à Criança e ao Adolescente) para **registrar um boletim de "
+    "ocorrência (B.O.)**, ou registre o B.O. **online** pela Delegacia Eletrônica "
+    "do seu estado. Maus-tratos, abuso, agressão e exploração são **crimes**, e o "
+    "B.O. formaliza a denúncia e permite a investigação policial."
+)
+
 MSG_DISQUE_100 = (
-    "Se você ou alguém estiver em situação de violência ou risco, procure ajuda "
-    "humana imediatamente. Ligue para o **Disque 100** (telefone 100) — denúncia "
-    "anônima, gratuita e 24 horas. Em emergência, ligue também para o **190**.\n\n"
-    "O Aurora Responde trata de dados e legislação; não substitui atendimento "
-    "de proteção ou acolhimento."
+    "**Se há perigo imediato, ligue agora para o 190** (Polícia Militar).\n\n"
+    + _BO
+    + "\n\nVocê também pode ligar para o **Disque 100** (telefone 100) — "
+    "denúncia anônima, gratuita e 24 horas — e, se for criança ou adolescente, "
+    "procurar o **Conselho Tutelar** do município.\n\n"
+    "O Aurora Responde trata de dados e legislação; não substitui o atendimento "
+    "policial, de proteção ou de acolhimento."
 )
 
 MSG_CONSELHO_TUTELAR = (
-    "Pelos relatos envolvendo criança ou adolescente, o caminho adequado é "
-    "procurar o **Conselho Tutelar** do município — órgão local responsável por "
-    "aplicar medidas de proteção quando direitos são ameaçados ou violados.\n\n"
-    "Como maus-tratos, abuso e exploração são **crimes** (por exemplo, maus-tratos "
-    "— art. 136 do Código Penal), você também pode **registrar um boletim de "
-    "ocorrência (B.O.)**: presencialmente na delegacia (de preferência a Delegacia "
-    "de Proteção à Criança e ao Adolescente) ou pela **Delegacia Eletrônica "
-    "(online)** do seu estado. O B.O. formaliza a denúncia e permite a investigação "
-    "policial.\n\n"
-    "Você também pode denunciar de forma anônima no **Disque 100** (telefone 100), "
-    "gratuito e 24 horas. Em emergência imediata, ligue **190**.\n\n"
-    "O Aurora Responde trata de dados e legislação; não substitui o atendimento do "
-    "Conselho Tutelar, da delegacia nem de outros serviços de proteção."
+    "**Se há perigo imediato, ligue agora para o 190** (Polícia Militar).\n\n"
+    + _BO
+    + "\n\nDepois, ou em paralelo, procure o **Conselho Tutelar** do município "
+    "— órgão local responsável por aplicar medidas de proteção quando direitos "
+    "de crianças e adolescentes são ameaçados ou violados — e, se preferir, "
+    "denuncie de forma anônima no **Disque 100** (telefone 100), gratuito e 24 "
+    "horas.\n\n"
+    "O Aurora Responde trata de dados e legislação; não substitui o atendimento "
+    "da delegacia, do Conselho Tutelar nem de outros serviços de proteção."
 )
 
 MSG_INJECAO = (
