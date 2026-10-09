@@ -50,6 +50,22 @@
       orientadas por evidências.
     </p>
   </section>
+
+  <section class="home-explore">
+    <h2>Explore a plataforma</h2>
+    <div class="home-explore-grid">
+      <a class="home-explore-card" href="{% url 'dashboards' %}">
+        <h3>Dashboard Aurora</h3>
+        <p>Indicadores, séries históricas e perfis das vítimas.</p>
+        <span>Acessar →</span>
+      </a>
+      <a class="home-explore-card" href="{% url 'aurora_responde' %}">
+        <h3>Aurora Responde</h3>
+        <p>Perguntas em linguagem natural sobre os dados, o Conselho Tutelar e a base legal.</p>
+        <span>Acessar →</span>
+      </a>
+    </div>
+  </section>
 </main>
 {% endblock %}
 

@@ -372,6 +372,43 @@ body {
   line-height: 1.65;
 }
 .home-about p:last-child { margin-bottom: 0; }
+.home-explore { margin-top: 3.5rem; }
+.home-explore h2 {
+  margin: 0 0 1.5rem;
+  color: var(--gov-blue);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.home-explore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.home-explore-card {
+  display: block;
+  border: 1px solid var(--gov-border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+}
+.home-explore-card:hover { border-color: var(--gov-blue); }
+.home-explore-card:focus-visible { outline: 2px solid var(--gov-blue); outline-offset: 2px; }
+.home-explore-card h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.home-explore-card p {
+  margin: 8px 0 0;
+  color: var(--gov-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.home-explore-card span {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--gov-blue);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
 .home-footer {
   border-top: 1px solid var(--gov-border);
   background: var(--gov-surface);
