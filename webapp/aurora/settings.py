@@ -39,6 +39,11 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split("
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in
                         os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
 
+# O padrão do Django (desde 3.0) é "same-origin", que omite o header Referer
+# em requisições cross-origin. O OpenStreetMap exige Referer nos tiles;
+# esta política envia a origem em HTTPS→HTTPS sem vazar o path.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -52,6 +57,9 @@ INSTALLED_APPS = [
     "core",
     # Dados SINAM/VIOLBR (camada semântica — filtros geo/violência p/ dados ao vivo)
     "sinam",
+    # Início e painel Aurora (telas vindas do Aurora-Dashborad)
+    "painel",
+    "mapas",
     # === Aurora Responde — chat único (só Jurema + RAG + dados ao vivo) ===
     "chats.series_temporais.orquestrador",
     # === Guardrails (entrada/saída + limites) ===

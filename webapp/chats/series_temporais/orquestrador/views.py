@@ -136,6 +136,7 @@ def _render_chat(request, thread):
         "max_attachments": attachments.MAX_ATTACHMENTS,
         "sidebar_chat_threads": _threads_for(request)[:40],
         "aurora_versao": AURORA_RESPONDE_VERSION,
+        "embed": request.GET.get("embed") == "1",
     })
 
 

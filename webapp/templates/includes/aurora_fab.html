@@ -1,0 +1,26 @@
+<div class="ar-fab-dock">
+  <div class="ar-fab-panel" id="ar-fab-panel" hidden>
+    <iframe data-src="{% url 'aurora_responde' %}?embed=1" title="Aurora Responde"></iframe>
+  </div>
+  <button type="button" class="ar-fab" id="ar-fab" aria-expanded="false" aria-controls="ar-fab-panel">
+    <svg class="ar-fab-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+    <svg class="ar-fab-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    <span class="ar-fab-label">Aurora Responde</span>
+  </button>
+</div>
+<script>
+(function () {
+  const btn = document.getElementById('ar-fab');
+  const panel = document.getElementById('ar-fab-panel');
+  const frame = panel.querySelector('iframe');
+  btn.addEventListener('click', function () {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.querySelector('.ar-fab-label').textContent = open ? 'Fechar' : 'Aurora Responde';
+    btn.querySelector('.ar-fab-chat').hidden = open;
+    btn.querySelector('.ar-fab-close').hidden = !open;
+    if (open && !frame.getAttribute('src')) frame.src = frame.dataset.src;
+  });
+})();
+</script>

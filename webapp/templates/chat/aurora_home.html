@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/govbr.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/site-header.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}?v=9">
   <style>
     body.ar-page {
@@ -296,6 +297,17 @@
     .ar-footer { background: #fff; border-top: 1px solid var(--gov-border); }
     .ar-footer .ar-wrap { padding-top: 32px; padding-bottom: 32px; font-size: 12px; line-height: 1.5; color: #3e4c5c; max-width: 105ch; }
 
+    body.ar-embed .ar-main { padding: 0; }
+    body.ar-embed .ar-wrap { max-width: none; padding: 0; }
+    body.ar-embed .ar-grid { display: block; }
+    body.ar-embed .ar-aside { display: none; }
+    body.ar-embed .ar-panel {
+      min-height: 100vh;
+      max-height: 100vh;
+      border: 0;
+      border-radius: 0;
+    }
+
     @media (max-width: 960px) {
       .ar-grid { grid-template-columns: 1fr; }
       .ar-hero h1 { font-size: 26px; }
@@ -305,26 +317,10 @@
     }
   </style>
 </head>
-<body class="govbr ar-page">
+<body class="govbr ar-page{% if embed %} ar-embed{% endif %}">
 
-<header>
-  <div class="ar-brandbar">
-    <div class="ar-wrap">
-      <a class="ar-brand" href="{% url 'home' %}">
-        <img class="ar-logo" src="{% static 'img/projeto-aurora-header.png' %}"
-             alt="Aurora — Análise Unificada de Registros para Orientar Respostas e Ações de Proteção à Criança e ao Adolescente"
-             onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
-        <span class="ar-wordmark" hidden>Projeto Aurora</span>
-      </a>
-    </div>
-  </div>
-  <div class="ar-yellow"></div>
-  <nav class="ar-nav" aria-label="Principal">
-    <div class="ar-wrap">
-      <a class="ar-nav-link" href="{% url 'home' %}" aria-current="page">Início</a>
-    </div>
-  </nav>
-</header>
+{% if not embed %}
+{% include "includes/site_header.html" %}
 
 <div class="ar-hero">
   <div class="ar-wrap">
@@ -333,6 +329,7 @@
   </div>
 </div>
 <div class="ar-yellow"></div>
+{% endif %}
 
 <main class="ar-main" id="conteudo">
   <div class="ar-wrap">
@@ -418,8 +415,8 @@
                       aria-label="Anexar arquivo">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
               </button>
-              <textarea name="message" id="msg-input" rows="1" maxlength="{{ max_input_chars }}"
-                        placeholder="Pergunte sobre dados (SINAN/SIPIA-CT), leis, ou anexe um arquivo. Ctrl+Enter envia."
+              <textarea name="message" id="msg-input" rows="1" maxlength="{{ max_input_chars }}" autocomplete="off"
+                        placeholder="Escreva sua dúvida..."
                         autofocus></textarea>
               <input type="file" name="files" id="file-input" multiple hidden
                      accept=".pdf,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.bmp,.gif,.tif,.tiff,image/*">
@@ -464,11 +461,13 @@
   </div>
 </main>
 
+{% if not embed %}
 <footer class="ar-footer">
   <div class="ar-wrap">
     Plataforma Aurora — conteúdo institucional de caráter informativo. Em situações de risco iminente, <strong>disque 190</strong>.
   </div>
 </footer>
+{% endif %}
 
 <script>
 (function () {
@@ -594,6 +593,13 @@
     const text = (input.value || '').trim();
     if (text) thinkingOverlay(text);
     if (sendBtn) sendBtn.disabled = true;
+    // O navegador monta o POST antes deste timeout, então a mensagem sai
+    // e o campo esvazia enquanto a resposta é gerada.
+    setTimeout(() => {
+      if (!input) return;
+      input.value = '';
+      input.style.height = 'auto';
+    }, 0);
   });
 })();
 </script>

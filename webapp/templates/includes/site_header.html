@@ -1,0 +1,22 @@
+{% load static %}
+<header>
+  <div class="ar-brandbar">
+    <div class="ar-wrap">
+      <a class="ar-brand" href="{% url 'home' %}">
+        <img class="ar-logo" src="{% static 'img/projeto-aurora-header.png' %}"
+             alt="Aurora — Análise Unificada de Registros para Orientar Respostas e Ações de Proteção à Criança e ao Adolescente"
+             onerror="this.hidden=true; this.nextElementSibling.hidden=false;">
+        <span class="ar-wordmark" hidden>Projeto Aurora</span>
+      </a>
+    </div>
+  </div>
+  <div class="ar-yellow"></div>
+  <nav class="ar-nav" aria-label="Principal">
+    <div class="ar-wrap">
+      <a class="ar-nav-link" href="{% url 'home' %}"
+         {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Início</a>
+      <a class="ar-nav-link" href="{% url 'dashboards' %}"
+         {% if request.resolver_match.url_name == 'dashboards' or request.resolver_match.url_name == 'distribuicao_geografica' %}aria-current="page"{% endif %}>Aurora</a>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,62 @@
+{% extends 'painel/base.html' %}
+{% load static %}
+
+{% block title %}Aurora — Proteção de Crianças e Adolescentes{% endblock %}
+
+{% block extra_head %}
+  <meta name="description" content="AURORA | Plataforma integrada de apoio à análise de registros para orientação de respostas e ações de Proteção a Crianças e Adolescentes no Brasil, com ênfase na exploração sexual e no tráfico de menores.">
+{% endblock %}
+
+{% block content %}
+<header class="home-hero">
+  <img
+    src="{% static 'painel/img/aurora-home.png' %}"
+    alt="Quatro crianças de mãos dadas correndo por um campo aberto sob o céu azul"
+  >
+  <div class="home-hero-overlay" aria-hidden="true"></div>
+  <div class="home-hero-copy">
+    <div class="gov-shell home-hero-inner">
+    <div class="home-hero-text">
+      <h1>AURORA <span class="sep">|</span></h1>
+      <p>
+        Plataforma integrada de apoio à análise de registros para orientação de respostas e
+        ações de Proteção a Crianças e Adolescentes no Brasil, com ênfase na exploração sexual
+        e no tráfico de menores.
+      </p>
+    </div>
+    <a class="home-enter" href="{% url 'dashboards' %}">Entrar</a>
+    </div>
+  </div>
+</header>
+
+<main class="home-about gov-shell">
+  <section class="home-about-inner">
+    <h2>Sobre o Aurora</h2>
+    <p>
+      Desenvolvida em parceria entre o Ministério da Justiça e Segurança Pública (MJSP), a
+      Universidade Federal de Sergipe (UFS) e a Universidade Federal da Bahia (UFBA), a
+      Plataforma Aurora integra e analisa dados públicos sobre a violência contra crianças e
+      adolescentes no Brasil, com ênfase na exploração sexual e no tráfico de menores.
+    </p>
+    <p>
+      A plataforma disponibiliza visualizações interativas, filtros, gráficos, relatórios e
+      um assistente virtual, facilitando o acesso, a exploração e a compreensão das
+      informações por gestores públicos, conselheiros tutelares, pesquisadores, organizações
+      da sociedade civil e cidadãos.
+    </p>
+    <p>
+      A iniciativa busca apoiar o monitoramento, a prevenção e a defesa dos direitos de
+      crianças e adolescentes, contribuindo para a formulação de respostas e ações
+      orientadas por evidências.
+    </p>
+  </section>
+</main>
+{% endblock %}
+
+{% block footer %}
+<footer class="home-footer">
+  <div class="gov-shell">
+    Aurora — dados ilustrativos para fins de demonstração. Denuncie: <strong>Disque 100</strong>.
+  </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,336 @@
+{% extends 'painel/base.html' %}
+{% load static %}
+
+{% block title %}Distribuição Geográfica por UF — Aurora{% endblock %}
+
+{% block extra_head %}
+{% if fonte == 'brasil' or fonte == 'sipia-ct' %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+{% endif %}
+<style>
+  #aurora-map, #sipiact-map {
+    height: calc(100vh - 280px);
+    min-height: 480px;
+    border-radius: .5rem;
+    background: #eef2f7;
+  }
+  .map-card { border: 0; box-shadow: 0 4px 16px rgba(15, 23, 42, .08); }
+  .map-info {
+    padding: 8px 12px; font: 13px/1.4 system-ui, sans-serif;
+    background: rgba(255,255,255,.95); box-shadow: 0 0 12px rgba(0,0,0,.15);
+    border-radius: 6px; max-width: 240px;
+  }
+  .map-info h6 { margin: 0 0 4px; font-size: .85rem; color: #7f1d1d; }
+  .map-info .uf-total { font-size: 1.05rem; font-weight: 600; }
+  .map-info .uf-row { display: flex; justify-content: space-between; gap: 1rem; }
+  .map-info .uf-row span:first-child { color: #475569; }
+  .map-legend {
+    padding: 8px 12px; font: 12px/1.4 system-ui, sans-serif;
+    background: rgba(255,255,255,.95); box-shadow: 0 0 12px rgba(0,0,0,.12);
+    border-radius: 6px;
+  }
+  .map-legend i { display:inline-block; width:18px; height:14px; margin-right:6px; opacity:.85; vertical-align:middle; }
+  .selected-uf-card .display-6 { font-weight: 600; color:#7f1d1d; }
+  .uf-detail-grid { display: grid; grid-template-columns: 1fr auto; gap: .25rem .75rem; font-size: .9rem; }
+  .uf-detail-grid .label { color:#475569; }
+  .uf-detail-grid .value { font-weight: 600; color:#0f172a; }
+  .map-toolbar .btn { font-size: .8rem; }
+  .map-loading {
+    position:absolute; inset:0; display:flex; flex-direction:column; gap:.75rem;
+    align-items:center; justify-content:center;
+    background:rgba(255,255,255,.85); z-index: 500; font-size:.9rem; color:#475569;
+  }
+  .map-loading .progress { width: min(360px, 70%); height: 8px; }
+  .map-loading-label { font-weight: 500; }
+  .detail-grid { display:grid; grid-template-columns:1fr auto; gap:.25rem .75rem; font-size:.9rem; }
+  .detail-total { font-size:1.7rem; font-weight:800; color:#b91c1c; }
+  .geo-sipia-notice {
+    border: 1px solid var(--gov-border);
+    border-radius: .375rem;
+    background: var(--gov-surface);
+    padding: .75rem 1rem;
+    color: var(--gov-muted);
+    font-size: .875rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-title-band">
+  <div class="page-title-band-inner">
+    <h1>Distribuição Geográfica por UF</h1>
+  </div>
+</div>
+
+<div class="container my-4">
+  <nav class="geo-tabs" aria-label="Fontes de dados">
+    <a class="geo-tab{% if fonte == 'brasil' %} active{% endif %}"
+       href="{% url 'distribuicao_geografica' %}?fonte=brasil">Brasil</a>
+    <a class="geo-tab{% if fonte == 'sinan' %} active{% endif %}"
+       href="{% url 'distribuicao_geografica' %}?fonte=sinan">SINAN</a>
+    <a class="geo-tab{% if fonte == 'sipia-ct' %} active{% endif %}"
+       href="{% url 'distribuicao_geografica' %}?fonte=sipia-ct">SIPIA-CT</a>
+  </nav>
+
+  {% if fonte == 'sinan' %}
+    <section class="restricted-card">
+      <header class="restricted-card-header">
+        <h2>Acesso restrito — SINAN</h2>
+      </header>
+      <div class="restricted-card-body">
+        <p>
+          A área de dados do SINAN é restrita. Entre com seu usuário e senha para continuar. Os
+          painéis e mapas continuam abertos ao público.
+        </p>
+        <a class="btn btn-primary mt-4" href="{% url 'dashboards' %}">Voltar ao painel</a>
+      </div>
+    </section>
+
+  {% elif fonte == 'sipia-ct' %}
+    {% if not usando_dados_reais %}
+    <div class="gov-notice mb-3">
+      <div class="gov-notice-inner">
+        <span>⚠️</span>
+        <p class="mb-0">
+          Dados do SIPIA-CT são <strong>ilustrativos</strong> (ordens de grandeza
+          compatíveis com os relatórios públicos), embutidos para o mapa funcionar
+          sem um banco externo. Para dados oficiais, carregue a extração do SIPIA-CT
+          com <code>manage.py load_sipiact</code>.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <aside class="col-lg-3">
+        <div class="card filter-card card-dashboard">
+          <div class="card-header">Filtros</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label small mb-1" for="f_indicador">Indicador (direito violado)</label>
+              <select class="form-select form-select-sm" id="f_indicador"></select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small mb-1" for="f_ano">Ano</label>
+              <select class="form-select form-select-sm" id="f_ano">
+                <option value="">Todos os anos</option>
+              </select>
+            </div>
+            <div class="small text-muted" id="sipiact-note"></div>
+          </div>
+        </div>
+
+        <div class="card card-dashboard mt-3" id="detail-card" hidden>
+          <div class="card-header" id="detail-title">Estado</div>
+          <div class="card-body">
+            <div class="detail-total" id="detail-total">—</div>
+            <div class="small text-muted" id="detail-pct"></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="col-lg-9">
+        <p class="geo-sipia-notice mb-3">
+          Os registros dos Conselhos Tutelares estão disponíveis apenas no nível de UF — não
+          há detalhamento por município.
+        </p>
+        <div class="card map-card">
+          <div class="card-header">Distribuição por UF — SIPIA-CT</div>
+          <div class="card-body p-2 position-relative">
+            <div id="sipiact-map"></div>
+            <div class="map-loading" id="map-loading" role="status" aria-live="polite">
+              <span class="map-loading-label" id="map-loading-label">Carregando mapa…</span>
+              <div class="progress" aria-label="Progresso de carregamento do mapa">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
+                     id="map-loading-bar" role="progressbar" style="width: 0%"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+  {% else %}
+    {% if not has_data %}
+    <div class="alert alert-warning">
+      Nenhum dado de notificação disponível nesta base.
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <aside class="col-lg-3">
+        <div class="card filter-card card-dashboard">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Filtros</span>
+            <span class="badge bg-secondary" id="filter-active-count">0 ativos</span>
+          </div>
+          <div class="card-body">
+            <form id="filter-form" method="get"
+                  data-current-uf="{{ filter_form.uf.value|default:'' }}"
+                  data-current-municipio="{{ filter_form.municipio.value|default:'' }}"
+                  data-current-ano-inicio="{{ filter_form.ano_inicio.value|default:'' }}"
+                  data-current-ano-fim="{{ filter_form.ano_fim.value|default:'' }}">
+              <input type="hidden" name="fonte" value="brasil">
+
+              <fieldset class="filter-group mb-3">
+                <legend class="filter-legend">Localização</legend>
+                <div class="mb-2">
+                  <label class="form-label small mb-1" for="f_uf">UF</label>
+                  <select class="form-select form-select-sm" name="uf" id="f_uf">
+                    <option value="">Todas</option>
+                  </select>
+                </div>
+              </fieldset>
+
+              <fieldset class="filter-group mb-3">
+                <legend class="filter-legend">Período</legend>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label small mb-1" for="f_ano_inicio">Ano inicial</label>
+                    <select class="form-select form-select-sm" name="ano_inicio" id="f_ano_inicio">
+                      <option value="">—</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small mb-1" for="f_ano_fim">Ano final</label>
+                    <select class="form-select form-select-sm" name="ano_fim" id="f_ano_fim">
+                      <option value="">—</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="filter-group mb-3">
+                <legend class="filter-legend">Vítima</legend>
+                <div class="mb-2">
+                  <label class="form-label small mb-1" for="f_sexo">Sexo</label>
+                  <select class="form-select form-select-sm" name="sexo" id="f_sexo">
+                    {% for value, label in filter_form.sexo.field.choices %}
+                      <option value="{{ value }}" {% if filter_form.sexo.value == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-1">
+                  <label class="form-label small mb-1" for="f_faixa">Faixa etária</label>
+                  <select class="form-select form-select-sm" name="faixa_etaria" id="f_faixa">
+                    {% for value, label in filter_form.faixa_etaria.field.choices %}
+                      <option value="{{ value }}" {% if filter_form.faixa_etaria.value == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </fieldset>
+
+              <fieldset class="filter-group mb-3">
+                <legend class="filter-legend">Tipo de violência</legend>
+                <div class="form-check small mb-1">
+                  <input class="form-check-input" type="checkbox" name="viol_sexu" id="f_viol_sexu"
+                         {% if filter_form.viol_sexu.value %}checked{% endif %}>
+                  <label class="form-check-label" for="f_viol_sexu">Apenas violência sexual</label>
+                </div>
+                <div class="form-check small mb-1">
+                  <input class="form-check-input" type="checkbox" name="viol_traf" id="f_viol_traf"
+                         {% if filter_form.viol_traf.value %}checked{% endif %}>
+                  <label class="form-check-label" for="f_viol_traf">Apenas tráfico</label>
+                </div>
+                <div class="form-check small">
+                  <input class="form-check-input" type="checkbox" name="sex_explo" id="f_sex_explo"
+                         {% if filter_form.sex_explo.value %}checked{% endif %}>
+                  <label class="form-check-label" for="f_sex_explo">Apenas exploração sexual</label>
+                </div>
+              </fieldset>
+
+              <div class="d-grid gap-2">
+                <button class="btn btn-sm btn-primary" type="submit">Aplicar filtros</button>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'distribuicao_geografica' %}?fonte=brasil">Limpar</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </aside>
+
+      <main class="col-lg-9">
+        <div class="card map-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Distribuição por UF</span>
+            <div class="map-toolbar">
+              <button class="btn btn-sm btn-outline-secondary" id="btn-reset-zoom" type="button">
+                Visão geral do Brasil
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-2 position-relative">
+            <div id="aurora-map"></div>
+            <div class="map-loading" id="map-loading" role="status" aria-live="polite">
+              <span class="map-loading-label" id="map-loading-label">Carregando mapa…</span>
+              <div class="progress" aria-label="Progresso de carregamento do mapa">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
+                     id="map-loading-bar" role="progressbar" style="width: 0%"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card map-card mt-3 selected-uf-card" id="uf-detail-card" hidden>
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span id="uf-detail-title">Detalhes do estado</span>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary me-1" id="btn-back-to-state" type="button" hidden>
+                Voltar ao estado
+              </button>
+              <button class="btn btn-sm btn-link text-decoration-none" id="btn-clear-selection" type="button">
+                Limpar seleção
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="text-muted small mb-1" id="uf-detail-total-label">Total de notificações</div>
+                <div class="display-6" id="uf-detail-total">—</div>
+                <div class="text-muted small" id="uf-detail-pct">—</div>
+              </div>
+              <div class="col-md-8">
+                <div class="uf-detail-grid" id="uf-detail-grid"></div>
+                <div class="text-muted small mt-2" id="uf-detail-hint">
+                  Clique em um município para ver os detalhes locais.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  {% endif %}
+
+  <a class="geo-back-link" href="{% url 'dashboards' %}">← Voltar ao dashboard</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if fonte == 'brasil' %}
+<script>
+window.AURORA = {
+  apiUrl: "{% url 'dashboard_data' 'KEY' %}",
+  filterOptionsUrl: "{% url 'filter_options' %}",
+  municipiosUrl: "{% url 'map_municipalities' 'UF' %}",
+  filterParams: window.location.search.replace(/^\?/, "")
+};
+</script>
+<script defer src="{% static 'painel/js/mapa.js' %}"></script>
+{% elif fonte == 'sipia-ct' %}
+<script>
+window.MAPAS = {
+  filtrosUrl: "{% url 'sipiact_filtros' %}",
+  ufUrl: "{% url 'sipiact_uf' %}"
+};
+</script>
+<script defer src="{% static 'mapas/js/mapa_sipiact.js' %}?v=3"></script>
+{% endif %}
+{% endblock %}
