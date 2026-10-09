@@ -50,6 +50,10 @@ _BLOQUEIO_SAIDA_FALLBACK = (
 def _ensure_session(request) -> str:
     if not request.session.session_key:
         request.session.save()
+    # Chat único e anônimo: a conversa vale só enquanto o navegador está aberto.
+    # Sem histórico na tela, reabrir o navegador começa uma conversa nova.
+    if not request.user.is_authenticated:
+        request.session.set_expiry(0)
     return request.session.session_key
 
 
