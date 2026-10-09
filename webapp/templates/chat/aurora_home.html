@@ -408,6 +408,7 @@
         <div class="ar-composer-wrap">
           <form method="post" action="{% url 'chat:send' thread.pk %}" class="ar-composer" id="composer" enctype="multipart/form-data">
             {% csrf_token %}
+            {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
             <div class="ar-files" id="ar-files"></div>
             <div class="ar-composer-row">
               <button type="button" class="ar-attach" id="attach-btn"

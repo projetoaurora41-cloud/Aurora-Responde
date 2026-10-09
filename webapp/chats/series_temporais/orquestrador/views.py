@@ -120,6 +120,17 @@ def new_thread(request):
     return redirect("chat:thread", pk=thread.pk)
 
 
+def _wants_embed(request) -> bool:
+    return request.GET.get("embed") == "1" or request.POST.get("embed") == "1"
+
+
+def _redirect_chat(request, pk: int):
+    url = reverse("chat:thread", kwargs={"pk": pk})
+    if _wants_embed(request):
+        url += "?embed=1"
+    return redirect(url)
+
+
 def _render_chat(request, thread):
     """Renderiza a interface do chat único (estilo ChatGPT) para uma conversa.
 
@@ -136,7 +147,7 @@ def _render_chat(request, thread):
         "max_attachments": attachments.MAX_ATTACHMENTS,
         "sidebar_chat_threads": _threads_for(request)[:40],
         "aurora_versao": AURORA_RESPONDE_VERSION,
-        "embed": request.GET.get("embed") == "1",
+        "embed": _wants_embed(request),
     })
 
 
@@ -174,7 +185,7 @@ def send_message(request, pk: int):
     files = request.FILES.getlist("files")[:attachments.MAX_ATTACHMENTS]
     if not text and not files:
         flash.error(request, "Mensagem vazia.")
-        return redirect("chat:thread", pk=pk)
+        return _redirect_chat(request, pk)
 
     # Forecaster fixo em Chronos-2: a escolha do modelo de série é automática
     # (sem seletor na UI). Mantém a temperatura padrão da thread.
@@ -226,7 +237,7 @@ def send_message(request, pk: int):
         if not thread.title or thread.title == "Nova conversa":
             thread.title = (text or display_text)[:80]
         thread.save()
-        return redirect("chat:thread", pk=pk)
+        return _redirect_chat(request, pk)
 
     # Histórico que o LLM vê (o system prompt é adicionado dentro de chat()).
     # Enviamos turnos LIMPOS user/assistant e PULAMOS as mensagens role="tool":
@@ -292,7 +303,7 @@ def send_message(request, pk: int):
     if result.error:
         flash.error(request, f"Erro no orquestrador: {result.error}")
 
-    return redirect("chat:thread", pk=pk)
+    return _redirect_chat(request, pk)
 
 
 @require_POST
