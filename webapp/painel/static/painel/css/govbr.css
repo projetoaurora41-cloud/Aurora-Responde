@@ -701,6 +701,29 @@ a { color: var(--gov-blue); }
 }
 .links-item-cta:hover { color: var(--gov-blue-dark); }
 
+/* --- Perguntas Frequentes (reusa .links-*; estilos específicos) ------- */
+.faq-fonte {
+  margin: .75rem 0 0;
+  font-size: .75rem;
+  line-height: 1.5;
+  color: var(--gov-muted);
+  overflow-wrap: anywhere;
+}
+.faq-fonte a {
+  color: var(--gov-blue);
+  text-decoration: underline;
+}
+.faq-fonte a:hover { color: var(--gov-blue-dark); }
+.faq-validado {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin: .5rem 0 0;
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--gov-blue);
+}
+
 /* --- Gráficos / tabelas ---------------------------------------------- */
 .chart-wrapper { position: relative; height: 320px; }
 .table-rows { max-height: 240px; overflow-y: auto; font-size: .85rem; }

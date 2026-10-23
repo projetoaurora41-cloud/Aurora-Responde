@@ -12,6 +12,7 @@ from django.utils.formats import number_format
 from django.views.decorators.http import require_GET
 
 from mapas import queries as mapas_queries
+from painel.data.faq import EIXOS_FAQ
 from painel.data.recursos import CATEGORIAS_RECURSOS
 from painel.forms import DashboardFilterForm
 from painel.services import analytics, cache as agg_cache, municipios as municipios_lookup
@@ -30,6 +31,13 @@ def inicio(request):
 def links_uteis(request):
     return render(request, "painel/links_uteis.html", {
         "categorias": CATEGORIAS_RECURSOS,
+    })
+
+
+@require_GET
+def perguntas_frequentes(request):
+    return render(request, "painel/perguntas_frequentes.html", {
+        "eixos": EIXOS_FAQ,
     })
 
 
