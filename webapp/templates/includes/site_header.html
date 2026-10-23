@@ -17,6 +17,8 @@
          {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Início</a>
       <a class="ar-nav-link" href="{% url 'dashboards' %}"
          {% if request.resolver_match.url_name == 'dashboards' or request.resolver_match.url_name == 'distribuicao_geografica' %}aria-current="page"{% endif %}>Aurora</a>
+      <a class="ar-nav-link" href="{% url 'links_uteis' %}"
+         {% if request.resolver_match.url_name == 'links_uteis' %}aria-current="page"{% endif %}>Links Úteis</a>
     </div>
   </nav>
 </header>

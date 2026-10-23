@@ -12,6 +12,7 @@ urlpatterns = [
 
     # `/` = Início. O painel Aurora e o chat ficam em rotas próprias.
     path("", painel_views.inicio, name="home"),
+    path("links-uteis/", painel_views.links_uteis, name="links_uteis"),
     path("aurora/", painel_views.dashboards, name="dashboards"),
     path("aurora/distribuicao-geografica/", painel_views.distribuicao_geografica, name="distribuicao_geografica"),
     path("aurora/api/filters/", painel_views.filter_options, name="filter_options"),

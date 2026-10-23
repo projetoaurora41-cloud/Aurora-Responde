@@ -1,0 +1,106 @@
+{% extends 'painel/base.html' %}
+{% load static %}
+
+{% block title %}Links Úteis — Denúncia, dados, legislação e rede institucional | Aurora{% endblock %}
+
+{% block extra_head %}
+  <meta name="description" content="Canais oficiais de denúncia, fontes de dados, legislação de proteção e rede institucional de enfrentamento à violência e ao tráfico de crianças e adolescentes.">
+{% endblock %}
+
+{% block content %}
+<div class="page-title-band">
+  <div class="page-title-band-inner">
+    <h1>Links Úteis</h1>
+  </div>
+</div>
+
+<main class="gov-shell links-uteis" id="conteudo">
+  <aside class="links-aviso" role="note">
+    A Plataforma Aurora não recebe denúncias. Em caso de suspeita, acione o Disque 100,
+    o Conselho Tutelar ou, em situação de risco imediato, o 190. Relação limitada a
+    fontes institucionais verificadas.
+  </aside>
+
+  <div class="links-toolbar">
+    <nav aria-label="Sumário das categorias" class="links-sumario">
+      {% for c in categorias %}
+        <a class="links-pill" href="#{{ c.id }}">{{ c.numero }} · {{ c.titulo }}</a>
+      {% endfor %}
+    </nav>
+    <label class="links-busca">
+      <span class="visually-hidden">Buscar nos links</span>
+      <svg class="links-busca-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input
+        type="search"
+        id="links-busca-input"
+        placeholder="Buscar nos links…"
+        autocomplete="off"
+      >
+    </label>
+  </div>
+
+  <p class="links-empty" id="links-empty" hidden></p>
+
+  <div class="links-categorias">
+    {% for c in categorias %}
+      <section class="links-categoria" id="{{ c.id }}" data-categoria>
+        <div class="links-categoria-head">
+          <span class="links-num-badge">{{ c.numero }}</span>
+          <h2>{{ c.titulo }}</h2>
+        </div>
+        <p class="links-categoria-resumo">{{ c.resumo }}</p>
+
+        <div class="accordion links-accordion" id="acc-{{ c.id }}">
+          {% for r in c.itens %}
+            <div
+              class="accordion-item"
+              data-recurso
+              data-search="{{ r.titulo }} {{ r.descricao }} {{ r.orgao }}"
+            >
+              <h3 class="accordion-header" id="heading-{{ c.id }}-{{ forloop.counter }}">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapse-{{ c.id }}-{{ forloop.counter }}"
+                  aria-expanded="false"
+                  aria-controls="collapse-{{ c.id }}-{{ forloop.counter }}"
+                >
+                  <span class="links-item-num">{{ c.numero }}.{{ forloop.counter }}</span>
+                  {{ r.titulo }}
+                </button>
+              </h3>
+              <div
+                id="collapse-{{ c.id }}-{{ forloop.counter }}"
+                class="accordion-collapse collapse"
+                aria-labelledby="heading-{{ c.id }}-{{ forloop.counter }}"
+              >
+                <div class="accordion-body">
+                  <span class="links-orgao-badge">{{ r.orgao }}</span>
+                  <p class="links-item-desc">{{ r.descricao }}</p>
+                  {% if r.url %}
+                    <a
+                      class="links-item-cta"
+                      href="{{ r.url }}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Acessar recurso
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                      <span class="visually-hidden">(abre em nova aba)</span>
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+  <script defer src="{% static 'painel/js/links_uteis.js' %}"></script>
+{% endblock %}

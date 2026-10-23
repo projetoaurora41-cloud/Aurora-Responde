@@ -12,6 +12,7 @@ from django.utils.formats import number_format
 from django.views.decorators.http import require_GET
 
 from mapas import queries as mapas_queries
+from painel.data.recursos import CATEGORIAS_RECURSOS
 from painel.forms import DashboardFilterForm
 from painel.services import analytics, cache as agg_cache, municipios as municipios_lookup
 
@@ -23,6 +24,13 @@ def _fmt_int_pt(n) -> str:
 @require_GET
 def inicio(request):
     return render(request, "painel/inicio.html")
+
+
+@require_GET
+def links_uteis(request):
+    return render(request, "painel/links_uteis.html", {
+        "categorias": CATEGORIAS_RECURSOS,
+    })
 
 
 @require_GET

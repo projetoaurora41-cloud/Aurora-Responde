@@ -519,6 +519,188 @@ a { color: var(--gov-blue); }
   color: var(--gov-blue-dark); margin-bottom: .4rem;
 }
 
+/* --- Links Úteis ------------------------------------------------------ */
+.links-uteis {
+  padding-block: 2rem 3rem;
+}
+.links-aviso {
+  border-left: 4px solid var(--gov-yellow);
+  background: var(--gov-blue-light);
+  color: var(--gov-text);
+  padding: .85rem 1rem;
+  margin-bottom: 2rem;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+.links-toolbar {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  align-items: start;
+}
+@media (min-width: 992px) {
+  .links-toolbar {
+    grid-template-columns: 1fr 320px;
+  }
+}
+.links-sumario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.links-pill {
+  display: inline-block;
+  border: 1px solid var(--gov-border);
+  background: var(--gov-surface);
+  color: var(--gov-blue);
+  border-radius: 999px;
+  padding: .5rem 1rem;
+  font-size: .875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+.links-pill:hover {
+  background: var(--gov-blue-light);
+  border-color: var(--gov-blue);
+  color: var(--gov-blue-dark);
+}
+.links-pill:focus-visible {
+  outline: 2px solid var(--gov-blue);
+  outline-offset: 2px;
+}
+.links-busca {
+  position: relative;
+  display: block;
+}
+.links-busca-icon {
+  position: absolute;
+  left: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gov-muted);
+  pointer-events: none;
+}
+.links-busca input {
+  width: 100%;
+  border: 1px solid var(--gov-border);
+  background: var(--gov-surface);
+  border-radius: .375rem;
+  padding: .5rem .75rem .5rem 2.25rem;
+  font-size: .875rem;
+  color: var(--gov-text);
+}
+.links-busca input:focus {
+  outline: none;
+  border-color: var(--gov-blue);
+  box-shadow: 0 0 0 2px rgba(19, 81, 180, .25);
+}
+.links-empty {
+  font-size: .875rem;
+  color: var(--gov-muted);
+  margin-bottom: 1.5rem;
+}
+.links-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+.links-categoria {
+  scroll-margin-top: 6rem;
+}
+.links-categoria-head {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+}
+.links-num-badge {
+  display: inline-block;
+  background: var(--gov-yellow);
+  color: var(--gov-blue-dark);
+  border-radius: .25rem;
+  padding: .15rem .5rem;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.links-categoria-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gov-text);
+}
+.links-categoria-resumo {
+  margin: .5rem 0 0;
+  max-width: 48rem;
+  font-size: .875rem;
+  color: var(--gov-muted);
+  line-height: 1.5;
+}
+.links-accordion {
+  margin-top: 1rem;
+  border: 1px solid var(--gov-border);
+  border-radius: .5rem;
+  background: var(--gov-surface);
+  overflow: hidden;
+}
+.links-accordion .accordion-item {
+  border-color: var(--gov-border);
+  background: transparent;
+}
+.links-accordion .accordion-item:first-child {
+  border-top: 0;
+}
+.links-accordion .accordion-button {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gov-text);
+  background: var(--gov-surface);
+  box-shadow: none;
+  gap: .5rem;
+}
+.links-accordion .accordion-button:not(.collapsed) {
+  background: var(--gov-blue-light);
+  color: var(--gov-blue-dark);
+  box-shadow: none;
+}
+.links-accordion .accordion-button:focus {
+  box-shadow: 0 0 0 2px rgba(19, 81, 180, .25);
+}
+.links-item-num {
+  color: var(--gov-blue);
+  margin-right: .35rem;
+  font-weight: 700;
+}
+.links-orgao-badge {
+  display: inline-block;
+  background: var(--gov-blue-light);
+  color: var(--gov-blue-dark);
+  border-radius: .25rem;
+  padding: .15rem .5rem;
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.links-item-desc {
+  margin: .75rem 0 0;
+  font-size: .875rem;
+  line-height: 1.6;
+  color: var(--gov-text);
+}
+.links-item-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin-top: 1rem;
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--gov-blue);
+  text-decoration: underline;
+}
+.links-item-cta:hover { color: var(--gov-blue-dark); }
+
 /* --- Gráficos / tabelas ---------------------------------------------- */
 .chart-wrapper { position: relative; height: 320px; }
 .table-rows { max-height: 240px; overflow-y: auto; font-size: .85rem; }
