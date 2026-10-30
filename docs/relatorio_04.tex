@@ -855,12 +855,13 @@ Como desdobramento das Metas anteriores, foi desenvolvido o Aurora Responde, ass
 %  TABELA: Síntese do Cumprimento da Meta 4
 % ============================================================
 
-\begin{table}[H]
-\centering
-\caption{Síntese do cumprimento das atividades da Meta 4}
-\label{tab:sintese_meta4}
+\begingroup
+\setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.25}
-\begin{tabularx}{\textwidth}{@{}P{3.6cm}P{4.4cm}P{4.2cm}P{2.8cm}@{}}
+\footnotesize
+\begin{longtable}{@{}P{3.6cm}P{4.4cm}P{4.2cm}P{2.8cm}@{}}
+\caption{Síntese do cumprimento das atividades da Meta 4}
+\label{tab:sintese_meta4}\\
 \toprule
 \rowcolor{HdrBg}
 \textcolor{white}{\textbf{Atividade}} &
@@ -868,6 +869,21 @@ Como desdobramento das Metas anteriores, foi desenvolvido o Aurora Responde, ass
 \textcolor{white}{\textbf{Evidência}} &
 \textcolor{white}{\textbf{Status}} \\
 \midrule
+\endfirsthead
+\multicolumn{4}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Atividade}} &
+\textcolor{white}{\textbf{Resultado esperado}} &
+\textcolor{white}{\textbf{Evidência}} &
+\textcolor{white}{\textbf{Status}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
 
 Conceber a arquitetura do chat único a partir do orquestrador de séries temporais &
 Interface única com roteador determinístico e um só LLM (Jurema-7B) para todas as respostas &
@@ -905,7 +921,7 @@ Concluída \\
 Consolidar o corpus jurídico e a base do SIPIA-CT como fontes plenas &
 Corpus de leis e normas curado para o RAG jurídico; consulta SQL ao SIPIA-CT com ETL recorrente &
 \url{orquestrador/leis_corpus.py}; \url{orquestrador/sipia_ct.py} &
-Em andamento \\
+Concluída \\
 
 \rowcolor{RowTint}
 Disponibilizar a página de Links Úteis no Portal Aurora &
@@ -918,9 +934,8 @@ FAQ em eixos temáticos com respostas e indicação de fonte, busca na página e
 \url{painel/data/faq.py}; \url{painel/templates/painel/perguntas_frequentes.html}; rota \texttt{perguntas\_frequentes}; Figura~\ref{fig:perguntas_frequentes} &
 Concluída \\
 
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{longtable}
+\endgroup
 
 \subsubsection{Concepção da Arquitetura}
 \label{subsubsec:arquitetura_meta4}
