@@ -1083,16 +1083,18 @@ Em resposta à necessidade de clareza operacional sobre o artefato final de banc
 \subsection{Portal Aurora — Visão Geral e Indicadores Consolidados}
 \label{subsec:portal}
 
-As visualizações do Projeto Aurora estão reunidas no Portal Aurora, ponto único de acesso aos mapas interativos, ao dashboard analítico e aos módulos de consulta em linguagem natural. A Figura~\ref{fig:portal_home} apresenta a página inicial do portal.
+O Portal Aurora constitui o ponto de entrada unificado da plataforma: página institucional, painel analítico, distribuição geográfica, assistente conversacional (Aurora Responde) e páginas de apoio (Links Úteis e Perguntas Frequentes), sob a mesma identidade visual e navegação. A Figura~\ref{fig:portal_home} apresenta a página inicial (\texttt{/}).
 
-\telaAurora{figures/Portal/portal_home.png}
-{Portal Aurora — página inicial, com acesso aos mapas interativos, ao dashboard analítico e aos módulos de consulta.}
+\telaAurora{figures/portal_home.png}
+{Portal Aurora — página inicial institucional, com apresentação do projeto, parceria MJSP/UFS/UFBA e atalhos para o painel analítico, o Aurora Responde e os Links Úteis.}
 {portal_home}
 
-A Figura~\ref{fig:portal_metricas} apresenta o painel de indicadores consolidados exibido na plataforma, que sintetiza o volume de registros disponível na Base de Dados Consolidada e delimita a abrangência temporal e territorial das análises.
+A página inicial concentra a apresentação do Aurora — missão, instituições parceiras e seção \textit{Explore a plataforma} —, sem exibir indicadores numéricos. O acesso ao painel analítico dá-se pelo botão \textit{Entrar} ou pelo item \textit{Aurora} da navegação; o assistente e os recursos de apoio estão descritos na Seção~\ref{subsec:atividades_meta4} (incluindo Links Úteis e Perguntas Frequentes, Seção~\ref{subsubsec:links_faq_meta4}).
 
-\telaAurora{figures/Portal/portal_metricas.png}
-{Portal Aurora — indicadores consolidados da base: total de notificações, notificações de violência sexual, tráfico de pessoas e exploração sexual, número de municípios cobertos e período de referência (2020–2025).}
+Os indicadores consolidados da Base de Dados Consolidada são apresentados na rota \texttt{/aurora/} (Painel sobre Violência contra Crianças e Adolescentes). A Figura~\ref{fig:portal_metricas} mostra a faixa superior do painel, com quatro cartões — municípios cobertos, total de notificações, violência sexual e exploração sexual — e o início das visualizações, acompanhados de filtros territoriais, temporais e por tipo de violência. O detalhamento dos painéis gráficos é tratado na Seção~\ref{subsec:dashboard_resultados}.
+
+\telaAurora{figures/portal_metricas.png}
+{Portal Aurora — indicadores consolidados no painel \texttt{/aurora/}: municípios, notificações, violência sexual e exploração sexual, com filtros e visualizações iniciais (notificações por UF e ranking de municípios).}
 {portal_metricas}
 
 Os valores exibidos são lidos diretamente da tabela unificada \texttt{sinan."VIOLBR"}, sendo coerentes com os indicadores de completude apresentados na Seção~\ref{subsec:completude}, o que evidencia que mapas, dashboard e módulos conversacionais operam sobre a mesma fonte de dados.
