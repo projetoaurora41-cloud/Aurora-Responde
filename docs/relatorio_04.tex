@@ -1,0 +1,1595 @@
+% ============================================================
+%  PROJETO AURORA — Relatório Técnico Institucional
+%  Documento reorganizado a partir do 3º Relatório Parcial de
+%  Cumprimento do Objeto (estrutura institucional padronizada)
+%  Estilo: IEEE-style technical report, limpo e sóbrio
+% ============================================================
+\documentclass[11pt,a4paper]{article}
+
+%% ── Codificação e idioma ────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{babel}
+\babelprovide[main,import]{portuguese}
+
+%% ── Fontes ──────────────────────────────────────────────────
+\usepackage{mathptmx}
+\usepackage[expansion=false]{microtype}
+
+%% ── Layout ──────────────────────────────────────────────────
+\usepackage[a4paper,
+  top=25mm, bottom=28mm,
+  left=25mm, right=25mm]{geometry}
+\usepackage{setspace}
+\setstretch{1.10}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{3em}
+\hyphenpenalty=200
+\tolerance=1500
+
+%% ── Tabelas ─────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{ragged2e}
+\newcolumntype{P}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{makecell}
+\usepackage{graphicx}
+\usepackage{float}
+
+\definecolor{cronoblue}{RGB}{0,32,96}
+
+%% ── Paleta de cor ───────────────────────────────────────────
+\definecolor{InkBlue}{RGB}{18,52,96}
+\definecolor{RuleGray}{RGB}{140,140,140}
+\definecolor{RowTint}{RGB}{240,245,252}
+\definecolor{HdrBg}{RGB}{18,52,96}
+\definecolor{BodyGray}{RGB}{55,55,55}
+
+%% ── Cabeçalho e rodapé ──────────────────────────────────────
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\sffamily\color{BodyGray}
+  Projeto Aurora — 3\textsuperscript{\underline{o}} Relatório Técnico Institucional}
+\fancyhead[R]{\small\sffamily\color{BodyGray} UFS · UFBA}
+\fancyfoot[C]{\small\sffamily\thepage}
+
+%% ── Títulos de seção ────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\sffamily\large\bfseries\color{InkBlue}}
+  {\thesection.}{0.55em}{}[{\color{RuleGray}\titlerule[0.5pt]}]
+\titleformat{\subsection}
+  {\sffamily\normalsize\bfseries\color{InkBlue}}
+  {\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\sffamily\normalsize\itshape\color{BodyGray}}
+  {\thesubsubsection}{0.4em}{}
+\titlespacing{\section}{0pt}{14pt}{6pt}
+\titlespacing{\subsection}{0pt}{10pt}{4pt}
+
+%% ── Legendas ────────────────────────────────────────────────
+\usepackage{caption}
+\captionsetup{
+  font={small,sf},
+  labelfont={bf,color=InkBlue},
+  labelsep=period,
+  justification=raggedright,
+  singlelinecheck=false}
+\captionsetup[longtable]{
+  font={small,sf},
+  labelfont={bf,color=InkBlue},
+  labelsep=period,
+  justification=raggedright,
+  singlelinecheck=false}
+
+%% ── Enumerações ─────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist{noitemsep, topsep=3pt, leftmargin=1.5cm}
+
+%% ── Data ────────────────────────────────────────────────────
+\usepackage[portuges]{datetime2}
+
+%% ── Hyperlinks ──────────────────────────────────────────────
+\usepackage[hidelinks,
+  pdftitle={Projeto Aurora — 3\textsuperscript{\underline{o}} Relatório Técnico Institucional},
+  pdfauthor={UFS; UFBA},
+  pdfsubject={3\textsuperscript{\underline{o}} Relatório Técnico Institucional},
+  pdfkeywords={Projeto Aurora, SINAN, SIPIA-CT, dashboards,
+    violência contra crianças e adolescentes, bases de dados}]{hyperref}
+
+\usepackage{xurl}
+
+%% ── Marcadores de preenchimento ─────────────────────────────
+\newcommand{\ph}[1]{\texttt{\textlangle\,#1\,\textrangle}}
+
+%% ── Figuras de tela (screenshots do Portal Aurora) ──────────
+\newcommand{\telaAurora}[3]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.95\textwidth]{#1}}
+    \caption{#2}
+    \label{fig:#3}
+  \end{figure}}
+
+\newcommand{\mapaUF}[4]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.86\textwidth]{#1}}
+    \caption{#3 — detalhamento territorial de #2.}
+    \label{fig:#4}
+  \end{figure}}
+
+\newcommand{\painelDash}[3]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.78\textwidth]{#1}}
+    \caption{#2}
+    \label{fig:#3}
+  \end{figure}}
+
+% ============================================================
+\begin{document}
+
+%% ── CAPA ────────────────────────────────────────────────────
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+
+  \vspace*{8mm}
+  \includegraphics[width=\textwidth,keepaspectratio]{figures/Header/header.png}
+
+  \vspace{10mm}
+  {\color{RuleGray}\rule{0.85\textwidth}{0.6pt}}
+  \vspace{10mm}
+
+  {\sffamily\Large\bfseries\color{InkBlue}
+  3\textsuperscript{\underline{o}} Relatório Técnico Institucional}\\[5pt]
+  {\sffamily\Large\bfseries\color{InkBlue}
+    Portal Analítico Interativo (Dashboard) funcional\\[5pt]    {\sffamily\Large\bfseries\color{InkBlue}}Plataforma Aurora}
+
+  \vspace{10mm}
+  {\color{RuleGray}\rule{0.85\textwidth}{0.6pt}}
+
+  \vspace{25mm}
+
+  {\sffamily\large\bfseries\color{BodyGray}Destinatário}\\[4pt]
+  {\sffamily\large\bfseries\color{InkBlue}
+    Ministério da Justiça e Segurança Pública}
+
+  \vfill
+
+  \vspace{12mm}
+  {\sffamily\normalsize\color{BodyGray}
+    Aracaju-SE \quad|\quad Agosto 2026}
+
+\end{center}
+\end{titlepage}
+
+%% ── IDENTIFICAÇÃO DO DOCUMENTO ──────────────────────────────
+\clearpage
+\thispagestyle{empty}
+
+\begin{center}
+  {\sffamily\Large\bfseries\color{InkBlue}
+    Projeto Aurora}\\[6pt]
+  {\sffamily\normalsize\color{BodyGray} Identificação do Documento}
+\end{center}
+
+\vspace{12pt}
+
+\renewcommand{\arraystretch}{1.25}
+
+\begin{tabular}{@{}P{4.8cm}P{10cm}@{}}
+  \sffamily\small\bfseries Título do documento
+    & \small 3\textsuperscript{\underline{o}} Relatório Técnico Institucional — Portal Analítico Interativo (Dashboard) funcional \\[8pt]
+
+  \sffamily\small\bfseries Instituições participantes
+    & \small Universidade Federal de Sergipe (UFS) e
+      Universidade Federal da Bahia (UFBA) \\[4pt]
+
+  \sffamily\small\bfseries Projeto
+    & \small Projeto AURORA — Análise Unificada de Registros para
+      Orientar Respostas e Ações de Proteção à Criança e ao
+      Adolescente \\[4pt]
+
+  \sffamily\small\bfseries Instrumento de execução
+    & \small Termo de Execução Descentralizada (TED) n.\,05/2025,
+      celebrado entre o Ministério da Justiça e Segurança Pública
+      (MJSP), por meio da Secretaria Nacional de Justiça (SENAJUS),
+      e a Universidade Federal de Sergipe (UFS) \\[4pt]
+
+  \sffamily\small\bfseries Unidades acadêmicas
+    & \small DComp/UFS; PPGM/UFBA; DCC/IC/UFBA \\[4pt]
+
+  \sffamily\small\bfseries Coordenação
+    & \small Glauco de Figueiredo Carneiro (UFS) \\[4pt]
+
+  \sffamily\small\bfseries Vice-coordenação
+    & \small Manoel Gomes de Mendonça Neto (UFBA) \\[4pt]
+
+  \sffamily\small\bfseries Pesquisadores
+    & \small Ricardo Eugênio Porto Vieira (PGCOMP/UFBA);
+      Marcelo Moreira West (PPGM/UFBA);
+      Rafael Takeguma Goto (PROCC/UFS);
+      Hernandison da Silva Bispo (PROCC/UFS);
+      João Cosme Sena Sá (PROCC/UFS);
+      João Fernando Pereira de Souza (PROCC/UFS);
+      Lauryane Santos Siqueira (PROCC/UFS);
+      Ana Beatriz Mendonça (UFBA) \\[4pt]
+  \sffamily\small\bfseries Destinatário
+    & \small Ministério da Justiça e Segurança Pública \\[4pt]
+
+  \sffamily\small\bfseries Local
+    & \small São Cristóvão/SE \\[4pt]
+
+  \sffamily\small\bfseries Data
+    & \small Agosto/2026 \\[4pt]
+\end{tabular}
+
+\vfill
+
+%% ── SUMÁRIO ─────────────────────────────────────────────────
+\clearpage
+\pagenumbering{roman}
+\renewcommand{\contentsname}{Sumário}
+{\sffamily\tableofcontents}
+\clearpage
+\pagenumbering{arabic}
+
+% ============================================================
+\section{Resumo Executivo}
+\label{sec:resumo}
+% ============================================================
+
+O presente relatório consolida os resultados alcançados pelo Projeto Aurora no âmbito do Termo de Execução Descentralizada (TED) n.,05/2025, celebrado entre o Ministério da Justiça e Segurança Pública (MJSP), por meio da Secretaria Nacional de Justiça (SENAJUS), e a Universidade Federal de Sergipe (UFS), em parceria com a Universidade Federal da Bahia (UFBA). O documento apresenta, de forma incremental, os avanços obtidos nas metas do projeto, registrando as atividades desenvolvidas, os produtos entregues e os esclarecimentos referentes às observações formuladas na Nota Técnica nº 16/2026/CPETP/CGETP/DEMIG/SENAJUS/MJ, no âmbito do Processo Administrativo nº 08026.000195/2025-78.
+
+Os resultados estão organizados em três frentes de trabalho articuladas. A primeira refere-se à consolidação da Base de Dados do Projeto Aurora (Meta~1), estruturada a partir dos sistemas SINAN e SIPIA-CT e implementada em ambiente PostgreSQL, acompanhada de documentação técnica, incluindo dicionário de dados, diagrama entidade-relacionamento e manuais de instalação e implantação. Também são apresentados os indicadores de completude e consistência da base consolidada, bem como os esclarecimentos relativos às pendências apontadas pelo MJSP quanto à integração de fontes adicionais ao SINAN, à apresentação de indicadores quantitativos de qualidade e à descrição operacional do artefato final de banco de dados unificado. A segunda frente corresponde às propostas preliminares de visualização dos dados consolidados (Meta~2), contemplando mapas coropléticos, gráficos de tendência e relatórios analíticos, desenvolvidos com o objetivo de apoiar a exploração e a interpretação das informações integradas. A terceira frente refere-se à entrega da primeira versão da Plataforma Aurora (Dashboard), correspondente à Meta~3. Para sua construção, foram realizadas a definição dos requisitos técnicos e das histórias de usuário, a concepção da interface e da experiência do usuário (UI/UX), o desenvolvimento do backend, com a implementação das APIs necessárias à integração com a base de dados, e o desenvolvimento do frontend, com a implementação de painéis, filtros interativos e visualizações de dados. Também foram conduzidas avaliações de funcionalidade e usabilidade, realizada a publicação da plataforma em servidor web temporário e elaborados materiais de apoio e manuais de utilização. Os resultados dessas atividades são apresentados em detalhe no Apêndice C — Plataforma Aurora (Dashboard).
+
+% ============================================================
+\clearpage
+\section{Introdução}
+\label{sec:introducao}
+% ============================================================
+
+O Projeto Aurora foi concebido a partir do reconhecimento de que a violência contra crianças e adolescentes constitui um fenômeno complexo, sensível e multidimensional, cuja compreensão demanda abordagens fundamentadas em evidências. Embora existam bases públicas relevantes sobre essa temática, essas fontes apresentam heterogeneidade estrutural, dificuldades de acesso e, em muitos casos, limitações para uso analítico direto. A simples disponibilidade de registros em portais públicos não assegura, por si só, uma compreensão qualificada dos padrões de violação de direitos.
+
+O projeto busca apoiar a análise, a caracterização e a consulta de informações sobre violência contra crianças e adolescentes no Brasil, com ênfase em casos de exploração sexual e tráfico de menores. Para isso, propõe a estruturação de uma base de evidências qualificada, acessível e utilizável por gestores públicos, pesquisadores, organizações da sociedade civil e demais atores do sistema de garantia de direitos.
+
+Este relatório consolida os resultados alcançados nas metas contratuais do projeto e incorpora os esclarecimentos e ajustes decorrentes das observações técnicas formuladas pelo MJSP sobre a entrega inicial da Meta~1, assegurando que os pontos indicados sejam considerados na evolução das entregas subsequentes. As propostas de visualização apresentadas constituem uma etapa inicial de organização, exploração e apresentação dos dados, passível de aperfeiçoamento progressivo à medida que novas análises sejam realizadas.
+
+
+
+
+% ============================================================
+\clearpage
+\section{Contextualização}
+\label{sec:contexto}
+% ============================================================
+
+A solução proposta organiza-se em uma arquitetura composta por quatro camadas funcionais integradas:
+\begin{itemize}
+    \item \textbf{Aquisição e integração de dados:} extração, tratamento, padronização e interoperabilidade dos registros provenientes de diferentes fontes;
+    \item \textbf{Curadoria semântica:} enriquecimento das informações com fontes normativas e mecanismos de validação da qualidade dos dados;
+    \item \textbf{Avaliação e garantia de qualidade:} verificação da confiabilidade das informações e das respostas produzidas por mecanismos automatizados;
+    \item \textbf{Interfaces de acesso:} disponibilização das informações por meio de portal analítico interativo e assistente virtual capaz de responder a consultas em linguagem natural.
+\end{itemize}
+
+A integração entre dados brutos, evidências normativas, validação semântica e mecanismos acessíveis de consulta constitui um dos diferenciais centrais da iniciativa, buscando transformar registros dispersos e heterogêneos em informações estruturadas, contextualizadas e passíveis de exploração analítica.
+
+No âmbito científico e tecnológico, o Projeto Aurora pretende contribuir para o desenvolvimento de uma abordagem escalável de organização, integração e avaliação de dados em um domínio sensível, criando condições para a construção de conjuntos de referência e mecanismos de análise qualificada. Paralelamente, busca ampliar o acesso a informações relevantes e confiáveis, fortalecendo sua utilização na pesquisa, na gestão pública e no apoio às ações de proteção e garantia dos direitos de crianças e adolescentes.
+
+% ============================================================
+\clearpage
+\section{Objetivos}
+\label{sec:objetivos}
+% ============================================================
+
+Consideradas as metas contratuais do TED n.\,05/2025, o presente relatório está orientado pelos seguintes objetivos específicos, associados às metas do projeto:
+
+\begin{itemize}
+  \item \textbf{Meta 1 — Base de Dados Consolidada:} consolidar, em base de dados única, as informações disponíveis sobre violência contra crianças e adolescentes provenientes do SINAN e do SIPIA-CT, produzindo como resultado a Base de Dados Consolidada e a respectiva documentação técnica.
+  \item \textbf{Meta 2 — Visualizações de Dados Preliminares:} produzir visualizações de dados preliminares (mapas e gráficos de tendência) a partir da base consolidada na Meta~1, elaborando o Relatório de Monitoramento do Projeto Aurora referente a essa etapa.
+  \item \textbf{Meta 3 — Dashboard:} disponibilizar o dashboard analítico do Projeto Aurora — o Painel de Proteção à Infância —, integrado ao Portal Aurora, com funcionalidades de visualização e filtros compartilhados.
+\end{itemize}
+
+Adicionalmente, o relatório tem por objetivo específico responder às pendências registradas na Nota Técnica nº 16/2026, explicitando a estrutura da Base de Dados Consolidada, a integração de fontes além do SINAN, os indicadores objetivos de completude e consistência da base, e a documentação técnica definitiva do artefato de banco unificado (Seções~\ref{sec:arquitetura} e~\ref{subsec:completude}).
+
+Na Meta~3, os objetivos específicos associados a cada camada de dados do dashboard distinguem-se conforme a fonte analisada:
+
+\begin{itemize}
+  \item \textbf{Camada SINAN/VIOL:} transformar o volume de notificações em informações de fácil leitura, apoiando a identificação de padrões territoriais e temporais, a avaliação situacional das violências contra crianças e adolescentes e o suporte à priorização territorial e à resposta da rede de proteção (Seção~\ref{subsec:dashboard_resultados}).
+  \item \textbf{Camada SIPIA-CT:} disponibilizar visualização geográfica agregada das situações registradas pelos Conselhos Tutelares, complementando as notificações do SINAN com uma perspectiva institucional distinta, com exploração por indicador e ano ao nível de Unidade da Federação (Seções~\ref{subsec:mapas} e~\ref{subsubsec:frontend_paineis_filtros_meta3}).
+\end{itemize}
+
+% ============================================================
+\clearpage
+\section{Metodologia e Abordagem Adotada}
+\label{sec:metodologia}
+% ============================================================
+
+A abordagem metodológica adotada no Projeto Aurora compreende as seguintes etapas gerais, aplicadas de forma articulada às bases SINAN e SIPIA-CT:
+
+\begin{enumerate}
+  \item \textbf{Aquisição de dados:} extração das bases junto às fontes oficiais — o SINAN a partir do portal de Transferência de Arquivos do DATASUS\footnote{\url{https://datasus.saude.gov.br/transferencia-de-arquivos/}}, com ênfase no arquivo VIOL (notificações de violência doméstica, sexual e outras formas de violência), e o SIPIA-CT a partir do Portal Brasileiro de Dados Abertos\footnote{\label{fn:dadosgov}\url{https://dados.gov.br/dados/conjuntos-dados/sistema-de-informacao-para-a-infancia-e-adolescencia---modulo-conselho-tutelar---sipiact}};
+  \item \textbf{Processamento e transformação:} emprego de pipeline desenvolvido em Python, com bibliotecas específicas de tratamento e transformação de dados, destinado a promover a interoperabilidade entre as fontes e a preservar a estrutura e a integridade dos registros ao longo das etapas de processamento;
+  \item \textbf{Consolidação em banco de dados:} migração, organização e integração das bases tratadas em ambiente PostgreSQL, segundo a arquitetura de \emph{schemas} descrita na Seção~\ref{sec:arquitetura};
+  \item \textbf{Definição de dimensões analíticas:} identificação de dimensões temporais, territoriais, sociodemográficas, contextuais e institucionais a partir do dicionário de dados do SINAN e da estrutura de dados abertos do SIPIA-CT, orientando a definição de indicadores, filtros e visualizações;
+  \item \textbf{Curadoria normativa:} consideração de fontes normativas brasileiras — o Estatuto da Criança e do Adolescente, o Código Civil, o Código Penal e a Lei nº 13.344/2016 — como subsídio jurídico às camadas de interpretação, consulta e avaliação das informações;
+  \item \textbf{Validação de qualidade:} aplicação de rotinas de padronização, tratamento de campos ausentes e verificação de consistência temporal, etária e territorial dos registros, conforme detalhado na Seção~\ref{subsec:completude};
+  \item \textbf{Concepção e implementação de visualizações:} elaboração de propostas de dashboards e relatórios analíticos a partir das dimensões identificadas, com posterior implementação no Portal Aurora.
+\end{enumerate}
+
+A documentação técnica associada à base — incluindo o dicionário de dados e demais artefatos que descrevem sua estrutura, organização, conteúdo e procedimentos de tratamento — encontra-se disponível no repositório do Projeto Aurora\footnote{\label{fn:portal}\url{http://www.projetoauroramjsp.com.br}}.
+
+% ============================================================
+\clearpage
+\section{Descrição das Atividades Desenvolvidas}
+\label{sec:atividades}
+% ============================================================
+
+\subsection{Meta 1 — Consolidação das Bases de Dados}
+\label{subsec:atividades_meta1}
+
+\subsubsection{SINAN — Sistema de Informação de Agravos de Notificação}
+\label{subsubsec:sinan_atividade}
+
+Os documentos analisados identificam o SINAN como a principal fonte estruturada utilizada na organização da base analítica do Projeto Aurora. A extração dos registros foi realizada a partir do portal DATASUS, com ênfase no arquivo VIOL. O dicionário de dados do SINAN reúne 157 campos documentados, organizados segundo atributos como nome, código no sistema, tipo, categoria, descrição, características e representação no formato DBF, servindo de referência para a definição das dimensões analíticas utilizadas no projeto.
+
+A partir da análise integrada da planilha de relatórios e do dicionário de dados, foi possível identificar um conjunto coerente de dimensões analíticas, sintetizadas na Tabela~\ref{tab:dimensoes_sinan}. Na etapa atual do projeto, a centralidade do SINAN como principal fonte estruturada permite estabelecer que as propostas de dashboards e relatórios estão diretamente fundamentadas em atributos de natureza temporal, territorial, sociodemográfica, contextual e institucional.
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{longtable}{@{}P{3cm}P{4.6cm}P{7.6cm}@{}}
+\caption{Dimensões analíticas da base SINAN no Projeto Aurora}
+\label{tab:dimensoes_sinan}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Dimensão}} & \textcolor{white}{\textbf{Campos representativos}} & \textcolor{white}{\textbf{Utilidade analítica}} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Dimensão}} & \textcolor{white}{\textbf{Campos representativos}} & \textcolor{white}{\textbf{Utilidade analítica}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Temporal} & DT\_NOTIFIC, SEM\_NOT, DT\_OCOR, HORA\_OCOR & Evolução das notificações, sazonalidade, concentração temporal e defasagem entre ocorrência e notificação. \\
+\rowcolor{RowTint}
+\textbf{Territorial da ocorrência} & SG\_UF\_OCOR, ID\_MN\_OCOR, ID\_DIS\_OCOR, ID\_BA\_OCOR, ZONA\_OCOR & Análises por UF, município, distrito e bairro; mapeamento de concentração espacial e priorização territorial. \\
+\textbf{Perfil da vítima} & DT\_NASC, NU\_IDADE\_N, CS\_SEXO, CS\_RACA, CS\_ESCOL\_N, CS\_GESTANT & Caracterização sociodemográfica e comparação entre perfis de vulnerabilidade. \\
+\rowcolor{RowTint}
+\textbf{Caracterização da violência} & VIOL\_SEXU, VIOL\_TRAF, SEX\_EXPLO, SEX\_ESTUPR, SEX\_ASSEDI, SEX\_PORNO & Diferenciação de tipos e subtipos, com destaque para exploração sexual e tráfico de menores. \\
+\textbf{Contexto da ocorrência} & LOCAL\_OCOR, LOCAL\_ESPE, ZONA\_OCOR, HORA\_OCOR & Contexto territorial e funcional da violência; padrões de horário e local. \\
+\rowcolor{RowTint}
+\textbf{Repetição da violência} & OUT\_VEZES & Identificação de recorrência e persistência territorial das situações notificadas. \\
+\textbf{Provável autor} & AUTOR\_SEXO, AUTOR\_ALCO, CICL\_VID\_AUTOR & Vínculo entre vítima e autor, sexo do autor, suspeita de uso de álcool e ciclo de vida. \\
+\rowcolor{RowTint}
+\textbf{Rede de proteção} & ENC\_SAUDE, ASSIST\_SOC, CONS\_TUTEL, DELEG\_CRIA, DELEG\_MULH, MPU & Respostas institucionais acionadas e cobertura da rede por território. \\
+\textbf{Residência da vítima} & SG\_UF, ID\_MN\_RESI, ID\_DISTRIT, ID\_BAIRRO, ZONA & Comparação entre território de residência e de ocorrência para detectar deslocamentos e áreas de risco. \\
+\end{longtable}
+\endgroup
+
+\subsubsection{SIPIA-CT — Sistema de Informação para a Infância e Adolescência (Conselho Tutelar)}
+\label{subsubsec:sipiact_atividade}
+
+O SIPIA-CT é uma plataforma nacional voltada ao registro, acompanhamento e monitoramento de situações de ameaça ou violação de direitos de crianças e adolescentes no âmbito dos Conselhos Tutelares, direcionada principalmente a conselheiros tutelares, equipes de apoio administrativo e demais órgãos que integram a rede de proteção. Entre seus objetivos, destacam-se a constituição de uma base integrada de informações sobre violações de direitos, a padronização dos registros e a oferta de subsídios ao acompanhamento das ocorrências e à formulação, implementação e avaliação de políticas públicas orientadas pelos princípios do Estatuto da Criança e do Adolescente (ECA).
+
+No âmbito do Projeto Aurora, foram utilizados dados abertos do SIPIA-CT, disponibilizados pelo Portal Brasileiro de Dados Abertos\textsuperscript{\ref{fn:dadosgov}} e incorporados à Base de Dados Consolidada em \emph{schema} específico (\texttt{sipiact}). Na configuração atualmente disponível, os dados encontram-se estruturados predominantemente em nível de Unidade da Federação, permitindo análises agregadas da distribuição territorial das situações registradas pelos Conselhos Tutelares em todo o país. As dimensões analíticas identificadas a partir dessa base são sintetizadas na Tabela~\ref{tab:dimensoes_sipia}.
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{longtable}{@{}P{3.4cm}P{4.4cm}P{7.4cm}@{}}
+\caption{Dimensões, indicadores e utilidade analítica da base do SIPIA-CT}
+\label{tab:dimensoes_sipia}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Dimensão}} & \textcolor{white}{\textbf{Indicadores}} & \textcolor{white}{\textbf{Utilidade analítica}} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Dimensão}} & \textcolor{white}{\textbf{Indicadores}} & \textcolor{white}{\textbf{Utilidade analítica}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Territorial} & Unidade da Federação & Comparação da distribuição dos registros entre as diferentes regiões do país. \\
+\rowcolor{RowTint}
+\textbf{Temporal} & Ano & Acompanhamento da evolução dos registros ao longo do tempo. \\
+\textbf{Direito violado} & Categorias de direitos registrados no SIPIA-CT & Identificação dos tipos de direitos mais frequentemente associados às situações registradas. \\
+\rowcolor{RowTint}
+\textbf{Agente violador} & Categorias de agentes violadores & Caracterização dos agentes associados às violações registradas. \\
+\textbf{Perfil da criança ou adolescente} & Faixa etária, sexo e cor/raça & Caracterização sociodemográfica dos registros e identificação de diferenças entre grupos. \\
+\end{longtable}
+\endgroup
+
+A incorporação dos dados do SIPIA-CT à Base de Dados Consolidada amplia o conjunto de evidências disponíveis no Projeto Aurora, complementando as notificações do SINAN com registros oriundos dos Conselhos Tutelares e permitindo examinar o fenômeno das violações de direitos a partir de fontes institucionais distintas e perspectivas complementares. Na etapa atual, o SIPIA-CT não é acessado diretamente em ambiente operacional; são utilizados dados abertos previamente incorporados ao \emph{schema} \texttt{sipiact} da Base de Dados Consolidada, em conformidade com as restrições de acesso ao sistema transacional.
+
+\subsection{Meta 2 — Concepção das Visualizações Preliminares}
+\label{subsec:atividades_meta2}
+
+A planilha técnica anexa aos entregáveis do projeto sistematiza quatro conjuntos complementares de informações destinados a orientar a estruturação dos produtos analíticos: propostas de gráficos para composição dos dashboards; nota explicativa sobre o uso de mapas coropléticos; propostas de relatórios analíticos; e dicionário de dados do SINAN. A organização proposta busca estruturar o portal analítico de forma a articular diferentes níveis de leitura das informações, combinando uma visão executiva e sintética dos principais indicadores, uma perspectiva territorial das ocorrências e possibilidades de aprofundamento temático sobre dimensões específicas do fenômeno analisado.
+
+As dez propostas de gráficos e painéis para o dashboard foram classificadas em prioridade alta e média, conforme detalhado na Seção~\ref{subsec:mapas} e na Tabela~\ref{tab:dashboards}. De forma complementar, foram formuladas dez propostas de relatórios analíticos (Tabela~\ref{tab:relatorios}), organizadas em três níveis: leitura panorâmica, recortes temáticos e vínculos institucionais e fluxos territoriais.
+
+\subsection{Meta 3 — Implementação do Dashboard}
+\label{subsec:atividades_meta3}
+
+A partir das propostas concebidas na Meta~2, foi implementado o Painel de Proteção à Infância, dashboard analítico do Projeto Aurora disponibilizado no Portal Aurora. O painel reúne visualizações territoriais, temporais e institucionais sobre violência contra crianças e adolescentes, com base nas notificações do SINAN/VIOL, permitindo a exploração dos indicadores por meio de filtros compartilhados de Unidade da Federação, município, período, sexo da vítima, faixa etária e marcadores de violência sexual, tráfico de pessoas e exploração sexual. A descrição detalhada do produto é apresentada na Seção~\ref{subsec:dashboard_resultados}.
+
+\subsubsection{Síntese do Cumprimento da Meta 3}
+\label{sec:sintese_meta3}
+
+% ============================================================
+%  TABELA: Síntese do Cumprimento da Meta 3
+%  Inserir após a Seção "Objetivos" ou "Descrição das Atividades"
+% ============================================================
+
+\begin{table}[H]
+\centering
+\caption{Síntese do cumprimento das atividades da Meta 3}
+\label{tab:sintese_meta3}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}P{3.6cm}P{4.4cm}P{4.2cm}P{2.8cm}@{}}
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Atividade}} &
+\textcolor{white}{\textbf{Resultado esperado}} &
+\textcolor{white}{\textbf{Evidência}} &
+\textcolor{white}{\textbf{Status}} \\
+\midrule
+
+Definir requisitos técnicos e histórias de usuário &
+Requisitos funcionais e não funcionais documentados; histórias de usuário organizadas por perfil &
+Seções~\ref{subsubsec:requisitos_historias_meta3} e~\ref{subsubsec:design_ui_ux_meta3}; arquivos \texttt{core/forms.py} e \texttt{core/services/analytics.py} &
+Concluída \\
+
+\rowcolor{RowTint}
+Definir design da interface (UI) e experiência do usuário (UX) &
+Interface padronizada, navegação simplificada, componentes reutilizáveis e responsivos &
+Seção~\ref{subsubsec:design_ui_ux_meta3}; templates \texttt{core/templates/}; estilos customizados; adoção do Design System gov.br &
+Concluída \\
+
+Desenvolver o backend e APIs &
+APIs conectadas à Base de Dados Consolidada; endpoints para painéis, filtros e mapas &
+Seção~\ref{subsubsec:backend_apis_meta3}; arquivos \texttt{core/views.py}, \texttt{core/urls.py}, \texttt{mapas/urls.py}, \texttt{core/services/analytics.py} &
+Concluída \\
+
+\rowcolor{RowTint}
+Desenvolver o frontend, painéis e filtros &
+Painéis interativos, filtros compartilhados, gráficos e mapas implementados &
+Seção~\ref{subsubsec:frontend_paineis_filtros_meta3}; arquivos \texttt{dashboards.html}, \texttt{dashboards.js}, \texttt{mapa.js}, \texttt{mapa\_sipiact.js} &
+Concluída \\
+
+Avaliar funcionalidade e usabilidade &
+Testes de funcionamento e de usabilidade registrados; falhas e correções documentadas &
+Seção~\ref{subsubsec:avaliacao_funcionalidade_usabilidade}; matriz de testes (Tabela~\ref{tab:testes_funcionais}) &
+Concluída \\
+
+\rowcolor{RowTint}
+Publicar em servidor web temporário &
+Portal acessível em endereço público; HTTPS ativo; documentação de implantação &
+Seção~\ref{subsubsec:publicacao_servidor_meta3}; URL \url{https://dashboard.projetoauroramjsp.com.br/}; arquivos \texttt{DEPLOY.md}, \texttt{docker-compose.yml}, \texttt{Dockerfile} &
+Concluída \\
+
+Elaborar material de apoio e manuais de utilização &
+Manual técnico e manual do usuário disponíveis &
+Seção~\ref{ap:aurora} & 
+Concluída \\
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Definição dos Requisitos Técnicos e Histórias de Usuário}
+\label{subsubsec:requisitos_historias_meta3}
+
+No âmbito funcional, os requisitos concentram-se na disponibilização pública do painel analítico; na apresentação de indicadores consolidados; na aplicação de filtros compartilhados por Unidade da Federação, município, período, sexo, faixa etária e marcadores de violência; e na apresentação de visualizações territoriais, temporais, sociodemográficas e institucionais. O sistema também contempla mapas coropléticos para exploração geográfica dos dados do SINAN/VIOLBR e do SIPIA-CT, incluindo detalhamento municipal para os dados do SINAN.
+
+A arquitetura implementada estabelece ainda como requisito a integração das visualizações com a Base de Dados Consolidada do Projeto Aurora. No ambiente temporário de publicação utilizado para a versão 1.0, as consultas analíticas utilizam diretamente a tabela unificada \texttt{sinan."VIOLBR"} em PostgreSQL, permitindo que os diferentes painéis operem sobre uma fonte comum de dados. A comunicação entre a camada de apresentação e os serviços analíticos ocorre por meio de endpoints da aplicação, incluindo os destinados à obtenção dos dados dos painéis, das opções de filtros e das informações territoriais. No frontend, os resultados são apresentados por meio de componentes interativos implementados nos templates da aplicação e em scripts JavaScript responsáveis pela atualização dinâmica dos gráficos e filtros.
+
+Além dos requisitos funcionais, foram identificados requisitos técnicos relacionados ao desempenho, à implantação e à operação da plataforma. Entre eles destacam-se o uso de cache para consultas analíticas, a indexação de campos empregados nos principais filtros, a implantação containerizada com Docker e servidor de aplicação Gunicorn, o suporte à execução em ambiente PostgreSQL e a adoção de mecanismos básicos de tratamento de erros e segurança para operação em produção. A interface também foi estruturada de forma responsiva e alinhada à identidade visual adotada pelo projeto, utilizando componentes compatíveis com o padrão visual do Governo Federal.
+
+As histórias de usuário foram organizadas considerando os principais perfis atendidos pelo Portal Aurora. Para gestores públicos, a plataforma deve possibilitar a consulta de indicadores consolidados, a aplicação de recortes territoriais e a identificação de áreas com maior concentração de notificações. Para pesquisadores, deve permitir a exploração de tendências temporais, características sociodemográficas das vítimas e valores detalhados associados às visualizações. Para profissionais da rede de proteção, deve possibilitar o acompanhamento de tipos específicos de violência, dos encaminhamentos institucionais registrados e das informações provenientes do SIPIA-CT. De forma geral, essas histórias refletem a necessidade de transformar os dados consolidados do projeto em informações exploráveis por meio de filtros, indicadores, gráficos e mapas interativos.
+
+\subsubsection{Design da Interface e Experiência do Usuário (UI/UX)}
+\label{subsubsec:design_ui_ux_meta3}
+
+A definição da interface e da experiência do usuário da Plataforma Aurora foi orientada pela construção de um ambiente analítico com identidade visual padronizada, navegação simplificada e organização hierárquica das informações. A camada de apresentação foi implementada com templates Django, Bootstrap e estilos customizados, adotando como referência visual o Design System gov.br. Essa abordagem permitiu manter consistência entre as diferentes páginas da plataforma por meio do uso de cabeçalho e rodapé institucionais, paleta de cores uniforme, tipografia padronizada e componentes visuais reutilizáveis, como cartões de indicadores, painéis de gráficos e grupos de filtros. 
+
+A navegação foi estruturada de modo a oferecer um fluxo de uso simples entre a página inicial, o painel analítico e os módulos de distribuição geográfica. No dashboard principal, as informações são organizadas em indicadores sintéticos no topo da página, painel lateral de filtros e área principal destinada às visualizações gráficas. Já o módulo de distribuição geográfica organiza as diferentes fontes de informação por meio de abas, permitindo a alternância entre as visualizações disponíveis. Essa organização busca facilitar o acesso progressivo às informações, partindo de uma visão geral dos indicadores para recortes analíticos mais específicos.
+
+A experiência de exploração dos dados é apoiada por filtros compartilhados de localização, período, características da vítima e tipos de violência, permitindo ao usuário construir diferentes recortes de análise. Os filtros são agrupados por dimensão e aplicados de forma integrada aos indicadores e visualizações, sendo também disponibilizados mecanismos de feedback, como indicação da quantidade de filtros ativos, mensagens para ausência de dados e tabelas detalhadas expansíveis. 
+
+A interface também incorpora mecanismos de interação nas visualizações. Os gráficos utilizam a biblioteca Chart.js, enquanto os mapas são implementados com Leaflet, permitindo recursos como \textit{tooltips}, seleção territorial e detalhamento geográfico de Unidade da Federação para município. Foram ainda empregadas estruturas responsivas do Bootstrap e regras CSS específicas para adaptação da interface a diferentes dimensões de tela, além de elementos pontuais de acessibilidade, como rótulos associados aos campos de formulário e atributos ARIA. 
+
+\subsubsection{Desenvolvimento do Backend e APIs}
+\label{subsubsec:backend_apis_meta3}
+
+O backend da Plataforma Aurora foi desenvolvido em Django 5, constituindo a
+camada responsável pela integração entre a interface analítica e a Base de
+Dados Consolidada do projeto. A aplicação está organizada de forma modular,
+com separação entre as rotas e \textit{views} responsáveis pelo atendimento
+das requisições HTTP, os serviços responsáveis pela lógica analítica e a
+camada de acesso aos dados. Os principais componentes relacionados ao
+dashboard encontram-se nos módulos \texttt{core/views.py},
+\texttt{core/services/analytics.py}, \texttt{core/models.py} e
+\texttt{mapas/queries.py}, enquanto o roteamento das requisições é definido
+em \texttt{core/urls.py} e \texttt{mapas/urls.py}.
+
+A integração com a Base de Dados Consolidada é realizada em ambiente
+PostgreSQL, com o uso do ORM do Django e do driver \textit{psycopg}. Para os
+dados provenientes do SINAN, o backend dispõe de um modelo não gerenciado que
+mapeia diretamente a tabela consolidada \texttt{sinan."VIOLBR"}, utilizada
+como fonte para os indicadores e visualizações do painel. Para os dados do
+SIPIA-CT, as consultas são realizadas, quando disponível no ambiente de
+produção, sobre a \textit{view}
+\texttt{sipiact.vw\_sipiact\_totais}. Dessa forma, a camada de aplicação
+permanece integrada às estruturas consolidadas produzidas nas etapas
+anteriores do Projeto Aurora.
+
+A disponibilização dos dados para o frontend é realizada por meio de
+\textit{endpoints} HTTP que retornam estruturas em formato JSON. O endpoint
+\texttt{GET /api/dashboard/<key>/} centraliza as consultas dos diferentes
+painéis analíticos, incluindo distribuição das notificações por Unidade da
+Federação, ranking de municípios, séries temporais mensais, subtipos de
+violência sexual, tipos de violência, encaminhamentos para a rede de proteção,
+pirâmide etária e perfil sociodemográfico das vítimas. Complementarmente, o
+endpoint \texttt{GET /api/filters/} fornece dinamicamente as opções utilizadas
+nos filtros territoriais e temporais, enquanto
+\texttt{GET /api/mapa/municipios/<uf>/} disponibiliza as agregações
+necessárias ao detalhamento municipal do mapa coroplético.
+
+Para os dados do SIPIA-CT, foram implementados endpoints específicos no
+módulo de mapas. O endpoint
+\texttt{GET /mapas/api/sipiact/filtros/} disponibiliza os indicadores e anos
+disponíveis para consulta, enquanto
+\texttt{GET /mapas/api/sipiact/uf/} retorna os totais agregados por Unidade da
+Federação de acordo com o indicador e o período selecionados. Essas
+informações são consumidas pelo frontend para a construção interativa das
+visualizações geográficas.
+
+Os filtros aplicados pelo usuário são enviados ao backend como parâmetros
+HTTP do tipo GET e validados pelo formulário
+\texttt{DashboardFilterForm}. A aplicação das restrições às consultas é
+centralizada na função \texttt{apply\_filters()}, presente em
+\texttt{core/services/analytics.py}. Os filtros podem ser combinados e
+contemplam Unidade da Federação, município, intervalo temporal, sexo da
+vítima, faixa etária e marcadores associados à violência sexual, tráfico de
+pessoas e exploração sexual. A centralização desse processamento assegura que
+as diferentes visualizações utilizem critérios de filtragem consistentes.
+
+As agregações necessárias às visualizações são realizadas
+predominantemente no backend, utilizando operações de contagem,
+agrupamento e ordenação sobre a base consolidada. Entre essas operações
+encontram-se agrupamentos por Unidade da Federação, município, mês, ano,
+faixa etária, sexo, raça/cor, escolaridade e local de ocorrência, além da
+produção de rankings e do cruzamento entre tipos de violência e
+encaminhamentos da rede de proteção. Também são realizadas transformações de
+códigos categóricos em rótulos legíveis e a associação de códigos
+territoriais às respectivas Unidades da Federação e municípios.
+
+O fluxo de processamento implementado pode ser sintetizado pela sequência:
+interface do usuário, envio dos parâmetros de filtragem, requisição aos
+endpoints do backend, validação dos parâmetros, execução das consultas e
+agregações sobre o PostgreSQL e retorno dos resultados em JSON para os
+componentes de visualização do frontend. Os dados retornados são então
+utilizados pelas bibliotecas de visualização da plataforma, especialmente
+Chart.js e Leaflet, para a apresentação dos gráficos e mapas interativos.
+
+Adicionalmente, foram implementados mecanismos voltados ao desempenho das
+consultas analíticas, entre eles o armazenamento temporário em cache dos
+resultados das agregações por um período de 15 minutos, a reutilização de
+conexões com o PostgreSQL e a limitação do ranking municipal aos 25
+municípios com maior número de registros. Esses mecanismos reduzem a
+necessidade de repetição de consultas de maior custo sobre a base consolidada
+durante a utilização interativa do portal.
+
+A implementação dessa atividade encontra-se documentada diretamente no
+repositório do Projeto Aurora. Entre as principais evidências estão os
+arquivos \texttt{aurora/settings.py}, responsável pela configuração da
+aplicação e da conexão com o PostgreSQL; \texttt{core/urls.py} e
+\texttt{mapas/urls.py}, que definem as rotas das APIs;
+\texttt{core/views.py}, que implementa os endpoints;
+\texttt{core/services/analytics.py}, que concentra as regras de filtragem e
+agregação dos indicadores; \texttt{core/models.py}, que realiza o mapeamento
+da tabela consolidada do SINAN; e \texttt{mapas/queries.py}, responsável
+pelas consultas aos dados agregados do SIPIA-CT. O consumo efetivo dessas
+APIs pelo frontend pode ser verificado nos arquivos
+\texttt{core/static/core/js/dashboards.js},
+\texttt{core/static/core/js/mapa.js} e
+\texttt{mapas/static/mapas/js/mapa\_sipiact.js}.
+
+\subsubsection{Desenvolvimento do Frontend, Painéis e Filtros}
+\label{subsubsec:frontend_paineis_filtros_meta3}
+
+O frontend da Plataforma Aurora foi implementado sobre a camada de apresentação do Django, utilizando templates HTML, JavaScript e integração com serviços de consulta responsáveis pelo fornecimento dos dados analíticos. A página principal do Painel de Proteção à Infância encontra-se implementada em \texttt{core/templates/core/dashboards.html}, enquanto a definição dos conjuntos de dados e das visualizações disponibilizadas é centralizada em \texttt{core/services/analytics.py}. A versão atual contempla quatro indicadores sintéticos no topo do painel e dez visualizações analíticas, abrangendo distribuição territorial das notificações, ranking de municípios, evolução temporal, tipos de violência, encaminhamentos da rede de proteção, faixa etária, perfil das vítimas e local de ocorrência.
+
+A renderização das visualizações gráficas é realizada com a biblioteca Chart.js, por meio do arquivo \texttt{core/static/core/js/dashboards.js}. Os painéis incluem gráficos de barras, séries temporais em linhas, barras empilhadas, pirâmide etária e visualizações compostas, além de tabelas detalhadas associadas aos resultados. Os dados de cada painel são obtidos de forma assíncrona por meio de requisições ao endpoint \texttt{/api/dashboard/<key>/}, utilizando os parâmetros de consulta correspondentes ao recorte analítico selecionado pelo usuário. Dessa forma, a interface mantém os diferentes gráficos vinculados aos mesmos critérios de filtragem.
+
+Os filtros compartilhados foram definidos por meio da classe \texttt{DashboardFilterForm}, em \texttt{core/forms.py}, contemplando Unidade da Federação, município, período inicial e final, sexo, faixa etária e marcadores específicos de violência sexual, tráfico de pessoas e exploração sexual. As opções de Unidade da Federação, município e ano são carregadas a partir do endpoint \texttt{/api/filters/}, sendo implementada uma relação em cascata na qual a seleção da Unidade da Federação determina os municípios disponibilizados para consulta. Após a aplicação dos filtros, os parâmetros são enviados por meio de requisição GET, os indicadores sintéticos são recalculados e os painéis são novamente carregados considerando o mesmo conjunto de critérios. A interface também disponibiliza mecanismo para limpeza dos filtros e indicação da quantidade de filtros ativos.
+
+Como complemento às visualizações gráficas, o frontend incorpora o módulo de distribuição geográfica, implementado com a biblioteca Leaflet. Para os dados do SINAN/VIOLBR, o mapa coroplético permite a visualização por Unidade da Federação e o detalhamento até o nível municipal, mediante seleção territorial e consulta ao endpoint \texttt{/api/mapa/municipios/<uf>/}. O módulo inclui recursos de interação como \textit{tooltips}, destaque de áreas e painéis com informações da unidade territorial selecionada. Para os dados do SIPIA-CT, a visualização geográfica é apresentada em nível estadual, com filtros de indicador e ano atualizados de forma assíncrona. As implementações correspondentes encontram-se principalmente em \texttt{core/static/core/js/mapa.js} e \texttt{mapas/static/mapas/js/mapa\_sipiact.js}.
+
+Esses componentes materializam a atividade de desenvolvimento do frontend prevista na Meta 3, integrando os indicadores, filtros parametrizáveis, gráficos e mapas da Plataforma Aurora em uma camada analítica única. A comunicação entre a interface e os dados é realizada por endpoints JSON específicos para os painéis, opções de filtros e detalhamento geográfico, permitindo que diferentes formas de visualização utilizem os mesmos parâmetros de consulta e permaneçam consistentes com os recortes selecionados.
+
+\subsubsection{Avaliação de funcionalidade e usabilidade}
+\label{subsubsec:avaliacao_funcionalidade_usabilidade}
+
+\begin{table}[H]
+\centering
+\caption{Testes funcionais realizados no Portal Aurora}
+\label{tab:testes_funcionais}
+\begin{tabularx}{\textwidth}{@{}P{3.2cm}P{4.2cm}P{3cm}P{2.5cm}@{}}
+\toprule
+\textbf{Funcionalidade} &
+\textbf{Procedimento de teste} &
+\textbf{Resultado esperado} &
+\textbf{Status} \\
+\midrule
+Carregamento do dashboard &
+Acessar a página principal sem filtros &
+Exibição dos indicadores e gráficos &
+Aprovado \\
+
+Filtro por Unidade da Federação &
+Selecionar uma UF e aplicar o filtro &
+Atualização dos indicadores e visualizações &
+Aprovado \\
+
+Filtro por município &
+Selecionar UF e município &
+Exibição dos dados correspondentes &
+Aprovado \\
+
+Filtro temporal &
+Alterar ano inicial e final &
+Reprocessamento das visualizações &
+Aprovado \\
+
+Limpeza dos filtros &
+Acionar o comando de limpeza &
+Retorno ao estado inicial &
+Aprovado \\
+
+Detalhamento municipal &
+Selecionar uma UF no mapa &
+Exibição dos municípios correspondentes &
+Aprovado \\
+
+Consulta SIPIA-CT &
+Selecionar indicador e ano &
+Atualização do mapa estadual &
+Aprovado \\
+
+Ausência de dados &
+Aplicar combinação sem registros &
+Exibição de mensagem informativa &
+A ajustar \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Complementarmente à matriz de testes funcionais, o ciclo de avaliação da versão 1.0 foi registrado por meio de formulário padronizado de Avaliação de Aplicação do Projeto Aurora, preenchido pelos avaliadores participantes ao final de cada rodada de testes. Foram registradas cinco avaliações, todas referentes ao ambiente \texttt{dashboard.projetoauroramjsp.com.br} (Desenvolvimento), totalizando 53 casos de teste executados. Os registros são apresentados de forma anonimizada, com supressão do carimbo de data/hora e da identificação dos respondentes (nome e endereço de correio eletrônico), preservando-se integralmente o conteúdo técnico informado. A Tabela~\ref{tab:ciclo_avaliacoes} sintetiza o escopo de cada avaliação; a Tabela~\ref{tab:resultado_categorias} apresenta os resultados por categoria de teste; e a Tabela~\ref{tab:falhas_correcoes} consolida as falhas encontradas, as correções realizadas e as limitações ainda existentes.
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}P{1.9cm}P{3.1cm}P{5.0cm}P{1.9cm}P{2.6cm}@{}}
+\caption{Síntese das avaliações registradas no ciclo de testes da versão 1.0}
+\label{tab:ciclo_avaliacoes}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Avaliação}} &
+\textcolor{white}{\textbf{Perfil do avaliador}} &
+\textcolor{white}{\textbf{Funcionalidades testadas}} &
+\textcolor{white}{\textbf{Casos executados}} &
+\textcolor{white}{\textbf{Conclusão}} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Avaliação}} &
+\textcolor{white}{\textbf{Perfil do avaliador}} &
+\textcolor{white}{\textbf{Funcionalidades testadas}} &
+\textcolor{white}{\textbf{Casos executados}} &
+\textcolor{white}{\textbf{Conclusão}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Avaliação 1} & Desenvolvimento & Dashboards & 4 & Totalmente atendido \\
+\rowcolor{RowTint}
+\textbf{Avaliação 2} & Desenvolvimento & Painéis do dashboard, visualização em mapas, navegação na plataforma & 5 & Totalmente atendido \\
+\textbf{Avaliação 3} & Desenvolvedor de software & Painéis do dashboard, visualização em mapas, navegação na plataforma & 23 & Totalmente atendido \\
+\rowcolor{RowTint}
+\textbf{Avaliação 4} & Não especificado & Plataforma Aurora (avaliação geral) & 1 & Totalmente atendido \\
+\textbf{Avaliação 5} & Membro bolsista & Dashboard & 20 & Totalmente atendido \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Total de casos de teste executados}} & \textbf{53} & \\
+\end{longtable}
+\endgroup
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}P{1.9cm}P{5.4cm}P{2.2cm}P{4.3cm}@{}}
+\caption{Resultado dos testes por categoria, conforme registrado pelos avaliadores}
+\label{tab:resultado_categorias}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Avaliação}} &
+\textcolor{white}{\textbf{Categorias com resultado de sucesso}} &
+\textcolor{white}{\textbf{Falhas}} &
+\textcolor{white}{\textbf{Categorias não aplicáveis}} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Avaliação}} &
+\textcolor{white}{\textbf{Categorias com resultado de sucesso}} &
+\textcolor{white}{\textbf{Falhas}} &
+\textcolor{white}{\textbf{Categorias não aplicáveis}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Avaliação 1} & Autenticação; Integração de Dados; Geração de Relatórios; Permissões de Acesso; Interface de Usuário & Nenhuma & Nenhuma \\
+\rowcolor{RowTint}
+\textbf{Avaliação 2} & Autenticação; Integração de Dados; Geração de Relatórios; Permissões de Acesso; Interface de Usuário & Nenhuma & Interface de Usuário \\
+\textbf{Avaliação 3} & Autenticação; Integração de Dados; Geração de Relatórios; Permissões de Acesso; Interface de Usuário & Nenhuma & Nenhuma \\
+\rowcolor{RowTint}
+\textbf{Avaliação 4} & Autenticação; Geração de Relatórios; Interface de Usuário & Nenhuma & Integração de Dados \\
+\textbf{Avaliação 5} & Integração de Dados; Geração de Relatórios; Interface de Usuário & Nenhuma & Autenticação; Permissões de Acesso \\
+\end{longtable}
+\endgroup
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}P{1.9cm}P{3.7cm}P{4.2cm}P{4.0cm}@{}}
+\caption{Falhas encontradas, correções realizadas e limitações registradas no ciclo de testes}
+\label{tab:falhas_correcoes}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Avaliação}} &
+\textcolor{white}{\textbf{Falhas encontradas}} &
+\textcolor{white}{\textbf{Correções realizadas durante o ciclo}} &
+\textcolor{white}{\textbf{Limitações ainda existentes}} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Avaliação}} &
+\textcolor{white}{\textbf{Falhas encontradas}} &
+\textcolor{white}{\textbf{Correções realizadas durante o ciclo}} &
+\textcolor{white}{\textbf{Limitações ainda existentes}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Avaliação 1} & Nenhuma & Refatoração de design & Nenhuma \\
+\rowcolor{RowTint}
+\textbf{Avaliação 2} & Nenhuma & Nenhuma & Não informado \\
+\textbf{Avaliação 3} & Nenhuma & Ajustes nos subtítulos dos painéis do dashboard; ajuste na navegação, simplificando duas telas principais: Início e Aurora & O carregamento dos painéis é demorado, uma vez que todos os dados são carregados de uma só vez \\
+\rowcolor{RowTint}
+\textbf{Avaliação 4} & Não informado & Não informado & Não informado \\
+\textbf{Avaliação 5} & Divergência na contagem de municípios do estado de Sergipe: são 75 e a aplicação apresenta 76 & Ajustes em nomenclaturas apresentadas no dashboard e nas visualizações & As requisições não são limitadas na borda por \emph{rate limit}, deixando a aplicação vulnerável a ataques de negação de serviço (DDoS), entre outros \\
+\end{longtable}
+\endgroup
+
+Em todas as cinco avaliações, a conclusão registrada quanto ao atendimento dos critérios de aceite foi "totalmente atendido", não tendo sido reportada falha em nenhuma das categorias de teste avaliadas. As categorias assinaladas como não aplicáveis decorrem do escopo específico de cada rodada de testes — por exemplo, avaliações restritas aos painéis públicos não exercitaram os mecanismos de autenticação e de permissões de acesso. As limitações registradas, relativas ao tempo de carregamento dos painéis e à ausência de limitação de requisições na borda, encontram-se consideradas na evolução prevista da plataforma, assim como o ajuste da contagem de municípios apontado na Avaliação 5.
+
+\subsubsection{Publicação em Servidor Web Temporário}
+\label{subsubsec:publicacao_servidor_meta3}
+
+Em atendimento à atividade de publicação do Portal Aurora em servidor web temporário, a versão implementada do dashboard foi implantada em uma infraestrutura do tipo VPS, utilizando containerização por meio do Docker Compose. A configuração de implantação encontra-se documentada no arquivo \texttt{DEPLOY.md} e nos artefatos \texttt{docker-compose.yml}, \texttt{Dockerfile} e \texttt{entrypoint.sh} do repositório \texttt{Aurora-Dashboard}. No ambiente disponibilizado, a aplicação é executada como uma aplicação Django por meio do servidor WSGI Gunicorn, enquanto os arquivos estáticos são tratados pelo WhiteNoise. O serviço é configurado para reinicialização automática por meio da política \texttt{restart: unless-stopped} do Docker Compose.
+
+O acesso público ao dashboard é realizado pelo endereço \url{https://dashboard.projetoauroramjsp.com.br/}. A exposição da aplicação à Web é intermediada pelo servidor Caddy, responsável pelo proxy reverso das requisições HTTPS para o serviço Django executado internamente na porta 8000. O Caddy também realiza o gerenciamento do certificado TLS, com emissão automática por meio do Let's Encrypt. A aplicação encontra-se configurada para operação com HTTPS e para utilização do cabeçalho encaminhado pelo proxy reverso, conforme as configurações presentes em \texttt{aurora/settings.py}.
+
+A camada de persistência utiliza PostgreSQL, executado em contêiner externo à aplicação do dashboard e acessado por meio de variáveis de ambiente. As credenciais e demais informações sensíveis do ambiente de publicação são mantidas em arquivo \texttt{.env} localizado no servidor e não são versionadas no repositório. Entre as configurações utilizadas encontram-se parâmetros relacionados ao banco de dados, hosts autorizados, origens confiáveis para proteção CSRF, chave secreta e modo de depuração. Dessa forma, informações sensíveis permanecem desacopladas da imagem da aplicação e do código-fonte versionado.
+
+O processo de implantação documentado é realizado de forma manual. O código é transferido para o servidor e, no diretório de implantação, a construção e inicialização dos serviços são efetuadas com o comando \texttt{docker compose up -d --build}. 
+
+\subsubsection{Material de Apoio e Manual de Utilização}
+\label{subsubsec:material_apoio_manual_meta3}
+
+Como parte das atividades da Meta 3, foram estruturados materiais de apoio destinados tanto à utilização da Plataforma Aurora quanto à sua operação técnica. Esses materiais encontram-se versionados juntamente com o código-fonte da aplicação, tendo como principal referência o arquivo \texttt{README.md}, que reúne a descrição geral da plataforma, orientações de acesso e navegação, procedimento de importação de dados, descrição dos filtros analíticos e catálogo dos painéis e mapas disponibilizados. As instruções de utilização são complementadas pelos próprios componentes da interface, não havendo, na versão atual do repositório, um documento autônomo em PDF ou Markdown dedicado exclusivamente ao usuário final.
+
+O fluxo básico de utilização é documentado pela combinação do \texttt{README.md} com os templates da aplicação. A partir da página inicial, implementada em \texttt{core/templates/core/inicio.html}, o usuário pode acessar o painel analítico, no qual são disponibilizados indicadores consolidados, filtros compartilhados e diferentes visualizações dos dados. A interface permite realizar recortes por dimensões territoriais, temporais e relacionadas ao perfil das vítimas e aos tipos de violência, bem como consultar tabelas detalhadas associadas aos painéis. A navegação também possibilita o acesso às visualizações geográficas, incluindo os mapas baseados no SINAN/VIOLBR e no SIPIA-CT. As principais orientações relativas a esses recursos estão implementadas nos templates \texttt{core/templates/core/dashboards.html}, \texttt{core/templates/core/mapa.html}, \texttt{core/templates/core/distribuicao\_geografica.html} e \texttt{mapas/templates/mapas/sipiact.html}.
+
+Além da documentação escrita, foram incorporados à própria interface elementos de apoio à interação com a plataforma. Entre eles estão os rótulos e agrupamentos dos filtros, mensagens relativas à disponibilidade dos dados, indicação da quantidade de filtros ativos, instruções para interação com os mapas, legendas das representações coropléticas, tabelas detalhadas expansíveis e textos auxiliares nos formulários de importação. O arquivo \texttt{core/forms.py}, por exemplo, contém textos de ajuda associados aos campos de entrada, enquanto os scripts da camada de apresentação implementam informações contextuais e comportamentos de apoio à navegação. Dessa forma, parte das instruções de utilização é apresentada diretamente no contexto em que cada funcionalidade é utilizada.
+
+Para a equipe responsável pela administração e manutenção da aplicação, o repositório também disponibiliza documentação técnica complementar. O \texttt{README.md} apresenta requisitos, configuração do ambiente, procedimentos de instalação, execução e testes, enquanto o arquivo \texttt{DEPLOY.md} documenta aspectos relacionados à implantação da plataforma. Esses documentos são complementados pelos arquivos \texttt{Dockerfile}, \texttt{docker-compose.yml}, \texttt{entrypoint.sh} e \texttt{.env.example}, que registram os procedimentos e parâmetros necessários à configuração e operação do ambiente. Assim, os materiais versionados no repositório constituem evidências tanto das orientações de utilização da Plataforma Aurora quanto da documentação necessária à sua sustentação técnica.
+
+\subsection{Meta 4 Aurora Responde}
+\label{subsec:atividades_meta4}
+
+Como desdobramento das Metas anteriores, foi desenvolvido o Aurora Responde, chat conversacional único do Portal Aurora que unifica, sob uma mesma interface, o acesso às diferentes fontes de informação do projeto. A solução foi concebida como extensão do orquestrador já existente para consultas de séries temporais, baseado no modelo Qwen3-8B em regime de \textit{tool-calling}, ao qual foram incorporadas novas ferramentas de roteamento, de modo que uma única conversa passa a intermediar consultas estruturadas às bases SINAN e SIPIA-CT, previsões de séries temporais, recuperação aumentada por geração (RAG) sobre a legislação de referência e RAG sobre a documentação interna do produto. Cada resposta é sintetizada pelo modelo orquestrador com indicação explícita da fonte consultada, substituindo os chats especializados mantidos anteriormente por pesquisadores distintos. A implementação incorporou ainda uma camada de \textit{guardrails} de segurança, responsável por limitação de requisições, detecção de situações de risco com encaminhamento ao Disque 100 e ao Conselho Tutelar, mitigação de tentativas de injeção de instruções e proteção de dados pessoais identificáveis presentes nas interações. As subseções seguintes detalham a arquitetura adotada, as fontes integradas, os mecanismos de segurança implementados e os resultados da avaliação funcional do Aurora Responde.
+
+\subsubsection{Síntese do Cumprimento da Meta 4}
+\label{sec:sintese_meta4}
+
+% ============================================================
+%  TABELA: Síntese do Cumprimento da Meta 4
+% ============================================================
+
+\begin{table}[H]
+\centering
+\caption{Síntese do cumprimento das atividades da Meta 4}
+\label{tab:sintese_meta4}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}P{3.6cm}P{4.4cm}P{4.2cm}P{2.8cm}@{}}
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Atividade}} &
+\textcolor{white}{\textbf{Resultado esperado}} &
+\textcolor{white}{\textbf{Evidência}} &
+\textcolor{white}{\textbf{Status}} \\
+\midrule
+
+Conceber a arquitetura do chat único, estendendo o orquestrador de séries temporais &
+Interface única substituindo os chats especializados, com roteamento por ferramentas (\textit{tools}) mantendo a lógica de séries já calibrada &
+\url{docs/plano_aurora_responde.md}; \url{orquestrador/orchestrator.py}; diagramas v1--v3 (\url{docs/img/}) &
+Concluída \\
+
+\rowcolor{RowTint}
+Implementar o roteamento entre as fontes de dados e conhecimento &
+Ferramentas de consulta SQL (SINAN e SIPIA-CT), previsão de séries temporais, RAG jurídico e RAG interno integradas ao mesmo laço de \textit{tool-calling} &
+\url{orquestrador/tools.py}; \url{orquestrador/rag_tools.py}; \url{orquestrador/sipia_ct.py} &
+Concluída \\
+
+Integrar o modelo jurídico (Jurema-7B) como gerador do parecer no RAG jurídico &
+Respostas jurídicas citando a legislação de referência (ex.: ECA), com degradação sem exceção quando o modelo está indisponível &
+Modelo \texttt{jurema-7b} (Ollama); função \texttt{\_ask\_jurema} em \url{rag_tools.py} &
+Concluída \\
+
+\rowcolor{RowTint}
+Implementar a camada de \textit{guardrails} de segurança &
+Limitação de requisições; encaminhamento a Disque 100 e Conselho Tutelar; mitigação de injeção de instruções; mascaramento de dados pessoais identificáveis &
+App \url{webapp/guardrails/}; \url{docs/guardrails_integracao.md} &
+Concluída \\
+
+Unificar a interface e disponibilizar o chat como página inicial do Portal Aurora &
+Home renderizando o Aurora Responde; chat aberto sem exigência de login; indicação da ferramenta consultada e suporte a anexos &
+\url{orquestrador/views.py} (\texttt{aurora\_home}); templates \texttt{thread.html} e \texttt{thread\_list.html} &
+Concluída \\
+
+\rowcolor{RowTint}
+Avaliar funcionalidade e cobertura do roteamento entre fontes &
+Bateria de perguntas validando as quatro rotas, os follow-ups multiturno e os casos de recusa por escopo &
+\url{docs/roteiro-testes-aurora.md} &
+Concluída \\
+
+Consolidar o corpus jurídico e a base do SIPIA-CT como fontes plenas &
+Corpus de leis e normas indexado para o RAG jurídico; ETL recorrente do SIPIA-CT &
+Seção~\ref{subsec:limitacoes_meta4} &
+Em andamento \\
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Concepção da Arquitetura}
+\label{subsubsec:arquitetura_meta4}
+
+A concepção da arquitetura do Aurora Responde partiu da decisão de \textbf{estender} um componente já existente e calibrado, em vez de desenvolver uma nova aplicação de chat. O bloco central necessário para um assistente conversacional — um laço de \textit{tool-calling} orientado por modelo de linguagem — já estava implementado em \url{orquestrador/orchestrator.py}, aplicativo desenvolvido para o chat de séries temporais, cobrindo consultas estruturadas à base SINAN e previsões com o comitê de modelos (Chronos-2 entre eles). Reescrever esse laço em uma aplicação nova significaria refazer a parte mais custosa do sistema; a alternativa adotada foi ampliar o conjunto de ferramentas (\textit{tools}) desse mesmo orquestrador, unificando na mesma interface os quatro chats mantidos até então: dados do SINAN, dados jurídicos, séries temporais e um assistente de propósito geral.
+
+O modelo utilizado como roteador e sintetizador é o \texttt{qwen3:8b}, servido localmente via Ollama (variável \texttt{OLLAMA\_MODEL}), com possibilidade de \textit{fallback} para modelos externos. A cada mensagem do usuário, o orquestrador monta uma conversa com o histórico recente, submete-a ao modelo junto com o esquema de ferramentas disponíveis (\texttt{TOOLS\_SCHEMA}) e, quando o modelo solicita a execução de uma ferramenta, despacha a chamada, devolve o resultado ao modelo e repete o ciclo — em até \texttt{MAX\_TOOL\_ROUNDS} rodadas — até que uma resposta em linguagem natural seja produzida. Esse mecanismo, preexistente para as consultas de série temporal, passou a ser compartilhado por todas as fontes do Aurora Responde.
+
+A instrução do roteamento entre fontes foi implementada de forma \textbf{aditiva} ao \textit{prompt} do sistema: o texto original (\texttt{SYSTEM\_PROMPT}), responsável pelas regras de análise de séries e consultas SINAN, foi concatenado a um bloco adicional (\texttt{AURORA\_ADDENDUM}, em \url{orquestrador/orchestrator.py}) que ensina o modelo a identificar o tipo de pergunta — dado quantitativo de violência, questão jurídica/normativa, dúvida sobre o funcionamento da própria plataforma ou indicador do Conselho Tutelar — e a acionar a ferramenta correspondente. O addendum também estabelece regras de citação obrigatória da fonte recuperada por ferramentas de recuperação aumentada por geração (RAG), a proibição de invenção de leis, artigos ou números não retornados por uma ferramenta, e a delimitação estrita do escopo do assistente ao domínio de violência contra crianças e adolescentes, à legislação correlata e ao funcionamento do próprio Aurora — com recusa educada de pedidos fora desse escopo (geração de código, HTML, redação criativa, assuntos gerais). Como o addendum é concatenado, e não substitui o texto original, as regras já calibradas para o núcleo de séries temporais permanecem intactas.
+
+Complementarmente ao \textit{prompt}, parte do roteamento é resolvida de forma determinística antes de acionar o modelo, reduzindo custo e instabilidade em casos já bem definidos. A função \texttt{\_is\_offscope} intercepta pedidos claramente fora de escopo (por exemplo, solicitações de código ou de conteúdo criativo) e recusa a mensagem sem chamar o modelo ou qualquer ferramenta; já \texttt{\_detect\_route\_hint}, entre outras heurísticas de contexto, injeta mensagens de sistema que reforçam a rota mais provável (fonte jurídica, fonte de produto, SIPIA-CT ou dados SINAN) e o estado herdado de perguntas anteriores — como a Unidade da Federação ou o tipo de violência mencionados em turnos anteriores da mesma conversa —, permitindo que perguntas de acompanhamento (\textit{follow-ups}) mantenham o recorte da conversa sem que o usuário precise repeti-lo.
+
+A unificação das ferramentas no mesmo orquestrador foi feita mantendo a separação de implementação por fonte: as ferramentas de dados SINAN e de séries temporais permanecem em \url{orquestrador/tools.py}, enquanto as novas ferramentas do Aurora Responde — RAG jurídico, RAG interno e consulta ao SIPIA-CT — foram implementadas em \url{orquestrador/rag_tools.py} e mescladas ao conjunto único de ferramentas do roteador (\texttt{TOOLS\_SCHEMA.extend(RAG\_TOOLS\_SCHEMA)} e \texttt{DISPATCH.update(RAG\_DISPATCH)}, em \url{orquestrador/tools.py}). Para evitar que o modelo de linguagem, de porte reduzido, confundisse ferramentas legadas de consulta SQL bruta com o caminho limpo e seguro de consulta às bases, o conjunto efetivamente anunciado ao roteador foi curado explicitamente (\texttt{\_EXPOSED\_TOOLS}), mantendo as ferramentas legadas disponíveis por retrocompatibilidade, porém ocultas do modelo. Dessa forma, a adição das novas fontes não interfere no comportamento já validado das consultas de série temporal e SINAN, e nenhuma fonte indisponível interrompe o fluxo — a ferramenta correspondente apenas degrada, retornando uma mensagem informativa em vez de lançar exceção.
+
+\subsubsection{Roteamento entre Fontes (\textit{Tools})}
+\label{subsubsec:roteamento_fontes_meta4}
+
+O conjunto de ferramentas efetivamente anunciado ao modelo roteador (\texttt{\_EXPOSED\_TOOLS}, em \url{orquestrador/tools.py}) reúne oito ferramentas de dados SINAN e de séries temporais — \texttt{consultar}, \texttt{contar}, \texttt{serie\_temporal}, \texttt{ranking\_municipios}, \texttt{resolver\_municipio}, \texttt{relatorio\_uf}, \texttt{relatorio\_brasil}, \texttt{relatorio\_municipio}, \texttt{previsao\_automatica} e \texttt{analise\_retrospectiva} — às quais se somam as três ferramentas específicas do Aurora Responde: \texttt{rag\_juridico}, \texttt{rag\_interno} e \texttt{consulta\_sipia\_ct}. Cada ferramenta é descrita ao modelo por um \textit{schema} no formato de \textit{function calling} da API Ollama/OpenAI, com um campo \texttt{description} escrito de forma prescritiva — indicando explicitamente quando usar e quando \emph{não} usar aquela ferramenta —, de modo a reduzir a ambiguidade do roteamento por um modelo de porte reduzido (\texttt{qwen3:8b}).
+
+\paragraph{Consulta SQL — SINAN e SIPIA-CT.} As perguntas quantitativas sobre violência contra crianças e adolescentes continuam sendo resolvidas pela camada segura de acesso ao SINAN já calibrada no chat de séries temporais (\texttt{relatorio\_uf}, \texttt{relatorio\_brasil}, \texttt{relatorio\_municipio}, \texttt{ranking\_municipios}, \texttt{contar}, \texttt{consultar}), descrita na Seção~\ref{subsubsec:backend_apis_meta3}. Para o SIPIA-CT, foi adicionada a ferramenta \texttt{consulta\_sipia\_ct} (\texttt{tool\_consulta\_sipia\_ct}, em \url{orquestrador/rag_tools.py}), que delega a uma camada dedicada (\url{orquestrador/sipia_ct.py}) responsável por agregações sobre a \textit{view} pré-agregada \texttt{sipiact.vw\_sipiact\_long} — cada linha combinando indicador, categoria, UF, ano e mês, com soma da coluna \texttt{quantidade}. A ferramenta aceita filtros (\texttt{uf}, \texttt{ano}, \texttt{indicador} — \emph{Sexo}, \emph{Cor}, \emph{Faixa Etária}, \emph{Direito Violado} ou \emph{Agente Violador} —, \texttt{mes}) e uma dimensão de agrupamento (\texttt{group\_by}), retornando o total e a distribuição correspondente. Identificadores de tabela e coluna são validados por expressão regular e os valores sempre parametrizados, com \textit{timeout} de execução configurável (\texttt{SIPIA\_CT\_TIMEOUT\_MS}); na ausência de \texttt{SIPIA\_CT\_TABLE} configurada, a ferramenta degrada de forma limpa, sem lançar exceção.
+
+\paragraph{Previsão de séries temporais — Chronos-2.} As perguntas sobre tendência, projeção ou evolução futura das notificações acionam \texttt{previsao\_automatica} e \texttt{analise\_retrospectiva}, que reaproveitam integralmente o comitê de modelos de séries temporais já calibrado (Chronos-2 entre os candidatos avaliados), sem alteração de comportamento em relação ao chat de séries temporais original.
+
+\paragraph{RAG jurídico — Jurema.} A ferramenta \texttt{rag\_juridico} (\texttt{tool\_rag\_juridico}, em \url{orquestrador/rag_tools.py}) é acionada para perguntas sobre o marco legal — ECA, leis, portarias, artigos, jurisprudência —, sendo explicitamente instruída a \emph{não} ser usada para estatísticas de casos (rota SINAN). A implementação combina duas etapas: (i) recuperação de trechos por busca \textit{full-text} sobre a base jurídica já existente no chat de Dados Jurídicos (\url{dados_juridicos/retrieval.py}); e (ii) geração do parecer pelo modelo jurídico local \texttt{jurema-7b} (\textit{fine-tune} do Qwen2.5-7B, servido via Ollama, função \texttt{\_ask\_jurema}), ancorado nos trechos recuperados quando disponíveis. O retorno inclui os trechos referenciados (\texttt{J1}, \texttt{J2}, \ldots), o parecer do Jurema e uma instrução de citação explícita para o modelo orquestrador. Na ausência da base jurídica, do modelo Jurema, ou de ambos, a ferramenta degrada progressivamente — parecer apenas pelo conhecimento do modelo (sinalizado como \emph{não confirmado na base}), ou indisponibilidade explícita — sem interromper a conversa.
+
+\paragraph{RAG interno — documentação do produto.} A ferramenta \texttt{rag\_interno} (\texttt{tool\_rag\_interno}) responde a perguntas sobre o funcionamento do próprio Aurora — metodologia, arquitetura, forecast, comitê de modelos, origem dos dados —, indexando em tempo de consulta os arquivos Markdown do diretório \texttt{docs/} da raiz do repositório (\texttt{AURORA\_DOCS\_DIR}). A recuperação é feita por contagem de ocorrências dos termos da pergunta (normalizados, sem acentuação, com mais de três letras) em cada parágrafo dos documentos, sem uso de \textit{embeddings}; os parágrafos com maior pontuação são retornados como trechos citáveis (\texttt{D1}, \texttt{D2}, \ldots), identificados pelo arquivo de origem.
+
+\paragraph{Contrato de citação de fonte.} As três ferramentas de RAG e consulta às bases retornam, de forma consistente, um campo \texttt{fonte}/\texttt{trechos} com referências curtas (\texttt{J\#} para o jurídico, \texttt{D\#} para a documentação interna) e uma instrução de citação (\texttt{instrucao\_citacao}) dirigida ao modelo orquestrador. Esse contrato é reforçado no \textit{prompt} de sistema (\texttt{AURORA\_ADDENDUM}, Seção~\ref{subsubsec:arquitetura_meta4}), que obriga a citação da fonte recuperada e proíbe a invenção de leis, artigos ou números não retornados por alguma ferramenta — mitigando alucinações na síntese final apresentada ao usuário.
+
+\subsubsection{Camada de Segurança — Guardrails}
+\label{subsubsec:guardrails_meta4}
+
+A abertura do Aurora Responde sem exigência de autenticação tornou necessária uma camada dedicada de proteções de entrada e saída, implementada no aplicativo \url{webapp/guardrails/} e acoplada tanto à visão de envio de mensagens (\texttt{send\_message}) quanto ao laço do orquestrador. A camada expõe um contrato público estável e independente da implementação interna — as funções \texttt{verificar\_limite}, \texttt{processar\_entrada} e \texttt{processar\_saida} —, de modo que os módulos internos de detecção possam evoluir, ou serem substituídos por um pacote de segurança mais completo, sem alterar os pontos de integração com o chat (\url{docs/guardrails_integracao.md}). Cada mensagem do usuário percorre a sequência: limite de requisições, mascaramento/bloqueio de entrada e, ao final, filtro de saída sobre a resposta gerada.
+
+\paragraph{Limitação de requisições (\textit{rate limit}).} A função \texttt{verificar\_limite} (\url{guardrails/limites.py}) controla o volume de mensagens por sessão/IP com dois tetos configuráveis — \texttt{GUARDRAILS\_RATE\_LIMIT\_PER\_MIN} (padrão 10 por minuto) e \texttt{GUARDRAILS\_RATE\_LIMIT\_PER\_DAY} (padrão 200 por dia) —, incrementando contadores no cache do Django (Valkey via \texttt{django-redis} quando \texttt{VALKEY\_URL} está definido; memória local em desenvolvimento). Ao estourar qualquer um dos tetos, a requisição é recusada com HTTP 429 e um tempo de espera sugerido (\texttt{retry\_after\_seconds}). Caso o cache esteja indisponível, a verificação degrada permitindo a requisição e registrando um aviso — priorizando a continuidade do chat sobre a aplicação estrita do limite.
+
+\paragraph{Risco pessoal — Disque 100 e Conselho Tutelar.} A função \texttt{detectar\_risco} (\url{guardrails/deteccao/topicos.py}) classifica a mensagem de entrada por expressões regulares normalizadas (sem acentuação), distinguindo dois encaminhamentos: mensagens que indicam emergência pessoal imediata (pedidos de ajuda, relato de abuso em curso, ideação suicida) disparam o encaminhamento ao \textbf{Disque 100}/190; relatos envolvendo criança ou adolescente em situação de risco, maus-tratos ou violação de direitos — sem caracterizar emergência imediata — disparam o encaminhamento ao \textbf{Conselho Tutelar}, com o Disque 100 citado como canal complementar de denúncia anônima. Um padrão auxiliar (\texttt{\_CONSULTA\_DADOS\_RE}) evita falso-positivo quando a menção ao Conselho Tutelar é, na verdade, uma pergunta estatística sobre a base SIPIA-CT (ex.: \textit{“Conselho Tutelar em SE em 2023”}). Em ambos os casos, a mensagem do usuário é bloqueada \emph{antes} de chegar ao modelo de linguagem — a resposta padronizada (\texttt{MSG\_DISQUE\_100} ou \texttt{MSG\_CONSELHO\_TUTELAR}, em \url{guardrails/mensagens.py}) é devolvida diretamente, sem custo de inferência e sem risco de o LLM minimizar ou desviar do encaminhamento adequado.
+
+\paragraph{Detecção de injeção de instruções.} A função \texttt{score\_injecao} (\url{guardrails/deteccao/injecao.py}) atribui um escore heurístico em $[0, 1]$ à mensagem de entrada, somando pesos de onze padrões associados a tentativas de manipulação do modelo — por exemplo, "ignore as instruções anteriores", menções a \textit{jailbreak}/\textit{developer mode}, pedidos para revelar o \textit{prompt} de sistema ou marcadores de bloco de sistema falsificados (\texttt{[system]}, \texttt{<<sys>>}). Mensagens com escore igual ou superior ao limiar configurável \texttt{GUARDRAILS\_INJECTION\_THRESHOLD} (padrão 0,70) são recusadas antes de acionar o modelo, com mensagem padronizada (\texttt{MSG\_INJECAO}).
+
+\paragraph{Proteção de dados pessoais identificáveis (PII).} A função \texttt{mascarar\_pii} (\url{guardrails/deteccao/pii.py}) localiza CPF, CNPJ e CNS na mensagem do usuário e os substitui por máscaras (ex.: \texttt{***.***.***-**}) apenas quando os dígitos correspondem a um documento \emph{válido} — com verificação do dígito verificador de cada tipo —, evitando falsos positivos sobre sequências numéricas quaisquer. Diferentemente do risco pessoal e da injeção, a presença de PII \textbf{não bloqueia} a mensagem: o texto mascarado segue para o modelo, preservando a possibilidade de resposta enquanto reduz a exposição de dados pessoais no histórico da conversa e nos registros do orquestrador.
+
+\paragraph{Sanitização de trechos recuperados (RAG) e filtro de saída.} Trechos retornados pelas ferramentas de RAG (jurídico e interno) são tratados como \emph{dado}, não como instrução: antes de entrarem no contexto do modelo, passam por \texttt{processar\_entrada(trechos\_recuperados=...)}, que neutraliza padrões de instrução embutidos no texto recuperado (ex.: "ignore instruções anteriores" dentro de um trecho de documento), registrando o evento correspondente. Já a resposta final do modelo passa por \texttt{processar\_saida}, que aplica três filtros: (i) bloqueio por \textbf{vazamento} — \textit{tracebacks}, comandos SQL, senhas, chaves de API ou blocos de chave privada na resposta; (ii) \textbf{supressão} de contagens baixas na prosa (abaixo de \texttt{GUARDRAILS\_SUPPRESS\_BELOW}, padrão 5), substituindo o texto por uma mensagem padronizada para reduzir o risco de reidentificação de casos individuais em recortes muito específicos; e (iii) sinalização, sem bloqueio, de números relevantes mencionados na resposta sem menção a uma fonte reconhecida (SINAN, SIPIA, ECA, referências \texttt{[J\#]}/\texttt{[D\#]}).
+
+
+% ============================================================
+%  NOVA SUBSEÇÃO: Critérios de Aceite
+%  Inserir aqui, após a última atividade da Meta 3
+% ============================================================
+
+\subsection{Critérios de Aceite da Versão 1.0}
+\label{subsec:criterios_aceite}
+
+Ao longo do desenvolvimento da versão 1.0  da Plataforma Aurora, as telas, os elementos de navegação e os componentes de apresentação de dados foram submetidos a avaliações incrementais de usabilidade e navegação, realizadas pelos pesquisadores envolvidos no projeto em reuniões específicas de avaliação. Essas revisões acompanharam de forma contínua a evolução da plataforma e abrangeram a Home, o Dashboard Aurora, a Distribuição Geográfica por UF — nas visões Brasil, SINAN e SIPIA-CT — e a tela específica do SIPIA-CT. O conjunto de telas disponível registra o estado atual da interface, enquanto o processo de avaliação foi conduzido de maneira iterativa, com análise coletiva das soluções implementadas e definição sucessiva de ajustes.
+
+A padronização observada entre as diferentes telas reflete esse processo incremental de avaliação. Entre os exemplos estão a adoção de uma estrutura uniforme de filtros — Localização, Período, Vítima e Tipo de Violência — no Dashboard e na Distribuição Geográfica, a organização da navegação por abas entre as fontes de dados Brasil, SINAN e SIPIA-CT e o uso recorrente do recurso “Tabela detalhada” associado aos gráficos. À medida que novas telas e funcionalidades eram incorporadas, as soluções de interface eram analisadas nas reuniões de avaliação e, quando consideradas adequadas, aplicadas ou ajustadas de forma consistente nos demais componentes da plataforma.
+
+Entre os principais aspectos avaliados e refinados destacam-se a apresentação institucional da página inicial; a clareza dos títulos, rótulos e indicadores numéricos; a padronização da terminologia relativa à violência sexual, ao tráfico e à exploração sexual; a organização da navegação entre o Dashboard e a Distribuição Geográfica, incluindo mecanismos de acesso e retorno entre as telas; a adequação dos painéis e gráficos ao conteúdo efetivamente apresentado; a uniformização do painel de filtros; e a diferenciação entre fontes de dados de acesso público e restrito. Também foram avaliadas a indicação específica de acesso restrito para a base SINAN, a limitação de granularidade da base SIPIA-CT ao nível de UF, a padronização da representação cartográfica por Unidade da Federação, a consistência da formatação numérica e a uniformidade visual entre cabeçalhos, elementos de navegação e mecanismos de detalhamento dos dados.
+
+Como resultado das avaliações incrementais realizadas coletivamente pelos pesquisadores, a plataforma foi sendo progressivamente refinada quanto à clareza das informações, à consistência terminológica, à hierarquia visual e ao fluxo de navegação. O estado atual das telas evidencia uma estrutura mais uniforme e coerente entre a página inicial, o Dashboard e os módulos de Distribuição Geográfica, refletindo os ajustes definidos ao longo das sucessivas reuniões de avaliação.
+
+% ============================================================
+\clearpage
+\section{Arquitetura, Processos e Componentes Técnicos}
+\label{sec:arquitetura}
+% ============================================================
+
+\subsection{Arquitetura de Banco de Dados e \emph{Schemas}}
+\label{subsec:schemas}
+
+A Base de Dados Consolidada do Projeto Aurora está implementada em \textbf{PostgreSQL 16}, organizada em três \emph{schemas} principais:
+
+\begin{itemize}
+  \item \texttt{django}: tabelas gerenciadas pela camada de aplicação (autenticação, logs, metadados de consultas, configurações);
+  \item \texttt{sinan}: dados brutos e derivados do SINAN/VIOLBR, incluindo a tabela unificada \texttt{"VIOLBR"} (2020–2025) e tabelas de séries temporais diárias;
+  \item \texttt{sipiact}: dados abertos do SIPIA-CT em formato \texttt{jsonb} e tabelas auxiliares com agregação por UF e indicador.
+\end{itemize}
+
+O \texttt{search\_path} da aplicação está configurado como \texttt{django, sinan, public}, de modo que as consultas analíticas e os módulos conversacionais operem diretamente sobre as tabelas consolidadas.
+
+\subsection{Tabela Unificada \texttt{sinan."VIOLBR"}}
+\label{subsec:violbr_tabela}
+
+A consolidação dos dados do SINAN/VIOLBR resultou na criação da tabela \texttt{sinan."VIOLBR"}, que unifica os arquivos anuais de 2020 a 2025 em uma única estrutura, com inclusão da coluna \texttt{ANO} para discriminar o ano de origem. O Dicionário de Dados do Projeto Aurora (Versão 1.0, 24/07/2026) documenta 161 colunas nessa tabela, correspondentes aos 157 campos originais do dicionário do SINAN acrescidos de colunas técnicas introduzidas no processo de consolidação. As colunas estão organizadas em grupos temáticos — temporal, territorial, perfil da vítima, caracterização da violência, contexto, repetição, provável autor, rede de proteção e residência, entre outros —, com descrição, tipo, possibilidade de nulo e observações específicas.
+
+Todos os dashboards, mapas coropléticos e módulos de consulta descritos na documentação de entregáveis leem diretamente essa tabela ou views derivadas, o que evidencia seu uso como fonte única da camada analítica.
+
+\subsection{Tabelas Derivadas de Séries Diárias}
+\label{subsec:series_diarias}
+
+Foram criadas duas tabelas derivadas de séries diárias, utilizadas na Meta~2 para análise de tendência e sazonalidade:
+
+\begin{itemize}
+  \item \texttt{EVENT\_DAILY\_FORECASTS}: 102.101 linhas, sem duplicados, com série diária de ocorrências por município, variáveis de calendário (dia da semana, janelas de Carnaval e outros eventos), \emph{lags}, médias móveis e previsões auxiliares;
+  \item \texttt{VIOLBR\_DAILY\_FORECASTS}: 204.529 linhas, também sem duplicados, com série diária de ocorrências por município, campos de \emph{lags}, médias móveis e previsões \emph{baseline} (ingênua, sazonal semanal, média de sete dias).
+\end{itemize}
+
+A existência dessas tabelas e suas características — tamanho, ausência de duplicados e coerência temporal — funcionam como evidência adicional de que a base consolidada está apta a sustentar análises temporais.
+
+\subsection{Integração de Fontes Além do SINAN}
+\label{subsec:integracao_fontes}
+
+A estratégia de integração de fontes adotada na Meta~1 compreende:
+
+\begin{itemize}
+  \item \textbf{SINAN/VIOLBR como base principal:} coluna vertebral da base consolidada, com dados em nível de município, distrito e bairro (quando disponíveis), abrangendo o período 2020–2025;
+  \item \textbf{SIPIA-CT a partir de dados abertos:} incorporação, no \emph{schema} \texttt{sipiact}, de dados anonimizados e agregados por UF (direitos violados, agentes violadores, faixa etária, sexo, cor/raça, entre outros);
+  \item \textbf{Integração analítica:} construção de mapa coroplético nacional em nível de UF para o SIPIA-CT e de mecanismos de filtragem que permitem ler, em paralelo, dados de notificações de saúde (SINAN) e registros dos Conselhos Tutelares (SIPIA-CT).
+\end{itemize}
+
+\subsection{Portal de Documentação e Repositório de Dados}
+\label{subsec:portal_documentacao}
+
+Foi implantada página específica do Projeto Aurora destinada a centralizar os materiais de acompanhamento — relatórios em PDF, documentação técnica e links para repositório de código e \emph{backup} do banco de dados. O acesso é feito por meio de \emph{token} de uso restrito, que libera um cookie de sessão; tentativas sem uso do \emph{token} são bloqueadas, e a página não é indexada por buscadores, funcionando como canal único e auditável de entrega dos artefatos. O endereço e o \emph{token} de acesso (\ph{TOKEN\_PORTAL}) são encaminhados ao MJSP por canal seguro, em mensagem separada deste relatório.
+
+De forma análoga, o repositório de banco de dados está disponível em plataforma Git, com acesso autenticado por \emph{token} pessoal de acesso (\ph{TOKEN\_GITHUB}) associado a usuário técnico indicado. O procedimento de clonagem do repositório \texttt{Projeto-Aurora-Database} é o seguinte:
+
+\vspace{4pt}
+\noindent\textbf{Windows} — abrir o PowerShell ou o Prompt de Comando; navegar até a pasta de destino (por exemplo, \texttt{cd D:\textbackslash Aurora}); executar:
+\begin{verbatim}
+git clone https://<TOKEN_GITHUB>@github.com/projetoaurora41-cloud/
+Projeto-Aurora-Database.git
+\end{verbatim}
+
+\noindent\textbf{Linux} — abrir o terminal; navegar até a pasta de destino (por exemplo, \texttt{cd \textasciitilde/Projetos}); executar o mesmo comando indicado acima.
+
+Após a conclusão, será criada automaticamente a pasta \texttt{Projeto-Aurora-Database}, contendo localmente todos os arquivos, diretórios e o histórico de versionamento do repositório.
+
+\subsection{Documentação Técnica Associada}
+\label{subsec:documentacao_tecnica}
+
+Em resposta à necessidade de clareza operacional sobre o artefato final de banco unificado, foram produzidos e atualizados os seguintes documentos técnicos, disponíveis no repositório do Projeto Aurora\textsuperscript{\ref{fn:portal}}:
+
+\begin{itemize}
+  \item \textbf{Dicionário de Dados — Projeto Aurora:} descreve a tabela unificada \texttt{sinan."VIOLBR"} (161 colunas), as tabelas derivadas de séries diárias e as tabelas de referência (agravos, UF, entre outras), com tipos, significados e observações;
+  \item \textbf{DER (Diagrama Entidade-Relacionamento):} documenta a estrutura lógica do banco, relacionando a tabela \texttt{"VIOLBR"} às tabelas de referência e estruturas auxiliares; gerado a partir de \texttt{scripts/gen\_der\_mermaid.py} e armazenado em formato \texttt{.md} e \texttt{.svg};
+  \item \textbf{Manual de Instalação:} descreve o procedimento de implantação da base Aurora em ambiente de desenvolvimento e produção, com e sem Docker, incluindo requisitos de PostgreSQL, configuração do \texttt{search\_path}, criação de superusuário e comandos de teste de conectividade;
+  \item \textbf{Roteiro de Implantação:} orienta o \emph{go-live} da plataforma (portal, chats, mapas e dashboards), detalhando arquitetura-alvo (PostgreSQL, Django, Ollama, modelos de séries), segurança (variáveis de ambiente, \texttt{DJANGO\_ALLOWED\_HOSTS}, \emph{backup} diário) e checklist de verificação pós-implantação;
+  \item \textbf{Documento de Entregáveis e Status:} consolida o alinhamento entre objetivos, perguntas, métricas e visualizações, registra que todas as visualizações leem a mesma base PostgreSQL (\texttt{sinan."VIOLBR"} e \texttt{sipiact}) e indica o estado de conclusão de itens como mapas coropléticos, manuais e repositório do projeto.
+\end{itemize}
+
+% ============================================================
+\clearpage
+\section{Resultados e Produtos}
+\label{sec:resultados}
+% ============================================================
+
+\subsection{Portal Aurora — Visão Geral e Indicadores Consolidados}
+\label{subsec:portal}
+
+As visualizações do Projeto Aurora estão reunidas no Portal Aurora, ponto único de acesso aos mapas interativos, ao dashboard analítico e aos módulos de consulta em linguagem natural. A Figura~\ref{fig:portal_home} apresenta a página inicial do portal.
+
+\telaAurora{figures/Portal/portal_home.png}
+{Portal Aurora — página inicial, com acesso aos mapas interativos, ao dashboard analítico e aos módulos de consulta.}
+{portal_home}
+
+A Figura~\ref{fig:portal_metricas} apresenta o painel de indicadores consolidados exibido na plataforma, que sintetiza o volume de registros disponível na Base de Dados Consolidada e delimita a abrangência temporal e territorial das análises.
+
+\telaAurora{figures/Portal/portal_metricas.png}
+{Portal Aurora — indicadores consolidados da base: total de notificações, notificações de violência sexual, tráfico de pessoas e exploração sexual, número de municípios cobertos e período de referência (2020–2025).}
+{portal_metricas}
+
+Os valores exibidos são lidos diretamente da tabela unificada \texttt{sinan."VIOLBR"}, sendo coerentes com os indicadores de completude apresentados na Seção~\ref{subsec:completude}, o que evidencia que mapas, dashboard e módulos conversacionais operam sobre a mesma fonte de dados.
+
+\subsection{Mapas}
+\label{subsec:mapas}
+
+Os mapas interativos do Portal Aurora permitem a visualização geográfica das notificações registradas nas bases SINAN/VIOLBR e SIPIA-CT, com representação coroplética, possibilitando identificar rapidamente regiões com maior concentração de ocorrências e apoiar análises comparativas entre estados e municípios.
+
+No caso do SINAN/VIOLBR, o mapa apresenta inicialmente os dados por Unidade da Federação e permite o detalhamento (\emph{drill-down}) até o nível municipal por meio da seleção de um estado, conforme ilustram as Figuras~\ref{fig:mapa_violbr_brasil} e~\ref{fig:mapa_violbr_municipios}, com filtros por ano, sexo da vítima e tipo de violência. O mapa do SIPIA-CT (Figuras~\ref{fig:mapa_sipiact_brasil} e~\ref{fig:mapa_sipiact_estado}) apresenta a distribuição dos registros por estado brasileiro, permitindo selecionar indicadores como agente violador, faixa etária, sexo, cor/raça e direito violado.
+
+\telaAurora{figures/Mapas/SINAN/violbr_nacional.png}
+{Mapa coroplético VIOLBR (SINAN) — notificações de violência por Unidade da Federação, com filtros de ano inicial e final, sexo da vítima e tipo de violência (violência sexual, tráfico e exploração sexual).}
+{mapa_violbr_brasil}
+
+\telaAurora{figures/Mapas/SINAN/violbr_bahia_municipios.png}
+{Mapa coroplético VIOLBR (SINAN) — detalhamento (\emph{drill-down}) em nível municipal a partir da seleção de uma Unidade da Federação, com painel lateral de totais do estado e do município selecionado. O detalhamento das demais unidades federativas consta do Apêndice~\ref{ap:sinan_uf}.}
+{mapa_violbr_municipios}
+
+\telaAurora{figures/Mapas/SIPIACT/sipiact_nacional.png}
+{Mapa coroplético SIPIA-CT (Conselho Tutelar) — registros por Unidade da Federação, com seleção de indicador (agente violador, direito violado, faixa etária, sexo e cor/raça) e de ano de referência.}
+{mapa_sipiact_brasil}
+
+\telaAurora{figures/Mapas/SIPIACT/sipiact_bahia.png}
+{Mapa coroplético SIPIA-CT (Conselho Tutelar) — detalhamento do total de registros de uma Unidade da Federação selecionada e sua participação no total nacional. O detalhamento das demais unidades federativas consta do Apêndice~\ref{ap:sipiact_uf}.}
+{mapa_sipiact_estado}
+
+Em ambos os mapas, a interação com o cursor sobre uma unidade territorial exibe um painel de leitura imediata com os totais correspondentes, conforme ilustram as Figuras~\ref{fig:violbr_detalhe} e~\ref{fig:sipiact_detalhe}.
+
+\telaAurora{figures/Mapas/SINAN/violbr_nacional_detalhe.png}
+{Mapa VIOLBR (SINAN) — painel de leitura exibido na seleção de uma Unidade da Federação, com total de notificações, participação no total nacional e desagregação por violência sexual, tráfico e exploração sexual.}
+{violbr_detalhe}
+
+\telaAurora{figures/Mapas/SIPIACT/sipiact_nacional_detalhe.png}
+{Mapa SIPIA-CT (Conselho Tutelar) — painel de leitura exibido na seleção de uma Unidade da Federação, com total de registros e participação no total nacional.}
+{sipiact_detalhe}
+
+O detalhamento territorial produzido para cada Unidade da Federação encontra-se sistematizado nos Apêndices~\ref{ap:sinan_uf} (SINAN/VIOLBR) e~\ref{ap:sipiact_uf} (SIPIA-CT).
+
+A nota explicativa técnica que fundamenta essas visualizações reforça a adequação do uso de mapas coropléticos para a representação de dados agregados por recortes territoriais, como Unidades da Federação e municípios, permitindo identificar de forma rápida a distribuição espacial das ocorrências, comparar diferentes regiões e destacar áreas com maior concentração relativa ou absoluta de registros.
+
+\subsubsection{Propostas de Dashboards (Meta 2)}
+
+As seis visualizações classificadas como de \textbf{alta prioridade} constituem o núcleo mínimo operacional do portal analítico: mapa coroplético por Unidade da Federação; ranking de municípios; série temporal das notificações; detalhamento dos subtipos de violência sexual; painel de encaminhamentos realizados pela rede de proteção; e gráfico de barras empilhadas por tipo de violência. As quatro propostas de \textbf{prioridade média} complementam esse núcleo, ampliando o detalhamento analítico quanto ao perfil das vítimas e ao refinamento da análise territorial em níveis de distrito e bairro. A Tabela~\ref{tab:dashboards} consolida essas propostas.
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}P{1.3cm}P{2.9cm}P{3.3cm}P{4.0cm}P{3.3cm}@{}}
+\caption{Proposta preliminar de dashboards do Projeto Aurora}
+\label{tab:dashboards}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Prior.}} & \textcolor{white}{\textbf{Dashboard}} & \textcolor{white}{\textbf{Objetivo}} & \textcolor{white}{\textbf{Campos-base}} & \textcolor{white}{\textbf{Filtros analíticos}} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Prior.}} & \textcolor{white}{\textbf{Dashboard}} & \textcolor{white}{\textbf{Objetivo}} & \textcolor{white}{\textbf{Campos-base}} & \textcolor{white}{\textbf{Filtros analíticos}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Alta} & Mapa coroplético por UF & Distribuição macro das notificações no território nacional. & UF de ocorrência, marcadores de violência sexual, tráfico e exploração sexual, datas de ocorrência e notificação. & Ano, mês, tipo de violência, subtipo sexual, sexo e faixa etária. \\
+\rowcolor{RowTint}
+\textbf{Alta} & Ranking de municípios & Identificação dos municípios com maior concentração de casos. & Município e UF de ocorrência, marcadores de violência sexual, tráfico e exploração sexual. & UF, período, tipo de violência, subtipo sexual, faixa etária e sexo. \\
+\textbf{Alta} & Série temporal mensal & Acompanhamento da evolução, do crescimento, da redução e da sazonalidade das notificações. & Data de notificação, semana epidemiológica, data de ocorrência e marcadores de violência sexual, tráfico e exploração sexual. & UF, município, tipo de violência, subtipo sexual, sexo e faixa etária. \\
+\rowcolor{RowTint}
+\textbf{Alta} & Barras por subtipo de violência sexual & Detalhamento em assédio, estupro, pornografia infantil, exploração sexual e outras categorias. & Subtipos de violência sexual. & UF, município, período, sexo, faixa etária e raça/cor. \\
+\textbf{Alta} & Painel de encaminhamentos da rede de proteção & Avaliação da resposta institucional acionada após a notificação. & Encaminhamentos para conselho tutelar, Ministério Público, saúde, assistência social, educação, delegacias e defensoria, combinados com o tipo de violência. & UF, município, período, tipo e subtipo de violência sexual. \\
+\rowcolor{RowTint}
+\textbf{Alta} & Barras empilhadas por tipo de violência & Peso relativo da exploração sexual, do tráfico e dos demais tipos de violência registrados. & Violência física, psicológica, tortura, sexual, tráfico, negligência, trabalho infantil e outras. & UF, município, período, faixa etária e sexo. \\
+\textbf{Média} & Pirâmide etária por faixa etária & Evidenciação das faixas etárias mais vulneráveis. & Data de nascimento, idade, sexo e marcadores de violência sexual, tráfico e exploração sexual. & UF, município, tipo de violência, subtipo sexual e sexo. \\
+\rowcolor{RowTint}
+\textbf{Média} & Perfil da vítima (sexo, raça/cor e escolaridade) & Caracterização sociodemográfica das vítimas. & Sexo, raça/cor, escolaridade e idade, combinados com violência sexual, tráfico e exploração sexual. & UF, município, período, tipo de violência e faixa etária. \\
+\textbf{Média} & Distribuição por local de ocorrência & Contexto territorial e funcional da violência. & Local de ocorrência, local específico, zona, hora e marcadores de violência sexual, tráfico e exploração sexual. & UF, município, período, tipo de violência, sexo e faixa etária. \\
+\rowcolor{RowTint}
+\textbf{Média} & Mapa de calor por distrito ou bairro & Localização de focos territoriais finos de ocorrência. & Distrito e bairro de ocorrência, nome do bairro, zona e marcadores de violência sexual, tráfico e exploração sexual. & UF, município, distrito, tipo de violência, local de ocorrência e período. \\
+\end{longtable}
+\endgroup
+
+\subsection{Dashboard — Painel de Proteção à Infância}
+\label{subsec:dashboard_resultados}
+
+O Portal Aurora disponibiliza um dashboard analítico — o \textbf{Painel de Proteção à Infância} — que reúne painéis interativos sobre a evolução temporal das notificações, o perfil das vítimas, os tipos e subtipos de violência e os encaminhamentos acionados na rede de proteção, complementando a leitura espacial oferecida pelos mapas. A Figura~\ref{fig:tela_inicial_dashboard} apresenta a tela inicial do dashboard (Início). A Figura ~\ref{fig:tela_inicial_aurora} mostra painéis com os indicadores consolidados (notificações, violência sexual, exploração sexual e municípios atingidos) e as visualizações de distribuição por estado e de ranking de municípios, etc.
+
+\telaAurora{figures/Dashboard/Aurora_inicio.png}
+{Tela Inicial da aplicação}
+{tela_inicial_dashboard}
+
+\telaAurora{figures/Dashboard/Aurora_aurora.png}
+{Tela com painéis indicadores consolidados, filtros territoriais e temporais, distribuição de casos por estado e ranking de municípios.}
+{tela_aurora}
+
+Além da visão inicial, o painel articula visualizações complementares que aprofundam a leitura dos dados: série temporal mensal das notificações; distribuição por tipos e subtipos de violência (com ênfase na violência sexual); pirâmide etária por sexo; perfil sociodemográfico das vítimas (raça/cor e escolaridade); local e horário de ocorrência; e indicadores de encaminhamentos acionados na rede de proteção (saúde, assistência social, Conselho Tutelar, Ministério Público e delegacias). O detalhamento de cada painel implementado encontra-se sistematizado no Apêndice~\ref{ap:dashboard_paineis}.
+
+A exploração desses painéis é orientada por filtros compartilhados aplicáveis simultaneamente a todas as visualizações: Unidade da Federação, município, período (ano inicial e final), sexo da vítima, faixa etária e marcadores específicos de violência sexual, tráfico de pessoas e exploração sexual.
+
+O Painel de Proteção à Infância foi desenvolvido para transformar o volume de notificações do SINAN/VIOL em informações de fácil leitura, apoiando pesquisadores, gestores públicos e profissionais da rede de proteção na identificação de padrões e concentrações de casos, na avaliação situacional das violências contra crianças e adolescentes e na formulação de estratégias de prevenção, proteção e enfrentamento baseadas em evidências. Entre os benefícios do painel, destacam-se: o acompanhamento contínuo da evolução das notificações; a identificação de padrões territoriais, sazonalidades e alterações no perfil dos casos; a apresentação consolidada de indicadores estratégicos em um único ambiente interativo; a aplicação de filtros compartilhados para recortes por território, período, sexo, faixa etária e tipo de violência; o apoio à elaboração de diagnósticos situacionais e relatórios gerenciais; e o suporte à priorização territorial e à avaliação da resposta da rede de proteção.
+
+Os indicadores exibidos no Painel de Proteção à Infância são lidos diretamente da tabela unificada \texttt{sinan."VIOLBR"}, mantendo coerência com a Base de Dados Consolidada (Seção~\ref{sec:arquitetura}) e com as visualizações preliminares da Meta~2 (Seção~\ref{subsec:atividades_meta2}), o que assegura consistência entre as diferentes formas de exploração dos dados no ecossistema do Portal Aurora.
+
+Complementarmente, o módulo de visualização geográfica do SIPIA-CT foi desenvolvido para tornar acessíveis, em nível estadual, os registros dos Conselhos Tutelares sobre violações de direitos de crianças e adolescentes, permitindo a comparação territorial entre fontes e o acompanhamento de indicadores como agente violador, faixa etária, sexo, cor/raça e direito violado. Os dados são lidos do \emph{schema} \texttt{sipiact} da Base de Dados Consolidada (Seção~\ref{sec:arquitetura}), em conformidade com a granularidade disponível nos dados abertos incorporados ao projeto.
+
+
+\subsection{Relatórios Analíticos (Meta 2)}
+\label{subsec:relatorios_analiticos}
+
+Além dos dashboards, foram formuladas dez propostas de relatórios analíticos, cada uma associada a objetivo específico, campos da base, escala geográfica e indicadores e formas de visualização sugeridos. Enquanto o dashboard privilegia a síntese das informações, a exploração visual e a navegabilidade entre recortes, os relatórios analíticos possibilitam maior aprofundamento em dimensões temáticas, territoriais, sociodemográficas e gerenciais. As propostas organizam-se em três níveis: leitura panorâmica (Panorama Nacional e Painel Executivo de Prioridades Territoriais); recortes temáticos (Exploração Sexual, Tráfico de Menores, Perfil das Vítimas, Contexto da Ocorrência e Violência de Repetição); e vínculos institucionais e fluxos territoriais (Rede de Proteção e comparação entre Residência da Vítima e Local da Ocorrência). A Tabela~\ref{tab:relatorios} sintetiza as dez propostas.
+
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}P{2.8cm}P{3.3cm}P{2.3cm}P{3.3cm}P{3.0cm}@{}}
+\caption{Relatórios analíticos do Projeto Aurora}
+\label{tab:relatorios}\\
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Relatório}} & \textcolor{white}{\textbf{Objetivo}} & \textcolor{white}{\textbf{Nível geográfico}} & \textcolor{white}{\textbf{Indicadores centrais}} & \textcolor{white}{\textbf{Visualizações}} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Relatório}} & \textcolor{white}{\textbf{Objetivo}} & \textcolor{white}{\textbf{Nível geográfico}} & \textcolor{white}{\textbf{Indicadores centrais}} & \textcolor{white}{\textbf{Visualizações}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Panorama Nacional} & Volume geral, evolução temporal e distribuição territorial das notificações. & Brasil, UF, município, distrito e bairro. & Total de casos; série anual; distribuição por sexo, idade, raça/cor e escolaridade. & Série temporal, mapa coroplético, ranking de municípios e mapa de calor. \\
+\rowcolor{RowTint}
+\textbf{Mapa Estratégico de Exploração Sexual} & Distribuição espacial dos casos com foco em exploração sexual. & UF, município, distrito e bairro. & Total de violência sexual; total de exploração sexual; proporção e concentração territorial. & Mapa de \emph{hot-spots}, barras por subtipo sexual, ranking de bairros e \emph{heatmap} por hora. \\
+\textbf{Mapa Estratégico de Tráfico de Menores} & Distribuição territorial dos casos de tráfico de seres humanos. & UF, município, distrito e bairro. & Total de tráfico; distribuição por faixa etária, sexo e local de ocorrência. & Mapa de incidência, painel por faixa etária, ranking de municípios e distribuição por tipo de local. \\
+\rowcolor{RowTint}
+\textbf{Perfil das Vítimas} & Perfil sociodemográfico das vítimas em exploração sexual e tráfico. & UF, município, distrito e bairro. & Distribuição por idade, sexo, raça/cor, escolaridade e deficiência/transtorno. & Pirâmide etária, barras empilhadas, mapas temáticos e painéis comparativos. \\
+\textbf{Contexto da Ocorrência} & Onde, quando e como a violência acontece. & Município, distrito e bairro. & Frequência por local e zona; meios de agressão; concentração por faixa horária. & \emph{Heatmap} temporal, mapa por local, matriz bairro por tipo de local e barras. \\
+\rowcolor{RowTint}
+\textbf{Violência de Repetição} & Persistência territorial e recorrência da violência. & UF, município, distrito e bairro. & Total de casos recorrentes; proporção de repetição; ranking de territórios com maior reincidência. & Mapa de recorrência, ranking territorial e série temporal. \\
+\textbf{Perfil do Provável Autor} & Vínculos relacionais e características do provável autor. & UF, município, distrito e bairro. & Vínculo com a vítima; sexo do autor; suspeita de uso de álcool; ciclo de vida do autor. & Matriz autor-vítima, ranking de vínculos e mapas por tipo de autor. \\
+\rowcolor{RowTint}
+\textbf{Rede de Proteção} & Acionamento da rede institucional após a notificação. & UF, município, distrito e bairro. & Total de encaminhamentos por rede; cobertura institucional por território. & Painel de cobertura, mapa de resposta e matriz tipo de violência por encaminhamento. \\
+\textbf{Residência vs. Local da Ocorrência} & Comparação entre território de residência e de ocorrência para detectar deslocamentos e áreas de risco. & UF, município, distrito e bairro. & Coincidência residência-ocorrência; fluxos entre bairros e municípios. & Fluxo origem-destino, mapa comparativo e painéis territoriais. \\
+\rowcolor{RowTint}
+\textbf{Painel Executivo de Prioridades Territoriais} & Consolidação dos principais indicadores para decisão estratégica. & Brasil, UF, município, distrito e bairro. & Total de notificações; exploração sexual; tráfico; repetição; perfil; cobertura de encaminhamentos. & Dashboard executivo, ranking de áreas críticas, semáforos territoriais e mapas multicamadas. \\
+\end{longtable}
+\endgroup
+
+Adicionalmente, a estrutura analítica do SIPIA-CT permite a elaboração de relatórios voltados à caracterização e à comparação territorial das violações de direitos registradas pelos Conselhos Tutelares, explorando a distribuição dos registros por Unidade da Federação e ano, os direitos violados com maior frequência, os principais agentes violadores registrados e o perfil das crianças e adolescentes segundo faixa etária, sexo e cor/raça. Esses produtos podem ser apresentados por meio de mapas coropléticos, rankings, gráficos de distribuição e séries históricas, conforme a disponibilidade e a granularidade dos dados.
+
+% ============================================================
+\clearpage
+\section{Análises e Discussões}
+\label{sec:analises}
+% ============================================================
+
+\subsection{Indicadores de Completude e Consistência}
+\label{subsec:completude}
+
+Em atendimento à necessidade de apresentação de indicadores objetivos de completude e consistência, foram estruturados três níveis de verificação.
+
+\subsubsection{Número de registros e ausência de duplicidades}
+
+A base consolidada do SINAN/VIOLBR, no ambiente da plataforma Aurora, reúne \textbf{3.035.710 notificações} no período 2020–2025, conforme documentado na apresentação da plataforma de chats e nos entregáveis técnicos, correspondendo ao total de linhas efetivamente lidas pela aplicação nos módulos de dashboard, mapas e chats. Nas tabelas derivadas de séries diárias, o Dicionário de Dados registra explicitamente que as estruturas \texttt{EVENT\_DAILY\_FORECASTS} (102.101 linhas) e \texttt{VIOLBR\_DAILY\_FORECASTS} (204.529 linhas) encontram-se sem duplicados, o que implica verificação prévia de unicidade por par (município, data).
+
+\subsubsection{Campos ausentes e regras de tratamento}
+
+O processo de ETL aplicado na consolidação da base inclui: padronização de códigos e textos (uso de \texttt{TRIM}, \texttt{UPPER}, \texttt{LPAD} e mapeamentos de categorias) para reduzir variações de grafia e preenchimento em campos categóricos; tratamento de campos vazios e valores ausentes, com distinção entre "não informado", "ignorado" e "não se aplica", de acordo com o dicionário do SINAN e o Dicionário de Dados do Projeto Aurora; e construção de rotinas internas de monitoramento de completude por grupo de campos (por exemplo, perfil da vítima, caracterização da violência, rede de proteção), permitindo quantificar, para cada variável, a proporção de registros preenchidos. Essas rotinas orientam tanto a depuração da base quanto a interpretação dos dashboards, uma vez que indicadores com baixa completude são destacados nas análises técnicas, evitando leituras indevidas de ausência de notificação como ausência de ocorrência.
+
+\subsubsection{Validações de consistência}
+
+Foram adotados, entre outros, os seguintes critérios de validação: coerência temporal, com verificação de que a data de ocorrência não é posterior à data de notificação, sinalizando-se e tratando-se os registros que violam essa regra; coerência entre faixa etária e data de nascimento, quando ambos os campos estão disponíveis, com sinalização de casos discrepantes; e conferência da validade de códigos de UF e município com base em tabelas de referência, reduzindo o risco de municípios inexistentes ou códigos desatualizados. O conjunto dessas validações contribui para assegurar que a Base de Dados Consolidada atenda a requisitos estruturais e a critérios mínimos de qualidade para uso analítico e para a alimentação de dashboards e assistentes virtuais.
+
+\subsection{Potencial de Aplicação para o MJSP}
+\label{subsec:aplicacao_mjsp}
+
+A estrutura de dashboards favorece a visualização rápida de concentração territorial, evolução temporal, distribuição e composição das ocorrências, permitindo identificar áreas prioritárias, tendências e padrões recorrentes a partir dos dados disponíveis. Os relatórios analíticos ampliam a capacidade de interpretação ao integrar dimensões geográficas, sociodemográficas, contextuais e institucionais, possibilitando explorar, de forma combinada, a distribuição territorial dos casos de exploração sexual e tráfico de menores, o perfil das vítimas, a recorrência das situações de violência e os encaminhamentos realizados para a rede de proteção.
+
+A documentação indica ainda que a camada analítica do portal será complementada por um assistente virtual para consultas em linguagem natural, cuja efetividade está diretamente relacionada à qualidade da organização, estruturação e documentação dos dados e produtos analíticos disponibilizados. A definição prévia de dashboards, indicadores e relatórios contribui para estabelecer uma base informacional consistente para as consultas realizadas por meio desse canal.
+
+Quanto ao SIPIA-CT, a análise territorial dos direitos violados e dos agentes violadores possibilita identificar diferenças entre as Unidades da Federação e subsidiar a definição de recortes prioritários para investigação, acompanhamento e monitoramento, enquanto os indicadores de faixa etária, sexo e cor/raça permitem caracterizar os grupos representados nos registros. A integração dessas informações com as demais fontes do Projeto Aurora contribui para a construção de uma visão mais abrangente das violações de direitos de crianças e adolescentes, atuando o SIPIA-CT como fonte complementar ao SINAN.
+
+Em conjunto, a integração entre portal analítico, relatórios estruturados, base de dados unificada e mecanismos de avaliação das respostas automatizadas tende a ampliar a confiabilidade do uso da informação em um domínio sensível, oferecendo ao MJSP instrumentos organizados para leitura territorial das ocorrências, definição de prioridades analíticas, articulação institucional e qualificação de estratégias de prevenção, proteção e enfrentamento das violações de direitos de crianças e adolescentes.
+
+
+% ============================================================
+\clearpage
+\section{Considerações Finais}
+\label{sec:consideracoes}
+% ============================================================
+
+Este relatório apresentou, de maneira articulada, a consolidação da Base de Dados do Projeto Aurora, a integração de fontes de dados além do SINAN, os indicadores de completude e consistência da base, a documentação técnica associada e as propostas e implementações de visualizações — mapas, dashboards e relatórios analíticos — desenvolvidas no âmbito das Metas 1, 2 e 3.
+
+O documento dialoga diretamente com o Relatório Parcial de Cumprimento do Objeto e com a Nota Técnica nº 16/2026, demonstrando que a base consolidada constitui um artefato efetivamente em uso, que sustenta as visualizações, as análises e os módulos conversacionais do Projeto Aurora. A equipe permanece à disposição do MJSP para prestar quaisquer esclarecimentos adicionais.
+
+% ============================================================
+\clearpage
+\section{Referências}
+\label{sec:referencias}
+% ============================================================
+
+As referências a seguir correspondem às fontes de dados, aos instrumentos normativos e aos endereços eletrônicos citados ao longo deste relatório.
+
+\begin{itemize}
+  \item DATASUS — Departamento de Informática do Sistema Único de Saúde. Portal de Transferência de Arquivos. Disponível em: \url{https://datasus.saude.gov.br/transferencia-de-arquivos/}.
+  \item Portal Brasileiro de Dados Abertos. Sistema de Informação para a Infância e Adolescência — Módulo Conselho Tutelar (SIPIA-CT). Disponível em: \url{https://dados.gov.br/dados/conjuntos-dados/sistema-de-informacao-para-a-infancia-e-adolescencia---modulo-conselho-tutelar---sipiact}.
+  \item Portal do Projeto Aurora — repositório de documentação técnica e artefatos do projeto. Disponível em: \url{http://www.projetoauroramjsp.com.br} (acesso restrito, mediante token).
+  \item BRASIL. Lei nº 8.069, de 13 de julho de 1990 — Estatuto da Criança e do Adolescente (ECA).
+  \item BRASIL. Código Civil.
+  \item BRASIL. Código Penal.
+  \item BRASIL. Lei nº 13.344, de 6 de outubro de 2016 — dispõe sobre prevenção e repressão ao tráfico interno e internacional de pessoas.
+  \item Nota Técnica nº 16/2026/CPETP/CGETP/DEMIG/SENAJUS/MJ, Processo Administrativo nº 08026.000195/2025-78.
+  \item Ofício nº 9/2026.
+\end{itemize}
+
+% ============================================================
+\appendix
+\clearpage
+% ============================================================
+\section{Mapas VIOLBR (SINAN) por Unidade da Federação}
+\label{ap:sinan_uf}
+% ============================================================
+
+Este apêndice reúne as visualizações territoriais geradas pelo mapa coroplético VIOLBR (SINAN) para cada Unidade da Federação, obtidas por meio do detalhamento (\emph{drill-down}) a partir do mapa nacional apresentado na Figura~\ref{fig:mapa_violbr_brasil}. Cada figura apresenta a distribuição municipal das notificações no estado selecionado, acompanhada do painel lateral com o total de notificações da unidade federativa, sua participação no total nacional e a desagregação por violência sexual, tráfico e exploração sexual. O estado da Bahia é apresentado, a título de exemplo do recurso de detalhamento, na Figura~\ref{fig:mapa_violbr_municipios}.
+
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_ac.png}{Acre (AC)}{Mapa VIOLBR (SINAN)}{sinanuf_ac}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_al.png}{Alagoas (AL)}{Mapa VIOLBR (SINAN)}{sinanuf_al}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_ap.png}{Amapá (AP)}{Mapa VIOLBR (SINAN)}{sinanuf_ap}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_am.png}{Amazonas (AM)}{Mapa VIOLBR (SINAN)}{sinanuf_am}
+% (sem captura disponível para Bahia (BA) — ver Figura~\ref{fig:mapa_violbr_municipios})
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_ce.png}{Ceará (CE)}{Mapa VIOLBR (SINAN)}{sinanuf_ce}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_df.png}{Distrito Federal (DF)}{Mapa VIOLBR (SINAN)}{sinanuf_df}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_es.png}{Espírito Santo (ES)}{Mapa VIOLBR (SINAN)}{sinanuf_es}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_go.png}{Goiás (GO)}{Mapa VIOLBR (SINAN)}{sinanuf_go}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_ma.png}{Maranhão (MA)}{Mapa VIOLBR (SINAN)}{sinanuf_ma}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_mt.png}{Mato Grosso (MT)}{Mapa VIOLBR (SINAN)}{sinanuf_mt}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_ms.png}{Mato Grosso do Sul (MS)}{Mapa VIOLBR (SINAN)}{sinanuf_ms}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_mg.png}{Minas Gerais (MG)}{Mapa VIOLBR (SINAN)}{sinanuf_mg}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_pa.png}{Pará (PA)}{Mapa VIOLBR (SINAN)}{sinanuf_pa}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_pb.png}{Paraíba (PB)}{Mapa VIOLBR (SINAN)}{sinanuf_pb}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_pr.png}{Paraná (PR)}{Mapa VIOLBR (SINAN)}{sinanuf_pr}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_pe.png}{Pernambuco (PE)}{Mapa VIOLBR (SINAN)}{sinanuf_pe}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_pi.png}{Piauí (PI)}{Mapa VIOLBR (SINAN)}{sinanuf_pi}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_rj.png}{Rio de Janeiro (RJ)}{Mapa VIOLBR (SINAN)}{sinanuf_rj}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_rn.png}{Rio Grande do Norte (RN)}{Mapa VIOLBR (SINAN)}{sinanuf_rn}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_rs.png}{Rio Grande do Sul (RS)}{Mapa VIOLBR (SINAN)}{sinanuf_rs}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_ro.png}{Rondônia (RO)}{Mapa VIOLBR (SINAN)}{sinanuf_ro}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_rr.png}{Roraima (RR)}{Mapa VIOLBR (SINAN)}{sinanuf_rr}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_sc.png}{Santa Catarina (SC)}{Mapa VIOLBR (SINAN)}{sinanuf_sc}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_sp.png}{São Paulo (SP)}{Mapa VIOLBR (SINAN)}{sinanuf_sp}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_se.png}{Sergipe (SE)}{Mapa VIOLBR (SINAN)}{sinanuf_se}
+\mapaUF{figures/Mapas/SINAN/UF/violbr_uf_to.png}{Tocantins (TO)}{Mapa VIOLBR (SINAN)}{sinanuf_to}
+
+% ============================================================
+\clearpage
+\section{Mapas SIPIA-CT por Unidade da Federação}
+\label{ap:sipiact_uf}
+% ============================================================
+
+Este apêndice reúne as visualizações territoriais geradas pelo mapa coroplético do SIPIA-CT para cada Unidade da Federação, a partir do mapa nacional apresentado na Figura~\ref{fig:mapa_sipiact_brasil}. Considerando que os dados abertos do SIPIA-CT encontram-se estruturados em nível de Unidade da Federação, cada figura apresenta o total de registros do estado selecionado e sua participação no total nacional, segundo o indicador escolhido no painel de filtros.
+
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ac.png}{Acre (AC)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ac}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_al.png}{Alagoas (AL)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_al}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ap.png}{Amapá (AP)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ap}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_am.png}{Amazonas (AM)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_am}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ba.png}{Bahia (BA)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ba}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ce.png}{Ceará (CE)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ce}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_df.png}{Distrito Federal (DF)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_df}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_es.png}{Espírito Santo (ES)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_es}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_go.png}{Goiás (GO)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_go}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ma.png}{Maranhão (MA)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ma}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_mt.png}{Mato Grosso (MT)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_mt}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ms.png}{Mato Grosso do Sul (MS)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ms}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_mg.png}{Minas Gerais (MG)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_mg}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_pa.png}{Pará (PA)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_pa}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_pb.png}{Paraíba (PB)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_pb}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_pr.png}{Paraná (PR)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_pr}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_pe.png}{Pernambuco (PE)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_pe}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_pi.png}{Piauí (PI)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_pi}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_rj.png}{Rio de Janeiro (RJ)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_rj}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_rn.png}{Rio Grande do Norte (RN)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_rn}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_rs.png}{Rio Grande do Sul (RS)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_rs}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_ro.png}{Rondônia (RO)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_ro}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_rr.png}{Roraima (RR)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_rr}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_sc.png}{Santa Catarina (SC)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_sc}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_sp.png}{São Paulo (SP)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_sp}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_se.png}{Sergipe (SE)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_se}
+\mapaUF{figures/Mapas/SIPIACT/UF/sipiact_uf_to.png}{Tocantins (TO)}{Mapa SIPIA-CT (Conselho Tutelar)}{sipiauf_to}
+
+\clearpage
+\section{Plataforma Aurora (Dashboard)}
+\label{ap:aurora}
+
+\subsubsection{Visão geral}
+
+A Plataforma Aurora é apresentada, em sua página inicial, como uma plataforma integrada de apoio à análise de registros para orientação de respostas e ações de proteção a crianças e adolescentes no Brasil, com ênfase na exploração sexual e no tráfico de menores. Foi desenvolvida em parceria entre o Ministério da Justiça e Segurança Pública (MJSP), a Universidade Federal de Sergipe (UFS) e a Universidade Federal da Bahia (UFBA), com a finalidade de integrar e analisar dados públicos sobre violência contra crianças e adolescentes no país.
+
+Os principais recursos identificados são: (i)~um painel analítico com indicadores agregados e gráficos sobre notificações de violência; (ii)~um módulo de distribuição geográfica por Unidade da Federação (UF), organizado por fonte de dados; (iii)~um mecanismo de filtros para refinamento das análises por localização, período, características da vítima e tipo de violência; e (iv)~uma área de acesso restrito vinculada ao SINAN. O rodapé do painel identifica-o como "painel educativo inspirado no Design System gov.br", com "dados ilustrativos", e traz referência ao canal de denúncia Disque~100 (anônimo, gratuito, 24~horas) — informação relevante para a correta interpretação dos números exibidos nas Figuras~\ref{fig:dash_casos_estado}--\ref{fig:dash_concentracao_local}.
+
+\subsubsection{Estrutura e navegação}
+
+A navegação é sustentada por um menu superior fixo, presente em todas as telas, com os itens "Início" e "Aurora". A estrutura identificada, organizada prioritariamente pelo conteúdo e pelas tarefas do usuário e, em segundo nível, pela fonte de dados, compreende:
+
+\begin{itemize}
+  \item Página inicial (rota \texttt{/}) — apresentação institucional e ponto de entrada para o painel analítico;
+  \item Dashboard Aurora (rota \texttt{/dashboards}) — painel consolidado com indicadores, filtros e gráficos;
+  \item Distribuição Geográfica por UF (rota \texttt{/distribuicao-geografica}), organizada em três abas por fonte de dados — "Brasil" (\texttt{fonte=brasil}), "SINAN" (\texttt{fonte=sinan}, acesso restrito) e "SIPIA-CT" (\texttt{fonte=sipia-ct}, sem detalhamento municipal);
+  \item Tela "SIPIA-CT" (rota \texttt{/sipia-ct}), com conteúdo idêntico ao da aba homônima.
+\end{itemize}
+
+Nas telas de conteúdo analítico, a navegação lateral esquerda é ocupada por um painel de filtros; no dashboard, um item de menu lateral direciona o usuário ao módulo de distribuição geográfica.
+
+\subsubsection{Página inicial}
+
+A página inicial exibe, no cabeçalho, os brasões do MJSP, da UFS e da UFBA ao lado da identificação "PROJETO AURORA", seguidos de uma barra de navegação horizontal com os itens "Início" e "Aurora". O corpo da página apresenta um banner com fotografia de crianças em um campo, sobreposto ao título "AURORA" e ao texto descritivo da plataforma, além de um botão "Entrar" que conduz à área analítica. Na sequência, a seção "Sobre o Aurora" reitera, em um parágrafo institucional, a parceria entre MJSP, UFS e UFBA e a finalidade da plataforma.
+
+\subsubsection{Painel analítico (Dashboard Aurora)}
+
+Ao acionar "Entrar", o usuário é direcionado ao Dashboard Aurora (rota \texttt{/dashboards}), intitulado "Painel sobre Violência contra Crianças e Adolescentes". O painel é composto por quatro blocos funcionais: indicadores-síntese, filtros, acesso à distribuição geográfica e um conjunto de gráficos analíticos.
+
+No topo, quatro cartões de indicadores (KPIs) apresentam: "Municípios" (5.627), "Notificações" (2.987.939), "Violência sexual" (342.714) e "Exploração sexual" (7.998). Na coluna lateral esquerda, o painel "Filtros" permite refinar a análise por "Localização" (UF e, condicionalmente, Município), "Período" (ano inicial e final), "Vítima" (sexo e faixa etária) e "Tipo de violência" (violência sexual, tráfico, exploração). Logo acima dos filtros, o item "Distribuição Geográfica por UF — Brasil/SIPIA-CT/SINAN" conduz ao módulo geográfico, tratado na Seção~\ref{ap:aurora-geo}.
+
+A área principal reúne os seguintes gráficos, todos referentes ao período 2021–2025, compartilhando o mesmo painel de filtros lateral e, na maior parte dos casos, um controle expansível de "Tabela detalhada":
+
+\painelDash{figures/Dashboard/Paineis/dash_casos_por_estado.png}
+{Notificações por UF: gráfico de barras verticais com série "Total" e séries por tipo de violência (violência sexual, tráfico, exploração sexual), comparando as Unidades da Federação.}
+{dash_casos_estado}
+
+\painelDash{figures/Dashboard/Paineis/dash_ranking_municipios.png}
+{Ranking de Municípios: gráfico de barras verticais, com a mesma legenda de tipos de violência, ordenando municípios por volume de notificações.}
+{dash_ranking_municipios}
+
+A evolução temporal das notificações é tratada na Seção~\ref{ap:aurora-temporal}, que reúne os dois gráficos do painel dedicados a essa dimensão.
+
+\painelDash{figures/Dashboard/Paineis/dash_tipos_violencia_sexual.png}
+{Tipos de Violência: gráfico de barras verticais (série "Casos") por natureza da violência — estupro, assédio sexual, exploração sexual, pornografia infantil e outras categorias.}
+{dash_tipos_violencia_sexual}
+
+\painelDash{figures/Dashboard/Paineis/dash_encaminhamentos_rede.png}
+{Encaminhamentos por Rede de Proteção: resposta institucional acionada após a notificação, representada por gráfico de barras (série "Encaminhamentos") por órgão ou serviço da rede.}
+{dash_encaminhamentos_rede}
+
+\painelDash{figures/Dashboard/Paineis/dash_encaminhamentos_por_tipo.png}
+{Encaminhamentos por Tipo de Violência: cobertura institucional cruzada com o tipo de violência, representada por gráfico de barras empilhadas.}
+{dash_encaminhamentos_por_tipo}
+
+\subsubsection{Distribuição temporal}
+\label{ap:aurora-temporal}
+
+A análise temporal das notificações, referente ao período 2021–2025, é representada por dois gráficos do Dashboard Aurora:
+
+\painelDash{figures/Dashboard/Paineis/dash_evolucao_mensal.png}
+{Distribuição Mensal: gráfico de linhas com séries "Violência sexual", "Tráfico" e "Exploração sexual", evidenciando a evolução, a sazonalidade e a possível defasagem entre ocorrência e notificação mês a mês.}
+{dash_evolucao_mensal}
+
+\painelDash{figures/Dashboard/Paineis/dash_violencia_por_ano.png}
+{Tipos de Violência por Ano: gráfico de barras empilhadas por natureza da violência (física, psicológica, tortura, sexual, tráfico, negligência, trabalho infantil e outras), permitindo comparar a composição anual das notificações entre 2021 e 2025 e o peso relativo da exploração sexual e do tráfico frente aos demais tipos.}
+{dash_violencia_por_ano}
+
+\subsubsection{Distribuição geográfica}
+\label{ap:aurora-geo}
+
+O módulo "Distribuição Geográfica por UF" (rota \texttt{/distribuicao-geografica}) é organizado em três abas, correspondentes às fontes "Brasil", "SINAN" e "SIPIA-CT", mantendo o mesmo painel de filtros lateral do dashboard.
+
+Na aba "Brasil", o conteúdo principal é um mapa coroplético intitulado "Distribuição por UF", no qual a intensidade da cor representa a faixa de notificações; ao passar o cursor sobre uma UF, exibe-se o total correspondente, sendo 2.987.939 o total nacional registrado. A legenda define nove faixas, de "sem dados/0" a "265.543 ou mais". Abaixo do mapa, um controle expansível dá acesso à "Tabela detalhada".
+
+Na aba "SINAN", em lugar do mapa, exibe-se um formulário de acesso restrito ("A área de dados do SINAN é restrita. Entre com seu usuário e senha para continuar. Os painéis e mapas continuam abertos ao público."), com os campos "Usuário" e "Senha" e o botão "Entrar".
+
+Na aba "SIPIA-CT", um aviso informa que os registros dos Conselhos Tutelares estão disponíveis apenas no nível de UF, sem detalhamento municipal. O mapa coroplético correspondente indica um total nacional de 125.495 notificações, com legenda de nove faixas, de "sem dados/0" a "11.154 ou mais". Também aqui, um controle expansível dá acesso à "Tabela detalhada". Todas as telas do módulo oferecem a opção "Voltar ao dashboard".
+
+\painelDash{figures/Dashboard/Paineis/dash_concentracao_municipio.png}
+{Concentração por Município: focos territoriais de maior granularidade que a UF, evidenciando concentrações finas de notificações por município.}
+{dash_concentracao_municipio}
+
+\painelDash{figures/Dashboard/Paineis/dash_local.png}
+{Concentração por Local: tipologia espacial das ocorrências, complementar à distribuição por local de ocorrência tratada na Seção~\ref{ap:aurora-perfil}.}
+{dash_concentracao_local}
+
+\subsubsection{Perfil e caracterização das notificações}
+\label{ap:aurora-perfil}
+
+A caracterização do perfil das notificações e das vítimas, referente ao período 2021–2025, é apresentada pelos seguintes elementos do Dashboard Aurora, aos quais se somam, para fins de caracterização geográfica e da natureza da violência, os gráficos de Notificações por UF, Ranking de Municípios, Tipos de Violência e Tipos de Violência por Ano já descritos:
+
+\painelDash{figures/Dashboard/Paineis/dash_piramide_etaria.png}
+{Faixa Etária: gráfico de barras horizontais organizado pelas faixas 00–04, 05–09, 10–13 e 14–17 anos, com séries "Masculino" e "Feminino", evidenciando as faixas etárias mais vulneráveis.}
+{dash_piramide_etaria}
+
+\painelDash{figures/Dashboard/Paineis/dash_perfil_vitimas.png}
+{Perfil das Vítimas: gráfico de barras verticais por classificação de raça/cor (parda, branca, preta, ignorada, indígena, amarela, não informada), com controle expansível de tabela detalhada por raça, sexo e escolaridade.}
+{dash_perfil_vitimas}
+
+\subsubsection{Bases de dados}
+
+A plataforma utiliza três fontes de dados, organizadas como abas do módulo de distribuição geográfica: "Brasil" (visão consolidada nacional), "SINAN" e "SIPIA-CT". 
+
+Quanto ao acesso: os dados do SINAN são restritos, mediante autenticação por usuário e senha; os dados do SIPIA-CT são públicos, mas disponíveis exclusivamente em nível de UF, sem detalhamento municipal. O nível de agregação e as regras de acesso da visão consolidada "Brasil" não são detalhados além do que consta no mapa e nos filtros já descritos.
+
+\subsubsection{Modo de utilização}
+
+Com base nas telas registradas, o fluxo típico de uso da plataforma é: (1)~acesso à página inicial; (2)~acionamento do botão "Entrar", com direcionamento ao Dashboard Aurora; (3)~consulta aos indicadores-síntese; (4)~aplicação de filtros de localização, período, vítima e tipo de violência; (5)~exame dos gráficos analíticos do painel, com expansão opcional das tabelas detalhadas; (6)~acesso à distribuição geográfica por meio do item correspondente no painel; (7)~seleção da aba referente à fonte de dados desejada e, quando disponível, consulta ao mapa coroplético; (8)~no caso da aba "SINAN", autenticação por usuário e senha; e (9)~retorno ao painel principal a qualquer momento, por meio da opção "Voltar ao dashboard".
+
+\telaAurora{figures/Fluxograma/navegacao.png}
+{Modo de utilização}
+% {portal_metricas}
+
+\subsubsection{Acesso à plataforma}
+
+Domínio ou endereço eletrônico completo de acesso público à Plataforma Aurora.
+
+\href{https://dashboard.projetoauroramjsp.com.br/}{Plataforma Aurora}
+
+\newpage
+\vspace{9.5em}
+
+\begin{center}
+\setstretch{1.0}
+\vspace{3.5em}
+\begin{minipage}{0.45\textwidth}
+\centering
+\vspace{3.5em}
+\rule{7cm}{0.4pt}\\[0.4em]
+\textbf{Glauco de Figueiredo Carneiro}\\
+\textbf{Universidade Federal de Sergipe}\\
+\textbf{Coordenador do Projeto}\\
+\textbf{CPF: ***.258.425-***}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+\centering
+\vspace{3.5em}
+\rule{7cm}{0.4pt}\\[0.4em]
+\textbf{Manoel Gomes de Mendonça Neto}\\
+\textbf{Universidade Federal da Bahia}\\
+\textbf{Vice-Coordenador do Projeto}\\
+\textbf{CPF: ***.035.645-***}
+\end{minipage}
+
+\vspace{4.8em}
+
+\begin{minipage}{0.45\textwidth}
+\centering
+\rule{7cm}{0.4pt}\\[0.4em]
+\textbf{Ricardo Eugênio Porto Vieira}\\
+\textbf{Universidade Federal da Bahia}\\
+\textbf{Pesquisador}\\
+\textbf{CPF: ***.929.375-**}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+\centering
+\rule{7cm}{0.4pt}\\[0.4em]
+\textbf{Marcelo Moreira West}\\
+\textbf{Universidade Federal da Bahia}\\
+\textbf{Pesquisador}\\
+\textbf{CPF: ***.555.581-**}
+\end{minipage}
+
+\vspace{4.8em}
+
+\begin{minipage}{0.45\textwidth}
+\centering
+\rule{7cm}{0.4pt}\\[0.4em]
+\textbf{Rafael Takeguma Goto}\\
+\textbf{Universidade Federal de Sergipe}\\
+\textbf{Pesquisador}\\
+\textbf{CPF: ***.324.825-**}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+\centering
+\rule{7cm}{0.4pt}\\[0.4em]
+\textbf{Hernandison da Silva Bispo}\\
+\textbf{Universidade Federal de Sergipe}\\
+\textbf{Pesquisador}\\
+\textbf{CPF: ***.552.515-**}
+\end{minipage}
+
+\vspace{4.8em}
+
+% \begin{minipage}{0.45\textwidth}
+% \centering
+% \rule{7cm}{0.4pt}\\[0.4em]
+% \textbf{João Fernando Pereira de Souza}\\
+% \textbf{Universidade Federal de Sergipe}\\
+% \textbf{Pesquisador}\\
+% \textbf{CPF: ***.960.246-**}
+% \end{minipage}
+% \hfill
+% \begin{minipage}{0.45\textwidth}
+% \centering
+% \rule{7cm}{0.4pt}\\[0.4em]
+% \textbf{João Cosme Sena Sá}\\
+% \textbf{Universidade Federal de Sergipe}\\
+% \textbf{Pesquisador}\\
+% \textbf{CPF: ***.843.365-**}
+% \end{minipage}
+
+% \vspace{4.8em}
+
+% \begin{minipage}{0.45\textwidth}
+% \centering
+% \rule{7cm}{0.4pt}\\[0.4em]
+% \textbf{Lauryane Santos Siqueira}\\
+% \textbf{Universidade Federal de Sergipe}\\
+% \textbf{Pesquisadora}\\
+% \textbf{CPF: ***.598.275-**}
+% \end{minipage}
+% \hfill\begin{minipage}{0.45\textwidth}
+% \centering
+% \rule{7cm}{0.4pt}\\[0.4em]
+% \textbf{Ana Beatriz Magalhães}\\
+% \textbf{Universidade Federal da Bahia}\\
+% \textbf{Pesquisadora Voluntária}\\
+% \textbf{CPF: ***.865.755-**}
+% \end{minipage}
+
+\end{center}
+
+\end{document}
