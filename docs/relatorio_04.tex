@@ -842,7 +842,7 @@ Para a equipe responsável pela administração e manutenção da aplicação, o
 \subsection{Meta 4 Aurora Responde}
 \label{subsec:atividades_meta4}
 
-Como desdobramento das Metas anteriores, foi desenvolvido o Aurora Responde, assistente conversacional único do Portal Aurora voltado ao domínio da violência contra crianças e adolescentes no Brasil. A solução substitui os chats especializados mantidos anteriormente por uma única interface, aberta sem exigência de autenticação, na qual o usuário formula perguntas em linguagem natural e recebe respostas com indicação explícita da fonte consultada — estatísticas de notificações (SINAN/VIOLBR), indicadores dos Conselhos Tutelares (SIPIA-CT), legislação de proteção à infância e à adolescência, ou informações sobre o funcionamento da própria plataforma. Além do acesso unificado às fontes do projeto, a implementação incorporou uma camada de proteção das interações, com limitação de uso, encaminhamento a canais oficiais em situações de risco — priorizando o~\textbf{190} (Polícia Militar), o registro de boletim de ocorrência em delegacia e, complementarmente, o Disque~100 e o Conselho Tutelar —, mitigação de tentativas de manipulação do assistente e proteção de dados pessoais eventualmente presentes nas mensagens. A Figura~\ref{fig:aurora_responde} apresenta a interface do assistente na página inicial do Portal Aurora. As subseções seguintes detalham a arquitetura adotada, as fontes integradas e os mecanismos de segurança implementados.
+Como desdobramento das Metas anteriores, foi desenvolvido o Aurora Responde, assistente conversacional único do Portal Aurora voltado ao domínio da violência contra crianças e adolescentes no Brasil. A solução substitui os chats especializados mantidos anteriormente por uma única interface, aberta sem exigência de autenticação, na qual o usuário formula perguntas em linguagem natural e recebe respostas com indicação explícita da fonte consultada — estatísticas de notificações (SINAN/VIOLBR), indicadores dos Conselhos Tutelares (SIPIA-CT), legislação de proteção à infância e à adolescência, ou informações sobre o funcionamento da própria plataforma. Além do acesso unificado às fontes do projeto, a implementação incorporou uma camada de proteção das interações, com limitação de uso, encaminhamento a canais oficiais em situações de risco — priorizando o~\textbf{190} (Polícia Militar), o registro de boletim de ocorrência em delegacia e, complementarmente, o Disque~100 e o Conselho Tutelar —, mitigação de tentativas de manipulação do assistente e proteção de dados pessoais eventualmente presentes nas mensagens. Complementarmente ao chat, o Portal disponibiliza as páginas \textbf{Links Úteis} e \textbf{Perguntas Frequentes}, com conteúdo institucional curado — canais oficiais, legislação, rede de proteção e esclarecimentos frequentes —, distintas da geração por modelo de linguagem. A Figura~\ref{fig:aurora_responde} apresenta a interface do assistente na página inicial do Portal Aurora. As subseções seguintes detalham a arquitetura adotada, as fontes integradas, os mecanismos de segurança e os recursos complementares de Links Úteis e Perguntas Frequentes.
 
 \telaAurora{figures/aurora_responde.png}
 {Aurora Responde: interface do assistente conversacional na página inicial do Portal Aurora, com campo de pergunta em linguagem natural, sugestões de consulta às fontes SINAN, SIPIA-CT e base legal, e aviso de encaminhamento imediato ao 190 (Polícia Militar) em situação de risco.}
@@ -907,6 +907,17 @@ Corpus de leis e normas curado para o RAG jurídico; consulta SQL ao SIPIA-CT co
 \url{orquestrador/leis_corpus.py}; \url{orquestrador/sipia_ct.py} &
 Em andamento \\
 
+\rowcolor{RowTint}
+Disponibilizar a página de Links Úteis no Portal Aurora &
+Catálogo categorizado de fontes institucionais (denúncia, dados, legislação e rede de proteção), com busca e aviso de que a plataforma não recebe denúncias &
+\url{painel/data/recursos.py}; \url{painel/templates/painel/links_uteis.html}; rota \texttt{links\_uteis}; Figura~\ref{fig:links_uteis} &
+Concluída \\
+
+Disponibilizar a página de Perguntas Frequentes no Portal Aurora &
+FAQ em eixos temáticos com respostas e indicação de fonte, busca na página e reforço dos canais oficiais de denúncia &
+\url{painel/data/faq.py}; \url{painel/templates/painel/perguntas_frequentes.html}; rota \texttt{perguntas\_frequentes}; Figura~\ref{fig:perguntas_frequentes} &
+Concluída \\
+
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -950,6 +961,22 @@ A abertura do Aurora Responde sem exigência de autenticação tornou necessári
 
 \paragraph{Sanitização de trechos recuperados (RAG) e filtro de saída.} Trechos retornados pelas ferramentas de RAG (jurídico e interno) são tratados como \emph{dado}, não como instrução: antes de entrarem no contexto do modelo, passam por \texttt{processar\_entrada(trechos\_recuperados=...)}, que neutraliza padrões de instrução embutidos no texto recuperado (ex.: ``ignore instruções anteriores'' dentro de um trecho de documento), registrando o evento correspondente. Já a resposta final do modelo passa por \texttt{processar\_saida}, que aplica três filtros: (i) bloqueio por \textbf{vazamento} — \textit{tracebacks}, comandos SQL, senhas, chaves de API ou blocos de chave privada na resposta; (ii) \textbf{supressão} de contagens baixas na prosa (abaixo de \texttt{GUARDRAILS\_SUPPRESS\_BELOW}, padrão 5), substituindo o texto por uma mensagem padronizada para reduzir o risco de reidentificação de casos individuais em recortes muito específicos; e (iii) sinalização, sem bloqueio, de números relevantes mencionados na resposta sem menção a uma fonte reconhecida (SINAN, SIPIA, ECA, referências \texttt{[J\#]}/\texttt{[D\#]}).
 
+\subsubsection{Links Úteis e Perguntas Frequentes}
+\label{subsubsec:links_faq_meta4}
+
+Além do Aurora Responde, o Portal Aurora disponibiliza duas páginas de apoio com conteúdo institucional \textbf{curado} — não gerado por modelo de linguagem —, acessíveis pelo cabeçalho de navegação do site (\textit{Início}, \textit{Aurora}, \textit{Links Úteis}, \textit{Perguntas Frequentes}). O objetivo é orientar o usuário a canais oficiais, bases de dados, legislação e esclarecimentos frequentes sobre proteção de crianças e adolescentes, sem confundir a plataforma com um canal de denúncia. Em ambas as páginas, um aviso institucional reforça que a Aurora \textbf{não} recebe denúncias e encaminha a pessoa, em caso de suspeita ou risco, ao Disque~100, ao Conselho Tutelar ou, em situação imediata, ao~\textbf{190}.
+
+\paragraph{Links Úteis.} A página \texttt{/links-uteis/} (rota \texttt{links\_uteis}, template \url{painel/templates/painel/links_uteis.html}) reúne um catálogo de cerca de trinta recursos institucionais, organizados em cinco categorias definidas em \url{painel/data/recursos.py}: (1)~Denúncia e Proteção; (2)~Dados e Evidências; (3)~Exploração Sexual e Tráfico de Pessoas; (4)~Legislação; e (5)~Rede Institucional de Enfrentamento ao Tráfico de Pessoas. A interface oferece sumário por categoria, busca textual e fichas com título, descrição, órgão responsável e link para a fonte oficial. A Figura~\ref{fig:links_uteis} ilustra a página.
+
+\telaAurora{figures/links_uteis.png}
+{Links Úteis — catálogo categorizado de fontes institucionais no Portal Aurora, com aviso de que a plataforma não recebe denúncias, sumário das categorias e campo de busca.}
+{links_uteis}
+
+\paragraph{Perguntas Frequentes.} A página \texttt{/perguntas-frequentes/} (rota \texttt{perguntas\_frequentes}, template \url{painel/templates/painel/perguntas_frequentes.html}) apresenta um FAQ com cerca de cinquenta perguntas e respostas, agrupadas em cinco eixos temáticos definidos em \url{painel/data/faq.py}: (1)~Proteção e Resposta Imediata; (2)~Conceitos e Legislação; (3)~Identificação e Sinais de Alerta; (4)~Prevenção e Cuidados; e (5)~Atendimento, Rede de Proteção e Encaminhamentos. Cada item inclui a resposta, a indicação da fonte e, quando aplicável, marcação de conteúdo validado. A interface oferece busca nas perguntas e navegação por eixo. O próprio FAQ deixa explícito que a Plataforma Aurora não é canal de denúncia e orienta o usuário aos órgãos competentes. A Figura~\ref{fig:perguntas_frequentes} ilustra a página.
+
+\telaAurora{figures/perguntas_frequentes.png}
+{Perguntas Frequentes — FAQ temático no Portal Aurora, com aviso institucional de encaminhamento ao Disque~100, Conselho Tutelar e 190, eixos de navegação e campo de busca.}
+{perguntas_frequentes}
 
 % ============================================================
 %  NOVA SUBSEÇÃO: Critérios de Aceite
