@@ -1102,37 +1102,37 @@ Os valores exibidos são lidos diretamente da tabela unificada \texttt{sinan."VI
 \subsection{Mapas}
 \label{subsec:mapas}
 
-Os mapas interativos do Portal Aurora permitem a visualização geográfica das notificações registradas nas bases SINAN/VIOLBR e SIPIA-CT, com representação coroplética, possibilitando identificar rapidamente regiões com maior concentração de ocorrências e apoiar análises comparativas entre estados e municípios.
+A visualização geográfica do Portal Aurora concentra-se na página \textbf{Distribuição Geográfica por UF} (\texttt{/aurora/distribuicao-geografica/}), acessível a partir do painel analítico. A interface organiza três abas de fonte — \textit{Brasil}, \textit{SINAN} e \textit{SIPIA-CT} — e utiliza mapas coropléticos interativos (Leaflet) para apoiar a comparação territorial das ocorrências.
 
-No caso do SINAN/VIOLBR, o mapa apresenta inicialmente os dados por Unidade da Federação e permite o detalhamento (\emph{drill-down}) até o nível municipal por meio da seleção de um estado, conforme ilustram as Figuras~\ref{fig:mapa_violbr_brasil} e~\ref{fig:mapa_violbr_municipios}, com filtros por ano, sexo da vítima e tipo de violência. O mapa do SIPIA-CT (Figuras~\ref{fig:mapa_sipiact_brasil} e~\ref{fig:mapa_sipiact_estado}) apresenta a distribuição dos registros por estado brasileiro, permitindo selecionar indicadores como agente violador, faixa etária, sexo, cor/raça e direito violado.
+Na aba \textbf{Brasil}, os dados da base VIOLBR/SINAN são apresentados inicialmente por Unidade da Federação, com filtros de UF, período (ano inicial e final), sexo da vítima, faixa etária e marcadores de violência sexual, tráfico e exploração sexual. A Figura~\ref{fig:mapa_violbr_brasil} ilustra a visão nacional. Ao selecionar um estado no mapa, a plataforma realiza o detalhamento (\emph{drill-down}) até o nível municipal e exibe um painel de leitura com o total de notificações, a participação no total nacional e a desagregação por violência sexual, tráfico e exploração sexual, conforme as Figuras~\ref{fig:mapa_violbr_municipios} e~\ref{fig:violbr_detalhe} (exemplo na Bahia).
 
-\telaAurora{figures/Mapas/SINAN/violbr_nacional.png}
-{Mapa coroplético VIOLBR (SINAN) — notificações de violência por Unidade da Federação, com filtros de ano inicial e final, sexo da vítima e tipo de violência (violência sexual, tráfico e exploração sexual).}
+\telaAurora{figures/mapa_brasil_nacional.png}
+{Distribuição Geográfica — aba Brasil: mapa coroplético nacional (VIOLBR/SINAN) por Unidade da Federação, com painel de filtros territoriais, temporais e por tipo de violência.}
 {mapa_violbr_brasil}
 
-\telaAurora{figures/Mapas/SINAN/violbr_bahia_municipios.png}
-{Mapa coroplético VIOLBR (SINAN) — detalhamento (\emph{drill-down}) em nível municipal a partir da seleção de uma Unidade da Federação, com painel lateral de totais do estado e do município selecionado. O detalhamento das demais unidades federativas consta do Apêndice~\ref{ap:sinan_uf}.}
+\telaAurora{figures/mapa_brasil_municipios.png}
+{Distribuição Geográfica — aba Brasil: detalhamento (\emph{drill-down}) municipal após a seleção de uma UF (exemplo: Bahia). O detalhamento das demais unidades federativas consta do Apêndice~\ref{ap:sinan_uf}.}
 {mapa_violbr_municipios}
 
-\telaAurora{figures/Mapas/SIPIACT/sipiact_nacional.png}
-{Mapa coroplético SIPIA-CT (Conselho Tutelar) — registros por Unidade da Federação, com seleção de indicador (agente violador, direito violado, faixa etária, sexo e cor/raça) e de ano de referência.}
-{mapa_sipiact_brasil}
-
-\telaAurora{figures/Mapas/SIPIACT/sipiact_bahia.png}
-{Mapa coroplético SIPIA-CT (Conselho Tutelar) — detalhamento do total de registros de uma Unidade da Federação selecionada e sua participação no total nacional. O detalhamento das demais unidades federativas consta do Apêndice~\ref{ap:sipiact_uf}.}
-{mapa_sipiact_estado}
-
-Em ambos os mapas, a interação com o cursor sobre uma unidade territorial exibe um painel de leitura imediata com os totais correspondentes, conforme ilustram as Figuras~\ref{fig:violbr_detalhe} e~\ref{fig:sipiact_detalhe}.
-
-\telaAurora{figures/Mapas/SINAN/violbr_nacional_detalhe.png}
-{Mapa VIOLBR (SINAN) — painel de leitura exibido na seleção de uma Unidade da Federação, com total de notificações, participação no total nacional e desagregação por violência sexual, tráfico e exploração sexual.}
+\telaAurora{figures/mapa_brasil_detalhe.png}
+{Distribuição Geográfica — aba Brasil: painel de leitura da UF selecionada, com total de notificações, participação no total nacional e desagregação por violência sexual, tráfico e exploração sexual.}
 {violbr_detalhe}
 
-\telaAurora{figures/Mapas/SIPIACT/sipiact_nacional_detalhe.png}
-{Mapa SIPIA-CT (Conselho Tutelar) — painel de leitura exibido na seleção de uma Unidade da Federação, com total de registros e participação no total nacional.}
-{sipiact_detalhe}
+Na aba \textbf{SIPIA-CT}, o mapa apresenta os registros dos Conselhos Tutelares agregados apenas no nível de UF — sem detalhamento municipal —, com filtros de indicador (direito violado / agente violador e correlatos disponíveis na base) e de ano. A Figura~\ref{fig:mapa_sipiact_brasil} mostra a visão nacional; a Figura~\ref{fig:mapa_sipiact_estado} exemplifica a seleção de um estado, com total de registros e participação no total nacional. O detalhamento das demais UFs consta do Apêndice~\ref{ap:sipiact_uf}.
 
-O detalhamento territorial produzido para cada Unidade da Federação encontra-se sistematizado nos Apêndices~\ref{ap:sinan_uf} (SINAN/VIOLBR) e~\ref{ap:sipiact_uf} (SIPIA-CT).
+\telaAurora{figures/mapa_sipiact_nacional.png}
+{Distribuição Geográfica — aba SIPIA-CT: mapa coroplético nacional por UF, com aviso de granularidade estadual e filtros de indicador e ano.}
+{mapa_sipiact_brasil}
+
+\telaAurora{figures/mapa_sipiact_detalhe.png}
+{Distribuição Geográfica — aba SIPIA-CT: seleção de uma UF (exemplo: Bahia), com total de registros e participação no total nacional.}
+{mapa_sipiact_estado}
+
+A aba \textbf{SINAN} permanece como área de acesso restrito: não exibe o mapa público da aba Brasil e informa que a consulta direta a essa fonte exige autenticação, mantendo abertos ao público o painel e as demais visualizações geográficas. A Figura~\ref{fig:mapa_sinan_restrito} registra essa tela.
+
+\telaAurora{figures/mapa_sinan_restrito.png}
+{Distribuição Geográfica — aba SINAN: mensagem de acesso restrito, sem mapa público nesta aba.}
+{mapa_sinan_restrito}
 
 A nota explicativa técnica que fundamenta essas visualizações reforça a adequação do uso de mapas coropléticos para a representação de dados agregados por recortes territoriais, como Unidades da Federação e municípios, permitindo identificar de forma rápida a distribuição espacial das ocorrências, comparar diferentes regiões e destacar áreas com maior concentração relativa ou absoluta de registros.
 
