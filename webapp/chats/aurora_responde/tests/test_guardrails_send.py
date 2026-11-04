@@ -7,8 +7,8 @@ from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from chats.series_temporais.orquestrador.models import ChatMessage, ChatThread
-from chats.series_temporais.orquestrador.orchestrator import OrchestratorResult
+from chats.aurora_responde.models import ChatMessage, ChatThread
+from chats.aurora_responde.roteador import RoteadorResult
 from guardrails.pipeline import EntradaResult, SaidaResult
 
 
@@ -39,9 +39,9 @@ class SendMessageGuardrailsTests(TestCase):
     def _post(self, message: str = "Quantos casos em SE?"):
         return self.client.post(self.url, {"message": message})
 
-    @patch("chats.series_temporais.orquestrador.views.run_chat")
+    @patch("chats.aurora_responde.views.run_chat")
     def test_rate_limit_terceiro_post_retorna_429(self, mock_chat):
-        mock_chat.return_value = OrchestratorResult(final_text="ok")
+        mock_chat.return_value = RoteadorResult(final_text="ok")
         r1 = self._post("pergunta 1")
         r2 = self._post("pergunta 2")
         self.assertEqual(r1.status_code, 302)
@@ -52,8 +52,8 @@ class SendMessageGuardrailsTests(TestCase):
         self.assertIn("Limite de mensagens", r3.content.decode())
         self.assertEqual(mock_chat.call_count, 2)
 
-    @patch("chats.series_temporais.orquestrador.views.run_chat")
-    @patch("chats.series_temporais.orquestrador.views.processar_entrada")
+    @patch("chats.aurora_responde.views.run_chat")
+    @patch("chats.aurora_responde.views.processar_entrada")
     def test_entrada_bloqueada_nao_chama_llm(self, mock_entrada, mock_chat):
         mock_entrada.return_value = EntradaResult(
             ok=False,
@@ -68,10 +68,10 @@ class SendMessageGuardrailsTests(TestCase):
             thread=self.thread, role="assistant").latest("created_at")
         self.assertEqual(assistant.content, "Procure o Disque 100.")
 
-    @patch("chats.series_temporais.orquestrador.views.processar_saida")
-    @patch("chats.series_temporais.orquestrador.views.run_chat")
+    @patch("chats.aurora_responde.views.processar_saida")
+    @patch("chats.aurora_responde.views.run_chat")
     def test_saida_bloqueada_usa_mensagem_canonica(self, mock_chat, mock_saida):
-        mock_chat.return_value = OrchestratorResult(
+        mock_chat.return_value = RoteadorResult(
             final_text="SELECT * FROM secret; password=xyz")
         mock_saida.return_value = SaidaResult(
             ok=False,

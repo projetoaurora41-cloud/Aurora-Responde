@@ -1,6 +1,6 @@
 """Pipeline de entrada/saída — proteções reais (encaminhamento 26).
 
-Contrato público estável usado por send_message / orquestrador:
+Contrato público estável usado por send_message / Aurora Responde:
 
   processar_entrada → EntradaResult
   processar_saida   → SaidaResult

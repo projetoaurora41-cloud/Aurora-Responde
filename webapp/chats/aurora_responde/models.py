@@ -31,7 +31,7 @@ class ChatThread(models.Model):
     )
     temperature = models.FloatField(
         default=0.2,
-        help_text=("Temperatura de amostragem do orquestrador (0.0 = determinístico, "
+        help_text=("Temperatura de amostragem do gerador (0.0 = determinístico, "
                    "1.0 = criativo). 0.2 dá respostas estáveis e baixa alucinação."),
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -61,7 +61,7 @@ class ChatMessage(models.Model):
     tool_name = models.CharField(max_length=64, blank=True)
     tool_payload = models.JSONField(default=dict, blank=True)
     elapsed_seconds = models.FloatField(null=True, blank=True)
-    # Tokens do orquestrador (Ollama) para feedback de uso na UI.
+    # Tokens do gerador (Ollama/Jurema) para feedback de uso na UI.
     tokens_prompt = models.IntegerField(null=True, blank=True)
     tokens_completion = models.IntegerField(null=True, blank=True)
     # Modelo de série vencedor do comitê (ex.: "Chronos-2"), exibido como badge
@@ -80,7 +80,7 @@ class ChatAttachment(models.Model):
     """Arquivo anexado a uma conversa (PDF, imagem ou texto).
 
     Guardamos só o TEXTO extraído (não o binário) — evita configurar MEDIA e
-    mantém o anexo utilizável como contexto (grounding) para o orquestrador.
+    mantém o anexo utilizável como contexto (grounding) para o chat.
     Imagens passam por OCR quando disponível; o texto extraído fica em `text`.
     """
     KIND_CHOICES = [

@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     "painel",
     "mapas",
     # === Aurora Responde — chat único (só Jurema + RAG + dados ao vivo) ===
-    "chats.series_temporais.orquestrador",
+    "chats.aurora_responde",
     # === Guardrails (entrada/saída + limites) ===
     "guardrails",
 ]

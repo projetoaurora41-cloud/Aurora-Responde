@@ -120,7 +120,7 @@ autor_sexo, autor_alcool
 
 ## Tools do chat que usam a camada semântica
 
-Em [`webapp/chats/series_temporais/orquestrador/tools.py`](../webapp/chats/series_temporais/orquestrador/tools.py):
+Em [`webapp/chats/aurora_responde/tools.py`](../webapp/chats/aurora_responde/tools.py):
 
 | Tool                   | Mapeia para (camada `sinam.queries`) |
 |------------------------|---------------------------------------|

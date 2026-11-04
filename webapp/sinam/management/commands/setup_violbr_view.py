@@ -3,7 +3,7 @@
 A view CRUA (colunas originais do DATASUS: DT_OCOR, VIOL_SEXU, ID_MN_OCOR,
 NDUPLIC, SG_UF_NOT, ...) é o que o chatbot de datas comemorativas (Carnaval) e
 o QA geral consomem — diferente da `sinam_notificacao` (limpa, usada pelo
-orquestrador) e da `view_violencia_chatbot` (colunas traduzidas).
+Aurora Responde) e da `view_violencia_chatbot` (colunas traduzidas).
 
 A importação `.dbc` (sinam) já chama isso automaticamente ao final. Este comando
 serve para recriar a view manualmente (ex.: após uma carga bruta feita por fora).

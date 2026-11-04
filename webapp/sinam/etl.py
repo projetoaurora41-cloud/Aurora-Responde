@@ -225,7 +225,7 @@ def import_dbc_file(dbc_path: str, source_table: str,
           dbf_size_mb=round(os.path.getsize(dbf_path) / 1e6, 1))
 
     # 1b) Carrega a tabela BRUTA (todas as colunas) — alimenta a view VIOLBR
-    #     consumida pelo chatbot Carnaval / QA geral. Sem isso, só o orquestrador
+    #     consumida pelo chatbot Carnaval / QA geral. Sem isso, só o Aurora Responde
     #     (que lê a base limpa) enxergaria a importação.
     raw_stats = load_raw_violbr_table(dbf_path, source_table,
                                       replace=replace, progress_cb=progress_cb)

@@ -22,7 +22,7 @@ só LLM — o Jurema-7B** — que redige **todas** as respostas. A escolha da fo
    - **dados** → `relatorio_brasil` / `relatorio_uf` / `relatorio_municipio` /
      `ranking_municipios` (SQL ao vivo no PostgreSQL — números exatos);
    - **legislação** → `rag_juridico` (corpus de leis curado em
-     [`leis_corpus.py`](../webapp/chats/series_temporais/orquestrador/leis_corpus.py));
+     [`leis_corpus.py`](../webapp/chats/aurora_responde/leis_corpus.py));
    - **SIPIA-CT** → `consulta_sipia_ct` (view `sipiact.vw_sipiact_long`);
    - **produto** → `rag_interno` (busca por palavra-chave nos `docs/*.md`).
 4. **Jurema redige** — `_narrar_com_jurema` monta o prompt a partir do payload
@@ -37,8 +37,8 @@ só LLM — o Jurema-7B** — que redige **todas** as respostas. A escolha da fo
 | Camada | Onde | Responsabilidade |
 |--------|------|------------------|
 | Web | `webapp/` (Django 6) | Views do chat, templates, autenticação, sessão. |
-| Orquestração | `webapp/chats/series_temporais/orquestrador/orchestrator.py` | Roteador determinístico (`_route_category`, `_maybe_*`, `_enforce_*`, `_extract_year_filter`) + narração (`_narrar_com_jurema`). |
-| Ferramentas | `.../tools.py`, `.../rag_tools.py`, `.../sipia_ct.py`, `.../leis_corpus.py` | Consultas SQL, RAG jurídico/interno, SIPIA-CT. |
+| Roteamento | `webapp/chats/aurora_responde/roteador.py` | Roteador determinístico (`_route_category`, `_maybe_*`, `_enforce_*`, `_extract_year_filter`) + narração (`_narrar_com_jurema`). |
+| Ferramentas | `webapp/chats/aurora_responde/tools.py`, `rag_tools.py`, `sipia_ct.py`, `leis_corpus.py` | Consultas SQL, RAG jurídico/interno, SIPIA-CT. |
 | Camada semântica | `webapp/sinam/` | Modelo `Notificacao` + filtros geo/violência (ver [semantic_layer.md](semantic_layer.md)). |
 | Dados | `src/db.py` + PostgreSQL | Conexão `psycopg`, séries e agregações SQL ao vivo. |
 | LLM | Ollama local | **Jurema-7B** — único modelo generativo. |

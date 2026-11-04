@@ -845,10 +845,9 @@ def _enforce_violencia_filter(name: str, args: dict, last_user_text: str
 
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-# Aurora Responde é um fork "só Jurema": não há mais orquestrador Qwen fazendo
-# tool-calling. O Jurema-7B redige TODAS as respostas a partir do payload das
-# ferramentas (roteamento determinístico). `DEFAULT_MODEL` fica como o modelo de
-# narração padrão.
+# Aurora Responde: só Jurema — não há LLM fazendo tool-calling. O Jurema-7B
+# redige TODAS as respostas a partir do payload das ferramentas (roteamento
+# determinístico). `DEFAULT_MODEL` fica como o modelo de narração padrão.
 DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", os.getenv("JUREMA_MODEL", "jurema-7b"))
 JUREMA_MODEL = os.getenv("JUREMA_MODEL", "jurema-7b")
 JUREMA_NUM_PREDICT = int(os.getenv("JUREMA_NUM_PREDICT", "520"))
@@ -1166,10 +1165,9 @@ REGRAS:
 
 
 # ---------------------------------------------------------------------------
-# Addendum "Aurora responde": para o usuario existe UM SO chat; por baixo, este
-# mesmo orquestrador roteia entre varias fontes. Este bloco ensina o Qwen3 a
-# escolher a fonte certa e a CITAR de onde tirou cada informacao. E aditivo ao
-# prompt de series/SINAM acima — as regras daquele bloco continuam valendo.
+# Addendum "Aurora responde": para o usuario existe UM SO chat; por baixo, o
+# roteador deterministico escolhe entre varias fontes. Este bloco reforca a
+# citacao de fonte na narracao. E aditivo ao prompt de series/SINAM acima.
 # ---------------------------------------------------------------------------
 AURORA_ADDENDUM = """
 
@@ -1314,7 +1312,7 @@ class ToolEvent:
 
 
 @dataclass
-class OrchestratorResult:
+class RoteadorResult:
     final_text: str
     tool_events: list[ToolEvent] = field(default_factory=list)
     elapsed_seconds: float = 0.0
@@ -1761,7 +1759,7 @@ def chat(messages: Iterable[dict],
          ts_model: str | None = None,
          forecaster: str | None = None,  # alias backcompat — usar ts_model
          model: str | None = None,
-         temperature: float = 0.2) -> OrchestratorResult:
+         temperature: float = 0.2) -> RoteadorResult:
     # Aceita ambos nomes (ts_model é o canônico; forecaster é o antigo).
     ts_model_name = ts_model or forecaster or "chronos2"
     forecaster = ts_model_name  # manter `forecaster` local pra resto do código
@@ -1769,7 +1767,7 @@ def chat(messages: Iterable[dict],
     try:
         client, model = _pick_client(model)
     except ValueError as exc:
-        return OrchestratorResult(
+        return RoteadorResult(
             final_text="", tool_events=[], elapsed_seconds=0.0, rounds=0,
             error=str(exc), raw_messages=[])
     ctx = ToolContext(forecaster=forecaster)
@@ -1866,7 +1864,7 @@ def chat(messages: Iterable[dict],
 
     # Escopo estrito: recusa pedidos fora do domínio SEM chamar o LLM/ferramentas.
     if _is_offscope(latest_user):
-        return OrchestratorResult(
+        return RoteadorResult(
             final_text=_OFFSCOPE_MSG, tool_events=[],
             elapsed_seconds=0.0, rounds=0, raw_messages=convo)
 
@@ -1915,7 +1913,7 @@ def chat(messages: Iterable[dict],
     try:
         result = run_tool(name, args, ctx)
     except Exception as exc:
-        return OrchestratorResult(
+        return RoteadorResult(
             final_text="Não consegui consultar os dados agora. Tente reformular a pergunta.",
             tool_events=events, elapsed_seconds=time.time() - t0, rounds=1,
             error=f"{type(exc).__name__}: {exc}", raw_messages=convo)
@@ -1941,7 +1939,7 @@ def chat(messages: Iterable[dict],
     final_text, tok_prompt, tok_completion = _narrar_com_jurema(
         name, latest_user, result, humanizado, compare_hint)
 
-    return OrchestratorResult(
+    return RoteadorResult(
         final_text=_sanitize_narrative(final_text), tool_events=events,
         elapsed_seconds=time.time() - t0, rounds=1, raw_messages=convo,
         prompt_tokens=tok_prompt, completion_tokens=tok_completion,

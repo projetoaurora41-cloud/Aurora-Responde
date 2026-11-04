@@ -22,7 +22,7 @@ except Exception:
 
 from . import attachments
 from .models import ChatAttachment, ChatMessage, ChatThread
-from .orchestrator import DEFAULT_MODEL, _display_model, chat as run_chat, ping_ollama
+from .roteador import DEFAULT_MODEL, _display_model, chat as run_chat, ping_ollama
 
 # Versão interna do AURORA Responde (beta). Exibida como selo na UI e citada
 # nos materiais. Bump a cada mudança relevante do assistente.
@@ -246,7 +246,7 @@ def send_message(request, pk: int):
     # sequência inválida que faz o modelo perder o vínculo com a resposta
     # anterior. A prosa final do assistant já carrega os números/tendências
     # necessários para responder perguntas de acompanhamento; se precisar de
-    # dado novo, o orquestrador chama as ferramentas de novo neste turno.
+    # dado novo, o roteador chama as ferramentas de novo neste turno.
     history: list[dict] = []
     for m in thread.messages.all():
         if m.role == "user":
@@ -301,7 +301,7 @@ def send_message(request, pk: int):
     thread.save()
 
     if result.error:
-        flash.error(request, f"Erro no orquestrador: {result.error}")
+        flash.error(request, f"Erro no chat: {result.error}")
 
     return _redirect_chat(request, pk)
 

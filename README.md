@@ -32,13 +32,12 @@ Aurora-Responde/
 │   ├── core/                         base + autenticação + home/registry
 │   ├── sinam/                        camada semântica: Notificacao + filtros geo/violência
 │   ├── guardrails/                   segurança (risco, injeção, PII, limites)
-│   └── chats/series_temporais/
-│       └── orquestrador/             O CHAT: roteador determinístico + Jurema
-│           ├── orchestrator.py        roteador + narração (_narrar_com_jurema)
-│           ├── tools.py               relatórios SQL (SINAM) ao vivo
-│           ├── rag_tools.py           rag_juridico / rag_interno / consulta_sipia_ct
-│           ├── leis_corpus.py         corpus jurídico curado (ECA, leis, ...)
-│           └── sipia_ct.py            fonte SQL do SIPIA-CT
+│   └── chats/aurora_responde/        O CHAT: roteador determinístico + Jurema
+│       ├── roteador.py                roteador + narração (_narrar_com_jurema)
+│       ├── tools.py                   relatórios SQL (SINAM) ao vivo
+│       ├── rag_tools.py               rag_juridico / rag_interno / consulta_sipia_ct
+│       ├── leis_corpus.py             corpus jurídico curado (ECA, leis, ...)
+│       └── sipia_ct.py                fonte SQL do SIPIA-CT
 ├── src/                            ← núcleo sem Django: src/db.py (acesso ao Postgres)
 ├── docs/                           ← documentação + diagrama + corpus RAG (docs/rag/)
 └── requirements.txt                ← 8 pacotes (Django, psycopg, pandas, ollama, ...)

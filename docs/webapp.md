@@ -18,7 +18,7 @@ Abre em <http://127.0.0.1:8000/>. (Requer o Ollama com o `jurema-7b` — ver
 
 | Rota | View | Descrição |
 |------|------|-----------|
-| `/` | `orquestrador.views.aurora_home` | O chat (abre a conversa mais recente) |
+| `/` | `aurora_responde.views.aurora_home` | O chat (abre a conversa mais recente) |
 | `/login/` · `/signup/` · `/logout/` | auth / `core.views.signup` | Autenticação |
 | `/series-temporais/chat/` | `thread_list` | Lista de conversas |
 | `/series-temporais/chat/new/` | `new_thread` | Nova conversa (POST) |
@@ -31,7 +31,7 @@ O chat funciona para visitantes anônimos (por sessão) e logados (por usuário)
 
 ## Modelos
 
-Em [`orquestrador/models.py`](../webapp/chats/series_temporais/orquestrador/models.py):
+Em [`aurora_responde/models.py`](../webapp/chats/aurora_responde/models.py):
 
 ```python
 ChatThread(user|session_key, title, model="jurema-7b", temperature, timestamps)
@@ -47,8 +47,8 @@ final é redigido pelo Jurema (ver [chat.md](chat.md)).
 
 1. `send_message` aplica os **guardrails de entrada** (limite de uso, risco,
    injeção, PII) antes de qualquer processamento.
-2. Persiste a mensagem do usuário e chama `orchestrator.chat(...)`.
-3. O orquestrador roteia determinadamente, roda **uma** ferramenta e o
+2. Persiste a mensagem do usuário e chama `roteador.chat(...)`.
+3. O roteador determinístico escolhe e roda **uma** ferramenta e o
    **Jurema** redige a resposta.
 4. **Guardrails de saída**, persiste a resposta e redireciona para a conversa.
 

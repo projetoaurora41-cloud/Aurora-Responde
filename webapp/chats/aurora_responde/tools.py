@@ -1,4 +1,4 @@
-"""Tools exposed to the orchestrator LLM (Ollama tool-calling format).
+"""Tools disponíveis ao roteador determinístico do Aurora Responde.
 
 Every tool:
   - has a JSON schema declared in `TOOLS_SCHEMA` (matches Ollama tool format)
@@ -1343,7 +1343,7 @@ DISPATCH = {
 
 # ---------------------------------------------------------------------------
 # Ferramentas extra do "Aurora responde" (RAG jurídico/interno + SIPIA-CT).
-# Mescladas aqui para o orquestrador enxergar tudo num único conjunto de tools,
+# Mescladas aqui para o roteador enxergar tudo num único conjunto de tools,
 # mantendo a implementação separada em [rag_tools.py].
 # ---------------------------------------------------------------------------
 from .rag_tools import RAG_DISPATCH, RAG_TOOLS_SCHEMA  # noqa: E402

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ChatType:
-    key: str            # identificador único, ex. "series_temporais"
+    key: str            # identificador único, ex. "aurora_responde"
     name: str           # nome exibido no card da home
     url_name: str       # nome de URL do ponto de entrada, ex. "chat:list"
     description: str = ""

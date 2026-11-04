@@ -27,7 +27,7 @@ Usuário ─► guardrails(entrada) ─► roteador determinístico ─┬─ re
 
 ## Roteador determinístico (sem LLM escolhendo)
 
-Em [`orchestrator.py`](../webapp/chats/series_temporais/orquestrador/orchestrator.py).
+Em [`roteador.py`](../webapp/chats/aurora_responde/roteador.py).
 Parte de um default (`relatorio_brasil`, `{}`) e refina com detectores de texto —
 os mesmos que, no projeto original, apenas **corrigiam** o Qwen3:
 
@@ -51,7 +51,7 @@ uma `narrativa_sugerida` pronta) alimenta o gerador.
 | `relatorio_uf` | menção a um estado | SQL SINAM ao vivo |
 | `relatorio_municipio` | menção a uma cidade | SQL SINAM ao vivo |
 | `ranking_municipios` | pedido de ranking | SQL SINAM ao vivo |
-| `rag_juridico` | tema jurídico/leis | corpus curado ([`leis_corpus.py`](../webapp/chats/series_temporais/orquestrador/leis_corpus.py)) |
+| `rag_juridico` | tema jurídico/leis | corpus curado ([`leis_corpus.py`](../webapp/chats/aurora_responde/leis_corpus.py)) |
 | `consulta_sipia_ct` | Conselho Tutelar / SIPIA | view `sipiact.vw_sipiact_long` |
 | `rag_interno` | "como o Aurora funciona" | busca por palavra-chave nos `docs/*.md` |
 
@@ -60,7 +60,7 @@ ano, rankings, séries). Não há forecasting: relatórios são SQL puro.
 
 ## Geração com o Jurema
 
-`_narrar_com_jurema` (em `orchestrator.py`) monta o prompt a partir do payload e
+`_narrar_com_jurema` (em `roteador.py`) monta o prompt a partir do payload e
 chama o Jurema (`ollama.generate`). Regras embutidas no prompt: usar **apenas** os
 números fornecidos, não citar anos sem dados, prosa curta em PT-BR.
 

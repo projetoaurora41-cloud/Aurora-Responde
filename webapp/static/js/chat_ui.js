@@ -1,5 +1,5 @@
 /* Funcionalidades universais de chat, compartilhadas por todos os chats do Aurora.
-   Auto-detecta o layout (orquestrador/dados_sinam usam .msg; datas usam .chat-bubble)
+   Auto-detecta o layout (aurora_responde/dados_sinam usam .msg; datas usam .chat-bubble)
    e adiciona: copiar resposta + exportar conversa (.md). Sem dependências. */
 (function () {
     // ----------------------------------------------------------------- Prefs

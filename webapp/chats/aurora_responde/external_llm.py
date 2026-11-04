@@ -1,7 +1,7 @@
 """Cliente HTTP pra LLMs externos cadastrados via UI (`ExternalModel`).
 
 Expõe `ExternalLLMClient` cuja interface mimica `ollama.Client.chat()`
-pra minimizar mudança no `orchestrator.chat()`. Suporta dois protocolos:
+pra minimizar mudança no `roteador.chat()`. Suporta dois protocolos:
 
 * **openai_chat** (default): cobre OpenAI, OpenRouter, LiteLLM, Groq,
   Together, Mistral, DeepSeek e qualquer outro proxy compatível com

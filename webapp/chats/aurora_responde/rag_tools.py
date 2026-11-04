@@ -1,14 +1,11 @@
-"""Ferramentas de RAG e fontes extra do orquestrador "Aurora responde".
+"""Ferramentas de RAG e fontes extra do Aurora Responde.
 
-Estas tools estendem o loop de tool-calling do [orchestrator.py] para além do
-SINAM + Chronos-2. São a parte "por baixo" do chat único: o Qwen3 roteia a
-pergunta e chama a ferramenta certa, depois sintetiza CITANDO A FONTE.
+Usadas pelo roteador determinístico ([roteador.py]): uma ferramenta por
+mensagem, com narração pelo Jurema-7B citando a fonte.
 
 Ferramentas expostas aqui:
 
-  * ``rag_juridico``      -> Leis, normas e jurisprudência (a "versão do Jurema").
-                             Reaproveita a busca full-text já existente no chat
-                             Dados Jurídicos ([dados_juridicos/retrieval.py]).
+  * ``rag_juridico``      -> Leis, normas e jurisprudência (parecer via Jurema).
   * ``rag_interno``       -> Documentação do próprio produto (pasta ``docs/``):
                              arquitetura, metodologia, camada semântica, etc.
   * ``consulta_sipia_ct`` -> Fonte SQL do SIPIA-CT (Conselho Tutelar). Ainda
@@ -18,7 +15,7 @@ Ferramentas expostas aqui:
 Todas retornam um dict pequeno com um campo ``fonte``/``fontes`` para que o
 modelo consiga citar de onde tirou a informação. Quando a fonte não está
 disponível, retornam ``{"disponivel": False, ...}`` com uma explicação — nunca
-levantam exceção que quebre o loop do orquestrador.
+levantam exceção que quebre o fluxo do chat.
 
 Registro: ``RAG_TOOLS_SCHEMA`` e ``RAG_DISPATCH`` são mesclados em
 ``TOOLS_SCHEMA``/``DISPATCH`` no final de [tools.py].
@@ -33,8 +30,8 @@ from typing import Any
 
 # Diretório da documentação do produto (RAG interno). Default: pasta ``docs/``
 # na raiz do repositório (este arquivo fica em
-# webapp/chats/series_temporais/orquestrador/rag_tools.py -> parents[4] == raiz).
-_DEFAULT_DOCS_DIR = Path(__file__).resolve().parents[4] / "docs"
+# webapp/chats/aurora_responde/rag_tools.py -> parents[3] == raiz).
+_DEFAULT_DOCS_DIR = Path(__file__).resolve().parents[3] / "docs"
 _DOCS_DIR = Path(os.getenv("AURORA_DOCS_DIR", str(_DEFAULT_DOCS_DIR)))
 
 # Fonte SQL do SIPIA-CT. Enquanto não existir a tabela/conexão, a tool degrada.
@@ -85,8 +82,8 @@ def _ask_jurema_narrar(prompt: str, num_predict: int | None = None
     """Gera texto livre com o Jurema-7B a partir de um prompt pronto.
 
     Diferente de [_ask_jurema] (que monta um prompt jurídico), aqui o prompt já
-    vem montado pelo orquestrador — é o GERADOR de narrativa de TODAS as rotas
-    (dados/SIPIA/produto) no fork "só Jurema". Devolve ``(texto, prompt_tokens,
+    vem montado pelo roteador — é o GERADOR de narrativa de TODAS as rotas
+    (dados/SIPIA/produto). Devolve ``(texto, prompt_tokens,
     completion_tokens)``; ``texto`` é ``None`` se o modelo estiver indisponível
     (o chamador cai no fallback da narrativa_sugerida).
     """
