@@ -236,6 +236,15 @@ body {
 .restricted-card-body {
   padding: 1.5rem;
 }
+.restricted-card-body .restricted-card-btn,
+.restricted-card-body .restricted-card-btn:hover,
+.restricted-card-body .restricted-card-btn:focus {
+  color: #fff;
+  background-color: var(--gov-blue);
+  border-color: var(--gov-blue);
+  text-decoration: none;
+}
+.restricted-card-body .restricted-card-btn:hover { background-color: #0f429a; }
 .restricted-card-body p {
   margin: 0;
   color: var(--gov-muted);
@@ -495,6 +504,9 @@ body {
 
 /* --- Botões ----------------------------------------------------------- */
 .btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
   --bs-btn-bg: var(--gov-blue);
   --bs-btn-border-color: var(--gov-blue);
   --bs-btn-hover-bg: #0f429a;

@@ -400,6 +400,15 @@ _DATA_INTENT_RE = re.compile(
     r"percentual|proporcao|incidencia|ocorrencias?")
 
 
+# Pedido INEQUÍVOCO de estatística (sem "quantos", que também aparece em
+# perguntas de lei como "quantos membros tem o Conselho Tutelar").
+_STRONG_DATA_RE = re.compile(
+    r"notificac|estatistic|\bdados\b|\branking\b|evolu|tendenci|\bserie\b|"
+    r"grafico|\bregistros?\b|\bem 20\d{2}\b|\bde 20\d{2}\b|\btaxa\b|percentual|"
+    r"panorama|\bcasos\b|aument|diminu|cresc|caiu|\bcidades\b|\bmunicipios\b|"
+    r"perfil das vitimas|por sexo|por raca|por cor")
+
+
 def _wants_data(user_text: str) -> bool:
     """True se a pergunta pede ESTATÍSTICA/DADOS do SINAM (e não a norma)."""
     if not user_text:
@@ -427,6 +436,12 @@ def _route_category(user_text: str) -> str | None:
     if not user_text:
         return None
     n = _norm(user_text)
+    # 0) Tema jurídico curado (ECA art. 132, 244-A, tráfico, escuta, dever de
+    #    comunicar...) vence, a menos que a pergunta peça estatística explícita.
+    #    Ex.: "Quantos membros tem o Conselho Tutelar?" é ECA art. 132, não SIPIA.
+    from . import leis_corpus
+    if leis_corpus.tem_tema(user_text) and not _STRONG_DATA_RE.search(n):
+        return "legal"
     # 1) Indicador do PRÓPRIO SIPIA-CT (mais específico) -> sipia.
     if _ROUTE_SIPIA_INDIC_RE.search(n):
         return "sipia"
@@ -539,23 +554,105 @@ _OFFSCOPE_RE = re.compile(
     r"monte|montar|desenvolva|desenvolver|programe|programar|codifique)\s+"
     r"(?:um\s|uma\s|o\s|a\s|meu\s|minha\s)?"
     r"(?:tela|site|codigo|programa|aplicativo|app|pagina|formulario|script|jogo|"
-    r"funcao|classe|componente|banner|layout)|"
-    r"\bpoema\b|\bpoesia\b|\bpiada\b|\bconto\b|letra de musica|receita de|horoscopo")
+    r"funcao|classe|componente|banner|layout|poema|poesia|musica|historia|redacao|texto)|"
+    r"\bpoema\b|\bpoesia\b|\bpiada\b|\bconto\b|letra de musica|receita|horoscopo|"
+    r"\beleic|\beleito|\bcandidat|\bpresidente\b|futebol|campeonato|\bfilme\b|"
+    r"\bcapital d[aeo]s?\s+(?!estado)|quanto (e|custa|da)\s+\d|\d+\s*[+x*/-]\s*\d+|"
+    r"\bmais\s+(um|dois|tres|\d+)\b.{0,10}\?|\bgato\b|\bcachorro\b|clima|previsao do tempo")
+
+# Termos do domínio do Aurora. Sem NENHUM deles (e sem estado/ano/município que
+# indique continuação de uma consulta), a pergunta está fora do escopo — o
+# filtro anterior só pegava algumas palavras ("receita") e o resto caía na rota
+# de dados (ex.: "quanto custa um mais um?" respondia "200").
+_DOMINIO_RE = re.compile(
+    r"crianc|adolesc|menor|infan|juvenil|jovem|jovens|bebe|filh[oa]|alun[oa]|"
+    r"violen|abus|estupr|sexual|explora|trafic|neglig|maus.?trat|agress|tortur|"
+    r"bullying|assedi|alicia|pedofil|vitim|agressor|crime|pena\b|lei\b|leis\b|"
+    r"\beca\b|estatuto|codigo penal|constitui|juridic|direito|protec|conselh|"
+    r"tutelar|sipia|sinan|sinam|notific|denunc|disque|\b190\b|\b100\b|delegacia|"
+    r"boletim|policia|escuta|depoimento|aurora|painel|plataforma|portal|dados|"
+    r"estatistic|ranking|municip|cidade|estado|\buf\b|brasil|regiao|nordeste|"
+    r"perfil|sexo|raca|idade|faixa etaria|evolu|tendenc|serie|notificac|registro|"
+    r"taxa|mapa|grafico|fonte|metodolog|ajuda|socorro|perigo|risco|medo|"
+    r"escola|professor|familia|mae|pai|responsavel|cras|creas|saude|hospital")
 
 _OFFSCOPE_MSG = (
     "Sou o assistente do Aurora, focado em dados de violência contra crianças e "
     "adolescentes (SINAN e SIPIA-CT), na legislação relacionada (ECA, leis e "
-    "normas) e no funcionamento desta plataforma. Não escrevo código nem crio "
-    "páginas/HTML, e não trato de assuntos fora desse escopo.\n\n"
+    "normas) e no funcionamento desta plataforma. Não trato de assuntos fora "
+    "desse escopo.\n\n"
     "Posso ajudar, por exemplo, com a evolução das notificações em um estado, o "
     "ranking de municípios, o perfil das vítimas, ou o que a lei diz sobre um "
     "tipo de violência. Como posso ajudar dentro desse escopo?"
 )
 
 
-def _is_offscope(user_text: str) -> bool:
-    """True se a pergunta pede algo claramente fora do escopo (código/HTML/etc.)."""
-    return bool(user_text and _OFFSCOPE_RE.search(_norm(user_text)))
+def _is_offscope(user_text: str, tem_contexto: bool = False) -> bool:
+    """True se a pergunta está fora do domínio do Aurora."""
+    if not user_text or not user_text.strip():
+        return False
+    n = _norm(user_text)
+    if _OFFSCOPE_RE.search(n):
+        # "Quem vai ganhar a eleição" sai; "lei sobre eleição de conselheiro
+        # tutelar" fica (cita o domínio de forma específica).
+        if not re.search(r"conselh|tutelar|crianc|adolesc|violen|\beca\b", n):
+            return True
+    if _DOMINIO_RE.search(n):
+        return False
+    # Follow-up curto ("e na Bahia?", "e em 2023?") continua a consulta anterior.
+    if tem_contexto and (_mentioned_ufs(user_text) or re.search(r"\b20\d{2}\b", n)
+                         or _detect_capital(user_text)):
+        return False
+    if _mentioned_ufs(user_text) or _detect_capital(user_text):
+        return False
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Orientações fixas (sem LLM, sem consulta): denúncia e uso do portal.
+# ---------------------------------------------------------------------------
+_DENUNCIA_RE = re.compile(
+    r"como (eu )?(faco para |posso |devo |faz para )?denunci|onde (eu )?(posso |devo )?denunci|"
+    r"denuncia anonima|denunciar (de forma |anonim)|anonimamente|canais? (oficiais? )?de denuncia|"
+    r"(aurora|plataforma|portal|site|voce|voces|assistente).{0,40}(recebe|aceita|registra|faz|encaminha)\w* denuncia|"
+    r"(posso|consigo|da para|tem como) (fazer uma |registrar uma |fazer a )?denuncia(r)? (aqui|por aqui|pelo|pela|no|na)|"
+    r"(fazer|registrar) uma denuncia|como funciona o disque 100|o que e o disque 100|"
+    r"para quem (eu )?(ligo|denuncio|conto)")
+
+_COMO_CONSULTAR_RE = re.compile(
+    r"como (eu )?(consulto|consultar|vejo|ver|acesso|acessar|encontro|encontrar|filtro|filtrar|"
+    r"pesquiso|pesquisar|busco|buscar|olho|obtenho|obter|uso|usar)\b.{0,40}"
+    r"(dados|numeros|informac|painel|notificac|estatistic)|"
+    r"onde (vejo|encontro|consulto|acho).{0,40}(dados|numeros|notificac|estatistic)")
+
+_MSG_COMO_CONSULTAR = (
+    "No próprio portal Aurora:\n\n"
+    "1. No menu, abra **Aurora** (o painel de dados).\n"
+    "2. No quadro **Filtros**, escolha a **UF** do seu estado e, se quiser, o "
+    "**município**.\n"
+    "3. Defina o **período** em *Ano inicial* e *Ano final* (os dados do ano mais "
+    "recente ainda são preliminares).\n"
+    "4. Para um tipo de violência, marque **Apenas violência sexual**, **Apenas "
+    "tráfico** ou **Apenas exploração sexual**. Também dá para filtrar por sexo e "
+    "faixa etária.\n"
+    "5. Clique em **Aplicar filtros**: os cartões, gráficos e o ranking de municípios "
+    "passam a mostrar só o seu estado. Em **Distribuição Geográfica por UF** você vê o "
+    "mapa por UF e, clicando no estado, os municípios.\n\n"
+    "Você também pode perguntar aqui, por exemplo: \"Evolução da violência sexual "
+    "em Sergipe\" ou \"Cidades com mais notificações na Bahia\"."
+)
+
+
+def _resposta_fixa(user_text: str) -> str | None:
+    if not user_text:
+        return None
+    n = _norm(user_text)
+    if _DENUNCIA_RE.search(n):
+        from guardrails.mensagens import MSG_COMO_DENUNCIAR
+        return MSG_COMO_DENUNCIAR
+    if _COMO_CONSULTAR_RE.search(n):
+        return _MSG_COMO_CONSULTAR
+    return None
 
 
 def _uf_to_sigla(raw) -> str | None:
@@ -737,6 +834,12 @@ def _maybe_rewrite_to_ranking(name: str, args: dict, last_user_text: str
     if not _looks_like_ranking_query(last_user_text):
         return name, args, None
 
+    # Ranking nacional ("municípios com mais notificações no Brasil").
+    if name == "relatorio_brasil":
+        extra = (args or {}).get("filters_extra") or {}
+        return ("ranking_municipios", {"uf": None, "top": 10, "filters_extra": extra},
+                "redirecionado: ranking nacional de municipios")
+
     # relatorio_municipio com expressão tipo "cidade mais violenta"
     if name == "relatorio_municipio":
         uf_val = (args or {}).get("uf")
@@ -767,7 +870,9 @@ def _maybe_rewrite_to_ranking(name: str, args: dict, last_user_text: str
 # Ordem importa: padrões mais específicos primeiro. Texto é normalizado
 # (sem acento, minúsculo) por _norm antes do match.
 _VIOLENCIA_PATTERNS: list[tuple[str, str]] = [
-    ("violencia_sexual",      r"sexual|estupro|abuso sexual|exploracao sexual|pedofil|assedio"),
+    ("exploracao_sexual",     r"exploracao sexual|prostituicao infantil"),
+    ("violencia_sexual",      r"sexual|estupro|abuso sexual|pedofil|assedio"),
+    ("violencia_infantil",    r"trabalho infantil"),
     ("violencia_psicologica", r"psicologic|psiquic|emocional"),
     ("tortura",               r"tortura"),
     ("negligencia",           r"negligenc|abandono|omissao de cuidado|desamparo"),
@@ -776,7 +881,7 @@ _VIOLENCIA_PATTERNS: list[tuple[str, str]] = [
     ("violencia_fisica",      r"fisic|agressao|espancamento|lesao corporal|maus[- ]tratos"),
 ]
 _VIOLENCIA_KEYS: set[str] = {k for k, _ in _VIOLENCIA_PATTERNS} | {
-    "violencia_infantil", "intervencao_legal", "outras_violencias"}
+    "violencia_infantil", "intervencao_legal", "outras_violencias", "exploracao_sexual"}
 
 _REPORT_TOOLS = {"relatorio_uf", "relatorio_municipio",
                  "relatorio_brasil", "ranking_municipios"}
@@ -793,13 +898,17 @@ def _detect_violencias(user_text: str) -> list[str]:
     norm = _norm(user_text)
     found: list[str] = []
     for key, pat in _VIOLENCIA_PATTERNS:
-        if re.search(pat, norm) and key not in found:
+        alvo = norm
+        if key == "violencia_sexual":
+            # "exploração sexual" já tem filtro próprio (SEX_EXPLO); não
+            # deve ligar também o filtro geral de violência sexual.
+            alvo = re.sub(r"exploracao sexual", " ", norm)
+        elif key == "violencia_fisica":
+            alvo = re.sub(r"trabalho infantil", " ", norm)
+        if re.search(pat, alvo) and key not in found:
             found.append(key)
-    # Fallback: "violencia infantil" (sem tipo específico) -> filtro próprio.
-    # Só dispara se nenhum tipo específico foi citado, pra não conflitar com
-    # "violencia sexual contra criancas".
-    if not found and re.search(r"\binfantil\b", norm):
-        found.append("violencia_infantil")
+    # "violência infantil" sem tipo NÃO vira filtro: no SINAN, VIOL_INFAN é
+    # TRABALHO infantil, não "violência contra crianças" em geral.
     return found
 
 
@@ -1587,75 +1696,194 @@ def _report_payload(escopo, evo, retro, compare_ctx: dict | None = None) -> dict
     }
 
 
-def _humanize_result_for_llm(name: str, result, compare_ctx: dict | None = None) -> "object":
-    """Per-tool humanisation: keep only qualitative info; UI keeps the raw numbers.
+_VIOL_ROTULO = {
+    "violencia_sexual": "violência sexual", "violencia_fisica": "violência física",
+    "violencia_psicologica": "violência psicológica", "tortura": "tortura",
+    "negligencia": "negligência/abandono", "trafico_pessoas": "tráfico de pessoas",
+    "violencia_financeira": "violência financeira", "violencia_infantil": "trabalho infantil",
+    "intervencao_legal": "intervenção legal", "outras_violencias": "outras violências",
+    "exploracao_sexual": "exploração sexual",
+}
 
-    Também filtra anos > 2024 do payload que vai pro LLM, pra evitar que ele
-    cite 2025 (não há dado real). A UI ainda recebe tudo.
-    """
+_AVISO_NOTIFICACAO = (
+    "Os números são notificações do SINAN (registros feitos pelos serviços de "
+    "saúde), não casos confirmados. Mais notificações podem refletir maior "
+    "população ou melhor capacidade de notificação, e não necessariamente mais "
+    "violência.")
+
+
+_UF_PREP = {"BA": "na", "PB": "na",
+            "AC": "no", "AP": "no", "AM": "no", "CE": "no", "DF": "no", "ES": "no",
+            "MA": "no", "MT": "no", "MS": "no", "PA": "no", "PR": "no", "PI": "no",
+            "RJ": "no", "RN": "no", "RS": "no", "TO": "no"}
+
+
+def _em_uf(sigla: str | None) -> str:
+    if not sigla:
+        return "no Brasil"
+    sig = str(sigla).upper()
+    return f"{_UF_PREP.get(sig, 'em')} {_UF_NAMES.get(sig, sig)}"
+
+
+def _tipo_txt(filtros: dict | None) -> str:
+    tipos = [_VIOL_ROTULO[k] for k in _VIOL_ROTULO if (filtros or {}).get(k)]
+    if not tipos:
+        return "violência contra crianças e adolescentes"
+    return " e ".join(tipos) + " contra crianças e adolescentes"
+
+
+def _onde_txt(escopo: str | None, filtros: dict | None = None) -> str:
+    esc = (escopo or "").strip()
+    uf = ((filtros or {}).get("uf") or "").upper()
+    if esc.startswith("Estado de") and uf in _UF_NAMES:
+        return _em_uf(uf)
+    if esc.startswith("Estado de"):
+        return _em_uf(esc.split()[-1])
+    if not esc or esc.lower().startswith("brasil"):
+        return "no Brasil"
+    return f"em {esc.replace('/', ' (')})" if "/" in esc else f"em {esc}"
+
+
+def _pct(a, b) -> str:
+    v = 100.0 * (b - a) / a
+    return ("+" if v >= 0 else "") + f"{v:.1f}".replace(".", ",") + "%"
+
+
+def _narrativa_relatorio(result: dict) -> str:
+    por_ano = [r for r in (result.get("por_ano") or []) if r.get("n") is not None]
+    filtros = result.get("filtros_aplicados") or {}
+    onde = _onde_txt(result.get("escopo"), filtros)
+    tipo = _tipo_txt(filtros)
+    if not por_ano:
+        return (f"Não há notificações de {tipo} {onde} para o recorte pedido "
+                f"na base do SINAN usada pelo painel.")
+    por_ano = sorted(por_ano, key=lambda r: r["ano"])
+    serie = ", ".join(f"{_br_num(r['n'])} em {r['ano']}" for r in por_ano)
+    if len(por_ano) == 1:
+        partes = [f"Notificações de {tipo} {onde} (SINAN): {serie}."]
+    else:
+        a0, a1 = por_ano[0], por_ano[-1]
+        pico = max(por_ano, key=lambda r: r["n"])
+        partes = [f"Notificações de {tipo} {onde} (SINAN): {serie}."]
+        if pico["ano"] == a1["ano"]:
+            partes.append(f"O maior valor da série é o de {pico['ano']} ({_br_num(pico['n'])}).")
+        else:
+            partes.append(f"O maior valor da série é o de {pico['ano']} ({_br_num(pico['n'])}); "
+                          f"em {a1['ano']} foram {_br_num(a1['n'])}.")
+        if a0["n"]:
+            partes.append(f"De {a0['ano']} a {a1['ano']}, a variação foi de {_pct(a0['n'], a1['n'])}.")
+        pen = por_ano[-2]
+        if pen["n"]:
+            sentido = "aumentou" if a1["n"] > pen["n"] else ("diminuiu" if a1["n"] < pen["n"] else "ficou estável")
+            partes.append(f"De {pen['ano']} para {a1['ano']}, o número {sentido} "
+                          f"({_br_num(pen['n'])} para {_br_num(a1['n'])}, {_pct(pen['n'], a1['n'])}).")
+    if result.get("nota_preliminar"):
+        partes.append(result["nota_preliminar"])
+    total = sum(r["n"] for r in por_ano)
+    partes.append(f"Total no período: {_br_num(total)} notificações. Os valores são os "
+                  f"mesmos do Painel Aurora com o mesmo filtro.")
+    return " ".join(partes) + "\n\n" + _AVISO_NOTIFICACAO
+
+
+def _narrativa_ranking(result: dict) -> str:
+    filtros = result.get("filtros_aplicados") or {}
+    uf = result.get("uf")
+    onde = _em_uf(uf)
+    tipo = _tipo_txt(filtros)
+    rows = result.get("ranking") or []
+    if not rows:
+        return f"Não há notificações de {tipo} {onde} para montar o ranking."
+    linhas = "\n".join(f"{i}. {r['nome']}: {_br_num(r['n'])}" for i, r in enumerate(rows, 1))
+    txt = (f"Municípios com mais notificações de {tipo} {onde} (SINAN, mesmo "
+           f"recorte do Painel Aurora):\n\n{linhas}\n\n"
+           f"Total {onde}: {_br_num(result.get('total_notificacoes'))} notificações.")
+    if result.get("sem_municipio"):
+        txt += (f" Outras {_br_num(result['sem_municipio'])} notificações não têm o "
+                f"município de ocorrência informado e ficaram fora do ranking.")
+    txt += ("\n\nO ranking mostra onde há mais notificações, o que acompanha o "
+            "tamanho da população e a capacidade de notificação de cada município. "
+            "Não indica, sozinho, onde a violência é maior.")
+    return txt
+
+
+def _narrativa_perfil(result: dict) -> str:
+    filtros = result.get("filtros_aplicados") or {}
+    uf = result.get("uf")
+    onde = _em_uf(uf)
+    tipo = _tipo_txt(filtros)
+
+    def _fmt(lst):
+        return "; ".join(f"{c['categoria'].lower()} {_br_num(c['n'])} "
+                         f"({str(c['pct']).replace('.', ',')}%)" for c in lst)
+    txt = (f"Perfil das vítimas nas notificações de {tipo} {onde} (SINAN, mesma base do "
+           f"Painel Aurora), total de {_br_num(result.get('total_notificacoes'))}:\n\n"
+           f"Por sexo: {_fmt(result.get('sexo') or [])}.\n\n"
+           f"Por raça/cor: {_fmt(result.get('raca') or [])}.")
+    return txt
+
+
+_SIPIA_DIM_TXT = {"sexo": "sexo", "cor": "raça/cor", "faixa etária": "faixa etária",
+                  "faixa etaria": "faixa etária", "direito violado": "direito violado",
+                  "agente violador": "agente violador"}
+
+
+def _narrativa_sipia(result: dict) -> str:
+    from . import sipia_ct
+    if not result.get("disponivel"):
+        return result.get("mensagem") or "A base do SIPIA-CT não está disponível no momento."
+    uf = result.get("uf")
+    onde = _em_uf(uf)
+    ano = result.get("ano")
+    quando = f"em {ano}" if ano else "no período disponível"
+    total = result.get("soma_registros") or 0
+    ind = result.get("indicador")
+    partes = [f"Segundo o {sipia_ct.NOME_SISTEMA}, os Conselhos Tutelares {onde} "
+              f"lançaram {_br_num(total)} registros de direitos violados {quando}."]
+    dist = result.get("distribuicao") or []
+    por = result.get("distribuicao_por")
+    if dist and por == "ano":
+        partes.append("Por ano: " + ", ".join(f"{d['valor']}: {_br_num(d['n'])}" for d in dist) + ".")
+        partes.append("Atenção: os anos dependem das extrações carregadas do SIPIA-CT; "
+                      "um ano com valor bem menor pode estar incompleto.")
+    elif dist and por == "uf":
+        top = dist[:5]
+        partes.append("Estados com mais registros: " + ", ".join(
+            f"{_UF_NAMES.get(str(d['valor']).upper(), d['valor'])} ({_br_num(d['n'])})" for d in top) + ".")
+    elif dist:
+        rot = _SIPIA_DIM_TXT.get(str(ind or result.get("distribuicao_dimensao") or "").lower(), "categoria")
+        tot = sum(d["n"] for d in dist) or 1
+        partes.append(f"Por {rot}: " + "; ".join(
+            f"{d['valor']} {_br_num(d['n'])} ({str(round(100 * d['n'] / tot, 1)).replace('.', ',')}%)"
+            for d in dist[:6]) + ".")
+    partes.append("O SIPIA-CT é a base dos Conselhos Tutelares e é diferente do SINAN "
+                  "(notificações da saúde); os números das duas fontes não se somam.")
+    return " ".join(partes)
+
+
+def _humanize_result_for_llm(name: str, result, compare_ctx: dict | None = None) -> "object":
+    """Payload enxuto + ``narrativa_sugerida`` determinística (números exatos)."""
     if not isinstance(result, dict) or "error" in result:
         return result
-
-    if name == "relatorio_municipio":
-        evo = _filter_anos_until_2024(result.get("por_ano"))
-        payload = _report_payload(result.get("municipio"), evo,
-                                  _humanize_forecast_block(result.get("previsao_mensal", {})),
-                                  compare_ctx)
-        payload["total_geral"] = result.get("total_geral")
-        return payload
-
-    if name in ("relatorio_uf", "relatorio_brasil"):
-        evo = _filter_anos_until_2024(result.get("por_ano"))
-        payload = _report_payload(result.get("escopo"), evo,
-                                  _humanize_forecast_block(result.get("previsao_mensal", {})),
-                                  compare_ctx)
-        payload["filtros"] = result.get("filtros_aplicados", {})
-        payload["total_geral"] = result.get("total_geral")
-        return payload
-
-    if name in ("previsao_automatica", "auto_forecast"):
-        return {
-            "filters_applied": result.get("filters_applied"),
-            "analise_retrospectiva": _humanize_forecast_block(result),
-        }
-
-    if name == "serie_temporal":
-        return {
-            "n_pontos": result.get("n_points"),
-            "freq": result.get("freq"),
-            "total": result.get("total_rows"),
-            "notes": result.get("notes", []),
-            # Não envia dates/values — o gráfico inline já mostra
-        }
-
+    if name in ("relatorio_municipio", "relatorio_uf", "relatorio_brasil"):
+        return {"escopo": result.get("escopo"), "por_ano": result.get("por_ano"),
+                "total_geral": result.get("total_geral"),
+                "narrativa_sugerida": _narrativa_relatorio(result)}
     if name == "ranking_municipios":
-        return {
-            "uf": result.get("uf") or "Brasil",
-            "filtros": result.get("filtros_aplicados", {}),
-            "top": result.get("top"),
-            "total_no_recorte": result.get("total_notificacoes"),
-            "ranking": [
-                {"nome": r.get("nome"), "uf": r.get("uf"), "casos": r.get("n")}
-                for r in (result.get("ranking") or [])
-            ],
-        }
-
+        return {"uf": result.get("uf") or "Brasil", "ranking": result.get("ranking"),
+                "narrativa_sugerida": _narrativa_ranking(result)}
+    if name == "perfil_vitimas":
+        return {"narrativa_sugerida": _narrativa_perfil(result)}
+    if name == "consulta_sipia_ct":
+        return {"narrativa_sugerida": _narrativa_sipia(result)}
     if name == "consultar":
         rows = result.get("rows", [])
-        return {
-            "total_rows": result.get("total_rows"),
-            "shown": result.get("shown"),
-            "notes": result.get("notes", []),
-            "amostra": rows[:5],  # só primeiros 5 pro LLM
-        }
-
-    # Default fallback: shrink arrays
+        return {"total_rows": result.get("total_rows"), "amostra": rows[:5]}
     return _shrink_for_llm(result)
 
 
-# Último ano com dados na base (VIOLBR20..VIOLBR24). O roteador NÃO inventa
-# anos além disso; perguntas sobre anos futuros caem no total disponível.
-_CURRENT_MAX_YEAR = int(os.getenv("AURORA_MAX_DATA_YEAR", "2024"))
+# Teto de ano aceito no filtro (anos acima disso são ignorados). A base do
+# painel vai até o ano mais recente carregado; o teto só barra lixo.
+_CURRENT_MAX_YEAR = int(os.getenv("AURORA_MAX_DATA_YEAR", "2030"))
 
 
 def _extract_year_filter(text: str) -> dict:
@@ -1683,24 +1911,23 @@ def _narrar_com_jurema(name: str, pergunta: str, result, humanizado,
     """
     from .rag_tools import _ask_jurema_narrar
 
-    # --- Jurídico: o parecer já foi gerado pelo Jurema dentro da tool --------
+    # --- Jurídico: texto curado da base (conferido no Planalto) ---------------
     if name == "rag_juridico" and isinstance(result, dict):
-        parecer = (result.get("parecer_jurema") or "").strip()
-        trechos = result.get("trechos") or []
-        if parecer:
-            fontes = "; ".join(
-                f"{t.get('lei','')} — {t.get('artigo','')}".strip(" —")
-                for t in trechos[:3] if isinstance(t, dict))
-            if fontes:
-                parecer = f"{parecer}\n\nBase legal: {fontes}."
-            return parecer, 0, 0
+        trechos = [t for t in (result.get("trechos") or []) if isinstance(t, dict)]
+        parecer = _limpar_parecer(result.get("parecer_jurema") or "")
         if trechos:
             corpo = "\n\n".join(
-                f"**{t.get('lei','')} — {t.get('artigo','')}**: {t.get('texto','')}"
-                for t in trechos[:3] if isinstance(t, dict))
-            return corpo, 0, 0
+                f"**{t.get('artigo','')}** ({t.get('lei','')}): {t.get('texto','')}"
+                for t in trechos[:2])
+            fontes = "; ".join(t.get("fonte", "") for t in trechos[:2] if t.get("fonte"))
+            if parecer:
+                corpo = parecer + "\n\n" + corpo
+            return f"{corpo}\n\nFonte: {fontes}.", 0, 0
+        if parecer:
+            return (parecer + "\n\n(Resposta não confirmada na base jurídica do "
+                    "Aurora; confira no texto da lei.)"), 0, 0
         return (result.get("erro")
-                or "Não encontrei base legal específica no corpus jurídico."), 0, 0
+                or "Não encontrei na base jurídica do Aurora um trecho de lei sobre esse tema."), 0, 0
 
     # --- Produto: Jurema responde a partir dos trechos da documentação -------
     if name == "rag_interno" and isinstance(result, dict):
@@ -1727,11 +1954,16 @@ def _narrar_com_jurema(name: str, pergunta: str, result, humanizado,
         return (f"Não consegui obter os dados para essa consulta ({msg}). "
                 f"Tente reformular ou especificar o estado e o tipo de violência."), 0, 0
 
-    # --- Dados / SIPIA: narrativa_sugerida pronta + Jurema reescreve ---------
+    # --- Dados / SIPIA: texto determinístico com os números exatos -----------
+    # A reescrita pelo Jurema-7B trocava números e inventava conclusões ("pico
+    # em 2024" com 2025 maior). Por padrão o texto pronto vai direto; o LLM só
+    # entra se AURORA_NARRAR_DADOS_COM_LLM=1.
     base = ""
     if isinstance(humanizado, dict):
         base = (humanizado.get("narrativa_sugerida")
                 or humanizado.get("mensagem") or "")
+    if base and os.getenv("AURORA_NARRAR_DADOS_COM_LLM", "0") != "1":
+        return base, 0, 0
     contexto = json.dumps(humanizado, ensure_ascii=False, default=str)[:1800]
     extra = ""
     if compare_hint:
@@ -1740,19 +1972,40 @@ def _narrar_com_jurema(name: str, pergunta: str, result, humanizado,
                  "SOMENTE os números fornecidos.")
     prompt = (
         "Você é o Aurora Responde, assistente sobre dados de violência contra "
-        "crianças e adolescentes no Brasil (fontes SINAM/SIPIA). Escreva uma "
-        "resposta clara, curta e em português (1 a 3 parágrafos, em prosa, SEM "
-        "tabelas e SEM cabeçalhos markdown). Use APENAS os números fornecidos — "
-        "NUNCA invente dados nem cite anos posteriores a 2024. Se houver uma "
-        "frase-resumo, reescreva-a de forma natural mantendo os números." + extra +
+        "crianças e adolescentes no Brasil (fontes SINAN/SIPIA-CT). Reescreva o "
+        "RESUMO-BASE em português claro, em prosa, SEM tabelas e SEM cabeçalhos. "
+        "Mantenha TODOS os números e anos exatamente como estão; não acrescente "
+        "conclusões. Fale em notificações (SINAN) ou registros (SIPIA-CT), nunca "
+        "em casos." + extra +
         f"\n\nPERGUNTA DO USUÁRIO:\n{pergunta}\n\n"
-        f"RESUMO-BASE (reescreva com naturalidade, mantendo os números):\n{base}\n\n"
-        f"DADOS (JSON, só referência):\n{contexto}\n\nRESPOSTA:")
+        f"RESUMO-BASE:\n{base}\n\nDADOS (JSON, só referência):\n{contexto}\n\nRESPOSTA:")
     txt, pe, ec = _ask_jurema_narrar(prompt)
     if txt:
         return txt, pe, ec
     return (base or "Não encontrei dados para essa consulta. Tente especificar "
             "o estado, o ano e o tipo de violência."), 0, 0
+
+
+_RACIOCINIO_RE = re.compile(
+    r"(analisando as alternativas|ao analisar as alternativas|alternativa\s+[a-e]\b|"
+    r"^\s*[a-e]\)\s|resposta\s*:|\btrecho\s+l\d\b|\[l\d\])",
+    re.IGNORECASE | re.MULTILINE)
+
+
+def _limpar_parecer(txt: str) -> str:
+    """Descarta parecer do Jurema com raciocínio de prova exposto ou cortado."""
+    t = (txt or "").strip()
+    if not t or _RACIOCINIO_RE.search(t):
+        return ""
+    if not re.search(r"[.!?)]\s*$", t):     # terminou no meio da frase
+        corte = max(t.rfind(". "), t.rfind(".\n"))
+        t = t[:corte + 1] if corte > 40 else ""
+    return t
+
+
+_PERFIL_RE = re.compile(
+    r"perfil|por sexo|por raca|por cor|raca/cor|raca e cor|meninas e meninos|"
+    r"meninos e meninas|sexo das vitimas|cor das vitimas|raca das vitimas")
 
 
 def chat(messages: Iterable[dict],
@@ -1862,8 +2115,14 @@ def chat(messages: Iterable[dict],
         if ctx_hint:
             convo.insert(latest_idx + 1, {"role": "system", "content": ctx_hint})
 
+    # Orientações fixas (denúncia, como consultar o portal) — sem consulta.
+    fixa = _resposta_fixa(latest_user)
+    if fixa:
+        return RoteadorResult(final_text=fixa, tool_events=[],
+                              elapsed_seconds=0.0, rounds=0, raw_messages=convo)
+
     # Escopo estrito: recusa pedidos fora do domínio SEM chamar o LLM/ferramentas.
-    if _is_offscope(latest_user):
+    if _is_offscope(latest_user, tem_contexto=bool(prev_msgs)):
         return RoteadorResult(
             final_text=_OFFSCOPE_MSG, tool_events=[],
             elapsed_seconds=0.0, rounds=0, raw_messages=convo)
@@ -1894,10 +2153,24 @@ def chat(messages: Iterable[dict],
         name, args = name3, args3
         redirect_note = note3 if not redirect_note else f"{redirect_note}; {note3}"
 
+    # Perfil das vítimas (sexo/raça) -> ferramenta própria, mesma base do painel.
+    if name in ("relatorio_brasil", "relatorio_uf") and _PERFIL_RE.search(_norm(latest_user)):
+        args = {"uf": (args or {}).get("uf"),
+                "filters_extra": (args or {}).get("filters_extra") or {}}
+        name = "perfil_vitimas"
+
     # Filtro de ANO (o roteador determinístico extrai do texto — antes isso
     # vinha do Qwen escolhendo os args). Só nas tools que leem filters_extra.
-    if name in ("relatorio_brasil", "relatorio_uf", "ranking_municipios"):
+    if name in ("relatorio_brasil", "relatorio_uf", "relatorio_municipio",
+                "ranking_municipios", "perfil_vitimas"):
         ano_filt = _extract_year_filter(latest_user)
+        # "Diminuiu em 2025?" pede comparação com o ano anterior: não restringe
+        # a série a um único ano.
+        if ("ano" in ano_filt and name != "ranking_municipios"
+                and re.search(r"aument|diminu|cresc|\bcai|caiu|queda|redu|variou|"
+                              r"variacao|compar|evolu|tendenc|subiu|baixou",
+                              _norm(latest_user))):
+            ano_filt = {}
         if ano_filt:
             fx = dict((args or {}).get("filters_extra") or {})
             for k, v in ano_filt.items():

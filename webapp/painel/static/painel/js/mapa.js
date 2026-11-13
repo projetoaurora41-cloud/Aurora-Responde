@@ -179,6 +179,14 @@
       };
       grand += r.total || 0;
     }
+    const semUf = (payload.data && payload.data.sem_uf) || 0;
+    const note = document.getElementById("map-sem-uf");
+    if (note) {
+      note.textContent = semUf
+        ? `O mapa soma ${fmt(grand)} notificações. Outras ${fmt(semUf)} não têm UF de ocorrência informada e entram só no total geral do painel.`
+        : "";
+      note.hidden = !semUf;
+    }
     return { totals, grand };
   }
 

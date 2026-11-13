@@ -137,11 +137,56 @@ def apply_filters(qs, filters: dict[str, Any] | None):
     return qs
 
 
+def available_years() -> list[str]:
+    """Anos efetivamente presentes nos dados (``NU_ANO`` e ano de ``DT_NOTIFIC``).
+
+    O rótulo de período precisa cobrir TUDO o que entra nos totais. Usar só
+    ``NU_ANO`` deixava o rótulo em "2021–2025" enquanto a série mensal (por
+    ``DT_NOTIFIC``) e os totais incluíam 2020. Aqui juntamos as duas colunas.
+    """
+    from django.db.models import Max, Min
+
+    Model = violbr_model()
+    qs = base_queryset()
+    anos: set[str] = set()
+    try:
+        agg = qs.exclude(NU_ANO="").aggregate(lo=Min("NU_ANO"), hi=Max("NU_ANO"))
+        for v in (agg.get("lo"), agg.get("hi")):
+            if v and str(v).strip().isdigit():
+                anos.add(str(v).strip())
+        anos.update(
+            str(a).strip()
+            for a in qs.exclude(NU_ANO="").values_list("NU_ANO", flat=True).distinct()
+            if a and str(a).strip().isdigit()
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        mes = (
+            qs.exclude(DT_NOTIFIC__isnull=True)
+            .annotate(_a=Substr(Cast("DT_NOTIFIC", output_field=CharField()), 1, 4))
+            .aggregate(lo=Min("_a"), hi=Max("_a"))
+        )
+        for v in (mes.get("lo"), mes.get("hi")):
+            if v and str(v).isdigit():
+                anos.add(str(v))
+    except Exception:  # noqa: BLE001
+        pass
+    if anos:
+        lo, hi = min(anos), max(anos)
+        anos.update(str(a) for a in range(int(lo), int(hi) + 1))
+    del Model
+    return sorted(anos)
+
+
 def period_label(filters: dict[str, Any] | None = None) -> str:
     """Texto amigável do período analítico (filtros ou anos da base)."""
     filters = filters or {}
     ai = str(filters.get("ano_inicio") or "").strip()
     af = str(filters.get("ano_fim") or "").strip()
+    ano = str(filters.get("ano") or "").strip()
+    if ano:
+        return f"Período: {ano}"
     if ai and af:
         return f"Período: {ai}" if ai == af else f"Período: {ai}–{af}"
     if ai:
@@ -149,14 +194,11 @@ def period_label(filters: dict[str, Any] | None = None) -> str:
     if af:
         return f"Período: até {af}"
 
-    years = sorted(
-        a
-        for a in violbr_model()
-        .objects.exclude(NU_ANO="")
-        .values_list("NU_ANO", flat=True)
-        .distinct()
-        if a and str(a).isdigit()
-    )
+    if caching_enabled():
+        from painel.services.cache import cached
+        years = cached("anos", "all", available_years)
+    else:
+        years = available_years()
     if not years:
         return "Período: não disponível"
     lo, hi = years[0], years[-1]
@@ -199,17 +241,32 @@ def _violence_count_kwargs() -> dict[str, Count]:
     return {key: Count("id", filter=q) for key, q in VIOLENCE_AGGREGATES.items()}
 
 
+def municipio_ignorado(codigo: str) -> bool:
+    """True quando o código não identifica um município real.
+
+    O SINAN grava o código da UF seguido de zeros (ex.: ``290000`` = BA,
+    ``330000`` = RJ) quando o município de ocorrência não foi informado. Esses
+    códigos não podem aparecer no ranking nem contar como município.
+    """
+    c = str(codigo or "").strip()
+    if not c:
+        return True
+    if c.endswith("0000"):
+        return True
+    return municipios_lookup.lookup(c) is None
+
+
 def _municipio_label(codigo: str, uf_raw: str = "") -> str:
     """Rótulo amigável no formato ``São Paulo (SP)``.
 
-    Usa a tabela IBGE embarcada. Se o código não for encontrado, cai para o
-    código original acompanhado da sigla da UF (quando disponível).
+    Usa a tabela IBGE embarcada. Código sem município (UF + zeros) vira
+    ``Município ignorado (UF)``.
     """
     info = municipios_lookup.lookup(codigo)
     if info:
         return municipios_lookup.label(codigo, with_uf=True)
-    sigla = municipios_lookup.uf_sigla(uf_raw)
-    return f"{codigo} ({sigla})" if sigla else codigo
+    sigla = municipios_lookup.uf_sigla(uf_raw) or municipios_lookup.uf_sigla(str(codigo or "")[:2])
+    return f"Município ignorado ({sigla})" if sigla else "Município ignorado"
 
 
 # --------------------------------------------------------------------------- #
@@ -234,7 +291,12 @@ def dashboard_uf_map(filters=None) -> dict[str, Any]:
         for k in metric_keys:
             merged[sigla][k] += r.get(k) or 0
     rows = sorted(merged.values(), key=lambda r: r["total"], reverse=True)
+    # Notificações sem UF de ocorrência ficam fora do mapa, mas entram no
+    # total geral do card — devolvemos a diferença para o front explicar.
+    sem_uf = apply_filters(base_queryset(), filters).filter(SG_UF_OCOR="").count()
     return {
+        "sem_uf": sem_uf,
+        "total_mapa": sum(r["total"] for r in rows),
         "labels": [r["SG_UF_OCOR"] for r in rows],
         "rows": [_normalize_row(r, key="SG_UF_OCOR", label="uf") for r in rows],
         "datasets": _violence_datasets(rows),
@@ -246,15 +308,28 @@ def dashboard_uf_map(filters=None) -> dict[str, Any]:
 # --------------------------------------------------------------------------- #
 
 
-def dashboard_municipality_ranking(filters=None, limit: int = 25) -> dict[str, Any]:
+def municipality_ranking_rows(filters=None, limit: int = 25) -> list[dict[str, Any]]:
+    """Linhas do ranking de municípios, SEM os códigos de município ignorado."""
     qs = (
         apply_filters(base_queryset(), filters)
         .exclude(ID_MN_OCOR="")
         .values("SG_UF_OCOR", "ID_MN_OCOR")
         .annotate(total=Count("id"), **_violence_count_kwargs())
-        .order_by("-total")[:limit]
+        .order_by("-total")
     )
-    rows = list(qs)
+    rows: list[dict[str, Any]] = []
+    # Busca um pouco além do limite para compensar os códigos descartados.
+    for r in qs[: limit + 60]:
+        if municipio_ignorado(r["ID_MN_OCOR"]):
+            continue
+        rows.append(r)
+        if len(rows) >= limit:
+            break
+    return rows
+
+
+def dashboard_municipality_ranking(filters=None, limit: int = 25) -> dict[str, Any]:
+    rows = municipality_ranking_rows(filters, limit)
     return {
         "labels": [_municipio_label(r["ID_MN_OCOR"], r["SG_UF_OCOR"]) for r in rows],
         "rows": rows,
@@ -489,7 +564,7 @@ def dashboard_age_pyramid(filters=None) -> dict[str, Any]:
 # --------------------------------------------------------------------------- #
 
 
-_RACA_LABELS = {"1": "Branca", "2": "Preta", "3": "Amarela", "4": "Parda", "5": "Indígena"}
+_RACA_LABELS = {"1": "Branca", "2": "Preta", "3": "Amarela", "4": "Parda", "5": "Indígena", "9": "Ignorada"}
 _SEXO_LABELS = {"M": "Masculino", "F": "Feminino", "I": "Ignorado"}
 _ESCOL_LABELS = {
     "00": "Analfabeto",
@@ -519,19 +594,19 @@ def dashboard_victim_profile(filters=None) -> dict[str, Any]:
         qs.values("CS_ESCOL_N").annotate(total=Count("id")).order_by("-total")
     )
 
+    def _merge(rows, field, labels, default):
+        """Soma linhas com o mesmo rótulo (ex.: '' e '9' viram uma só 'Ignorada')."""
+        acc: "OrderedDict[str, int]" = OrderedDict()
+        for r in rows:
+            lab = labels.get((r[field] or "").strip(), default)
+            acc[lab] = acc.get(lab, 0) + (r["total"] or 0)
+        ordered = sorted(acc.items(), key=lambda kv: -kv[1])
+        return {"labels": [k for k, _ in ordered], "data": [v for _, v in ordered]}
+
     return {
-        "raca": {
-            "labels": [_RACA_LABELS.get(r["CS_RACA"] or "", "Ignorada") for r in raca_rows],
-            "data": [r["total"] for r in raca_rows],
-        },
-        "sexo": {
-            "labels": [_SEXO_LABELS.get(r["CS_SEXO"] or "", "Ignorado") for r in sexo_rows],
-            "data": [r["total"] for r in sexo_rows],
-        },
-        "escolaridade": {
-            "labels": [_ESCOL_LABELS.get(r["CS_ESCOL_N"] or "", "Ignorada") for r in escol_rows],
-            "data": [r["total"] for r in escol_rows],
-        },
+        "raca": _merge(raca_rows, "CS_RACA", _RACA_LABELS, "Ignorada"),
+        "sexo": _merge(sexo_rows, "CS_SEXO", _SEXO_LABELS, "Ignorado"),
+        "escolaridade": _merge(escol_rows, "CS_ESCOL_N", _ESCOL_LABELS, "Ignorada"),
     }
 
 
@@ -682,8 +757,10 @@ def overview_kpis(filters=None) -> dict[str, int]:
         violencia_sexual=Count("id", filter=Q(VIOL_SEXU="1")),
         exploracao_sexual=Count("id", filter=Q(SEX_EXPLO="1")),
     )
-    municipios = (
-        qs.exclude(ID_MN_OCOR="").values("ID_MN_OCOR").distinct().count()
+    municipios = sum(
+        1
+        for c in qs.exclude(ID_MN_OCOR="").values_list("ID_MN_OCOR", flat=True).distinct()
+        if not municipio_ignorado(c)
     )
     return {
         "total": agg["total"] or 0,

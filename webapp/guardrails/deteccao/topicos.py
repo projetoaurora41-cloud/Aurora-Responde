@@ -13,7 +13,10 @@ def _norm(s: str) -> str:
 
 # Emergência imediata / pessoa em perigo → Disque 100 + 190.
 _EMERGENCIA_RE = re.compile(
-    r"\b(me\s+ajud[ae]|preciso\s+de\s+ajuda|estou\s+em\s+perigo|"
+    # "me ajuda a escrever um poema" NÃO é pedido de socorro: exige que o
+    # pedido de ajuda não seja seguido de uma tarefa ("a", "com", "em"...).
+    r"\b(me\s+ajud[ae](?!\s+(?:a|com|em|no|na|nos|nas|para|pra|sobre|entender|escrever|fazer)\b)|"
+    r"preciso\s+de\s+ajuda(?!\s+(?:com|para|pra|em|no|na|sobre)\b)|estou\s+em\s+perigo|"
     r"estou\s+sendo\s+(?:abusad[oa]|agredid[oa]|violentad[oa])|"
     r"(?:abuso|agressao|violencia)\s+(?:agora|neste momento|em curso)|"
     r"quero\s+denunciar\s+(?:meu|minha|o\s+meu|a\s+minha)\b|"
@@ -55,9 +58,28 @@ _CONSELHO_TUTELAR_RE = re.compile(
 )
 
 
+# Criança/adolescente relatando aliciamento ou pedido de imagens íntimas.
+_ALICIAMENTO_RE = re.compile(
+    r"(?:oferec\w*|pag\w*|dar|da|deu)\s+(?:\w+\s+){0,3}dinheiro.{0,40}(?:foto|video|nude|imagem)|"
+    r"(?:em\s+troca\s+de|por)\s+(?:umas?\s+)?(?:fotos?|videos?|nudes?)|"
+    r"(?:pedindo|pede|pediu|quer|querendo|mandar?|enviar?|envie)\s+(?:\w+\s+){0,3}"
+    r"(?:fotos?|videos?|nudes?)\s*(?:intimas?|pelad\w*|sem\s+roupa|nu\b|nua\b|minhas?)?|"
+    r"\bnudes?\b|sem\s+roupa|fotos?\s+intimas?|"
+    r"(?:ameac\w*|chantage\w*)\s+.{0,40}(?:foto|video|imagem)"
+)
+
+# Primeira pessoa menor de idade ("tenho 15 anos", "sou adolescente").
+_MENOR_1A_PESSOA_RE = re.compile(
+    r"\btenho\s+(?:[1-9]|1[0-7])\s+anos\b|\bsou\s+(?:menor|adolescente|crianca)\b|"
+    r"\bfiz\s+(?:[1-9]|1[0-7])\s+anos\b"
+)
+_ADULTO_RE = re.compile(r"\b(?:adulto|homem|mulher|cara|moco|senhor|tio|professor|treinador|"
+                        r"desconhecido|alguem|pessoa|ele|ela|namorad\w*)\b")
+
+
 @dataclass
 class RiscoResult:
-    """encaminhamento: '' | 'disque_100' | 'conselho_tutelar'."""
+    """encaminhamento: '' | 'disque_100' | 'conselho_tutelar' | 'aliciamento'."""
 
     em_risco: bool
     encaminhamento: str = ""
@@ -82,6 +104,16 @@ def detectar_risco(texto: str) -> RiscoResult:
             encaminhamento="disque_100",
             motivo=m_em.group(0),
         )
+
+    # Adolescente relatando pedido/oferta por fotos íntimas (aliciamento).
+    m_al = _ALICIAMENTO_RE.search(n)
+    if m_al and (_MENOR_1A_PESSOA_RE.search(n) or (_ADULTO_RE.search(n) and re.search(r"\bme\b|\bmim\b|\bmeu\b|\bminha", n))):
+        return RiscoResult(em_risco=True, encaminhamento="aliciamento",
+                           motivo=m_al.group(0)[:80])
+    if _MENOR_1A_PESSOA_RE.search(n) and re.search(
+            r"abus|agred|bat(e|eu|endo)|violen|estupr|tocou|toca|ameac|maltrat", n):
+        return RiscoResult(em_risco=True, encaminhamento="aliciamento",
+                           motivo="menor relatando violência")
 
     # Evita confundir "Conselho Tutelar em SE 2023" (dado) com relato pessoal.
     if _CONSULTA_DADOS_RE.search(n):

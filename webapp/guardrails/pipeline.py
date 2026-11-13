@@ -16,7 +16,7 @@ from django.conf import settings
 from .deteccao.injecao import score_injecao
 from .deteccao.pii import mascarar_pii
 from .deteccao.topicos import detectar_risco
-from .mensagens import MSG_CONSELHO_TUTELAR, MSG_DISQUE_100, MSG_INJECAO
+from .mensagens import MSG_ALICIAMENTO, MSG_CONSELHO_TUTELAR, MSG_DISQUE_100, MSG_INJECAO
 from .saida import filtrar_saida
 
 # Padrões de "instrução" em trechos RAG — neutralizados (snippet = dado).
@@ -102,7 +102,9 @@ def processar_entrada(
             "encaminhamento": risco.encaminhamento,
             "motivo": risco.motivo,
         })
-        if risco.encaminhamento == "conselho_tutelar":
+        if risco.encaminhamento == "aliciamento":
+            msg = MSG_ALICIAMENTO
+        elif risco.encaminhamento == "conselho_tutelar":
             msg = MSG_CONSELHO_TUTELAR
         else:
             msg = MSG_DISQUE_100

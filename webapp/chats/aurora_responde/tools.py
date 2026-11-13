@@ -1081,45 +1081,46 @@ def tool_resolver_municipio(args: dict, ctx: ToolContext) -> dict:
 
 
 def tool_ranking_municipios(args: dict, ctx: ToolContext) -> dict:
-    """Top N municipios por contagem com nome resolvido (via Municipio IBGE)."""
-    from django.db.models import Count
-    from sinam.models import Municipio
-    from sinam import queries as sqm
+    """Top N municípios por notificações — mesma fonte e regra do Painel.
 
-    uf = (args.get("uf") or "").strip().upper() or None
+    Códigos sem município (UF + zeros, ex.: 290000) ficam FORA do ranking e são
+    somados em ``sem_municipio``.
+    """
+    from . import fonte_painel as fp
+
+    uf = _normalize_uf(args.get("uf") or "") or None
     top = int(args.get("top") or 10)
-    extra = args.get("filters_extra") or {}
-    filters = dict(extra)
+    filters = dict(args.get("filters_extra") or {})
     if uf:
         filters["uf"] = uf
-
-    sanitized, ignored, notes = sqm._sanitize_filters(filters)
-    qs = (Notificacao.objects.filter(**sanitized)
-                            .exclude(municipio_codigo="")
-                            .values("municipio_codigo", "uf")
-                            .annotate(n=Count("id"))
-                            .order_by("-n")[:top])
-    rows = list(qs)
-
-    # Resolve nome do municipio. SINAM usa 6 digitos IBGE (sem verificador).
-    # Cacheia para evitar N queries.
-    codes = [(r["municipio_codigo"], r["uf"]) for r in rows]
-    cache = {}
-    for code, uf_row in codes:
-        mun = Municipio.objects.filter(codigo__startswith=code, uf=uf_row).first()
-        cache[(code, uf_row)] = mun.nome if mun else f"(codigo {code})"
-    for r in rows:
-        r["nome"] = cache.get((r["municipio_codigo"], r["uf"]), "?")
-
-    total_all = Notificacao.objects.filter(**sanitized).count()
+    r = fp.ranking(filters, top=top)
     return {
         "uf": uf,
-        "filtros_aplicados": sanitized,
-        "filtros_ignorados": ignored,
-        "notes": notes,
+        "filtros_aplicados": filters,
         "top": top,
-        "total_notificacoes": total_all,
-        "ranking": rows,
+        "total_notificacoes": fp.total(filters),
+        "sem_municipio": r["sem_municipio"],
+        "ranking": r["ranking"],
+        "fonte": "SINAN (notificações) — mesma base do Painel Aurora",
+    }
+
+
+def tool_perfil_vitimas(args: dict, ctx: ToolContext) -> dict:
+    """Perfil das vítimas (sexo e raça/cor) — mesma fonte do Painel."""
+    from . import fonte_painel as fp
+
+    uf = _normalize_uf(args.get("uf") or "") or None
+    filters = dict(args.get("filters_extra") or {})
+    if uf:
+        filters["uf"] = uf
+    p = fp.perfil(filters)
+    return {
+        "uf": uf,
+        "filtros_aplicados": filters,
+        "total_notificacoes": fp.total(filters),
+        "sexo": p["sexo"],
+        "raca": p["raca"],
+        "fonte": "SINAN (notificações) — mesma base do Painel Aurora",
     }
 
 
@@ -1148,23 +1149,24 @@ def _normalize_uf(uf_input: str) -> str | None:
 
 def _relatorio_pipeline(filters: dict, label: str, ctx: ToolContext,
                         horizon: int = 6) -> dict:
-    """Shared body: count by year + monthly series + retrospective analysis."""
-    by_year = sq.aggregate(filters, group_by="ano", top=20)
-    ts_monthly = sq.time_series(filters, freq="ME")
-    prev = tool_previsao_automatica(
-        {"filters": filters, "freq": "ME", "horizon": horizon}, ctx
-    )
+    """Contagem por ano + série mensal, lidas da MESMA base do Painel."""
+    from . import fonte_painel as fp
+
+    por_ano = fp.por_ano(filters)
+    mensal = fp.serie_mensal(filters)
+    ultimo = por_ano[-1]["ano"] if por_ano else None
     return {
         "escopo": label,
         "filtros_aplicados": filters,
-        "total_geral": by_year.get("total_rows", 0),
-        "por_ano": by_year.get("rows", []),
+        "total_geral": sum(r["n"] for r in por_ano) or fp.total(filters),
+        "por_ano": por_ano,
         "serie_mensal": {
-            "n_points": ts_monthly.get("n_points", 0),
-            "dates": ts_monthly.get("dates", []),
-            "values": ts_monthly.get("values", []),
+            "n_points": len(mensal),
+            "dates": [m["mes"] for m in mensal],
+            "values": [m["n"] for m in mensal],
         },
-        "previsao_mensal": prev if not prev.get("error") else {"erro": prev["error"]},
+        "nota_preliminar": fp.nota_preliminar(mensal, ultimo),
+        "fonte": "SINAN (notificações) — mesma base do Painel Aurora",
     }
 
 
@@ -1180,43 +1182,24 @@ def tool_relatorio_uf(args: dict, ctx: ToolContext) -> dict:
 
 def tool_relatorio_brasil(args: dict, ctx: ToolContext) -> dict:
     extra = args.get("filters_extra") or {}
-    return _relatorio_pipeline(extra, label="Brasil (nacional)", ctx=ctx)
+    return _relatorio_pipeline(dict(extra), label="Brasil (nacional)", ctx=ctx)
 
 
 def tool_relatorio_municipio(args: dict, ctx: ToolContext) -> dict:
-    """One-shot: resolve + count_by_year + serie + previsao mensal."""
+    """Município: resolve o nome no IBGE e conta pela base do Painel."""
     nome = args.get("municipio") or ""
-    uf = args.get("uf") or None
-    horizon = int(args.get("horizon") or 6)  # 6 meses pra frente por default
+    uf = _normalize_uf(args.get("uf") or "") or None
 
     resolved = sq.resolver_municipio(nome, uf)
     if not resolved.get("found"):
         return {"error": f"Municipio '{nome}' nao encontrado/ambiguo.",
                 "lookup_result": resolved}
-    filters = {"municipio_nome": nome}
-    if uf:
-        filters["uf"] = uf
-
-    by_year = sq.aggregate(filters, group_by="ano", top=20)
-    ts_monthly = sq.time_series(filters, freq="ME")
-
-    # Previsão sobre a série mensal (mais pontos = mais confiável que anual)
-    prev = tool_previsao_automatica({"filters": filters, "freq": "ME",
-                                     "horizon": horizon}, ctx)
-
-    return {
-        "municipio": f"{resolved['nome']}/{resolved['uf']}",
-        "codigo_ibge": resolved["codigo"],
-        "codigo_sinam": resolved["codigo"][:6],
-        "total_geral": by_year.get("total_rows", 0),
-        "por_ano": by_year.get("rows", []),
-        "serie_mensal": {
-            "n_points": ts_monthly.get("n_points", 0),
-            "dates": ts_monthly.get("dates", []),
-            "values": ts_monthly.get("values", []),
-        },
-        "previsao_mensal": prev if not prev.get("error") else {"erro": prev["error"]},
-    }
+    extra = dict(args.get("filters_extra") or {})
+    filters = {**extra, "municipio_codigo": resolved["codigo"][:6]}
+    out = _relatorio_pipeline(filters, label=f"{resolved['nome']}/{resolved['uf']}", ctx=ctx)
+    out["municipio"] = f"{resolved['nome']}/{resolved['uf']}"
+    out["codigo_ibge"] = resolved["codigo"]
+    return out
 
 
 def tool_previsao_automatica(args: dict, ctx: ToolContext) -> dict:
@@ -1326,6 +1309,7 @@ DISPATCH = {
     "relatorio_uf":          tool_relatorio_uf,
     "relatorio_brasil":      tool_relatorio_brasil,
     "ranking_municipios":    tool_ranking_municipios,
+    "perfil_vitimas":        tool_perfil_vitimas,
     "list_saved_queries": tool_list_saved_queries,
     "load_series": tool_load_series,
     "forecast": tool_forecast,
@@ -1361,6 +1345,7 @@ DISPATCH.update(RAG_DISPATCH)
 _EXPOSED_TOOLS = {
     # Dados SINAM (ORM limpo)
     "consultar", "contar", "serie_temporal", "ranking_municipios", "resolver_municipio",
+    "perfil_vitimas",
     "relatorio_uf", "relatorio_brasil", "relatorio_municipio",
     # Série temporal / Chronos (só quando a pergunta é de série)
     "previsao_automatica", "analise_retrospectiva",

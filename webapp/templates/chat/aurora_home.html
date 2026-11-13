@@ -381,14 +381,8 @@
                   <div class="ar-step">
                     <span class="dot {% if res.error %}err{% endif %}"></span>
                     <span>Consultou <strong>{{ m.tool_name|tool_label }}</strong></span>
-                    <code>{{ m.tool_name }}</code>
                     {% if m.elapsed_seconds %}· {{ m.elapsed_seconds|floatformat:1 }}s{% endif %}
-                    {% if res.fonte %}· fonte: {{ res.fonte }}{% endif %}
-                    {% if res.error %}· <span style="color:var(--gov-red)">erro</span>{% endif %}
-                    · <details><summary>detalhes</summary></details>
-                  </div>
-                  <div style="display:none" data-tool-details>
-                    <pre class="sql-block">{{ m.tool_payload.result|jsonpretty:6000 }}</pre>
+                    {% if res.error %}· <span style="color:var(--gov-red)">não foi possível consultar</span>{% endif %}
                   </div>
                 </div>
                 {% endwith %}
@@ -465,7 +459,7 @@
 {% if not embed %}
 <footer class="ar-footer">
   <div class="ar-wrap">
-    Plataforma Aurora — conteúdo institucional de caráter informativo. Em situações de risco iminente, <strong>disque 190</strong>.
+    Plataforma Aurora — conteúdo institucional de caráter informativo. Em situações de risco iminente, <strong>ligue 190</strong>.
   </div>
 </footer>
 {% endif %}

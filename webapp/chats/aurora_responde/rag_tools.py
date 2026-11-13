@@ -215,44 +215,39 @@ def tool_rag_juridico(args: dict, ctx) -> dict:
         return {"disponivel": False, "erro": "query vazia."}
     limit = int(args.get("limit") or 5)
 
-    # 1) Recupera trechos do corpus jurídico curado (leis).
+    # 1) Recupera trechos do corpus jurídico curado (leis). Primeiro pelo TEMA
+    #    (regex curada por artigo); se nada casar, cai na busca por palavras.
     from . import leis_corpus
-    encontrados = leis_corpus.buscar(query, limit=limit)
+    encontrados = leis_corpus.por_tema(query, limit=2) or leis_corpus.buscar(query, limit=min(limit, 2))
     trechos = [
         {"ref": t["ref"], "lei": t["lei"], "artigo": t["artigo"],
-         "texto": t["texto"][:800], "fonte": t["fonte"]}
+         "texto": t["texto"][:1600], "fonte": t["fonte"]}
         for t in encontrados
     ]
 
-    # 2) Gera o parecer com o Jurema, ANCORADO nos trechos da lei (quando houver).
-    contexto = "\n".join(
-        f"[{t['ref']}] {t['lei']} — {t['artigo']}: {t['texto']}" for t in trechos)
-    parecer = _ask_jurema(query, contexto)
+    # 2) O texto curado do corpus É a resposta (conferido com o Planalto). O
+    #    Jurema-7B, treinado em questões de prova, inventava artigos ("art. 244"
+    #    no lugar do 244-A), expunha o raciocínio ("analisando as alternativas
+    #    A, B, C, D") e cortava a frase no meio. Só é chamado se a variável
+    #    AURORA_JURIDICO_JUREMA=1 estiver ligada.
+    parecer = None
+    if os.getenv("AURORA_JURIDICO_JUREMA", "0") == "1":
+        contexto = "\n".join(
+            f"{t['lei']} — {t['artigo']}: {t['texto']}" for t in trechos)
+        parecer = _ask_jurema(query, contexto)
 
     if not trechos and not parecer:
         return {"disponivel": False,
-                "fonte": "Corpus jurídico (Aurora)",
-                "erro": ("Nem o corpus jurídico nem o modelo Jurema estão "
-                         "disponíveis para esta consulta.")}
+                "fonte": "Base jurídica do Aurora",
+                "erro": ("Não encontrei na base jurídica do Aurora um trecho de lei "
+                         "sobre esse tema.")}
 
     return {
         "disponivel": True,
         "encontrou": bool(trechos),
-        "fonte": ("Jurema (LLM jurídico) + corpus de leis (Aurora)"
-                  if parecer else "Corpus de leis (Aurora)"),
+        "fonte": "Base jurídica do Aurora (textos de lei conferidos no Planalto)",
         "parecer_jurema": parecer,
-        "parecer_baseado_em": (
-            "trechos de lei do corpus" if (parecer and trechos)
-            else "conhecimento do modelo Jurema (NÃO confirmado no corpus)" if parecer
-            else None),
         "trechos": trechos,
-        "instrucao_citacao": (
-            "Baseie a resposta nos trechos [L#], CITANDO a lei/artigo (campo "
-            "'fonte'). Se o parecer vier só do modelo (sem trechos), sinalize que "
-            "não foi confirmado no corpus. Se a pergunta envolver DENÚNCIA ou relato "
-            "de violência contra criança/adolescente, oriente também a registrar um "
-            "BOLETIM DE OCORRÊNCIA (delegacia física ou Delegacia Eletrônica online), "
-            "além do Conselho Tutelar e do Disque 100."),
     }
 
 

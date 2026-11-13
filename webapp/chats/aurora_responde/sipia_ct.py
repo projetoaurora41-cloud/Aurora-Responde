@@ -60,8 +60,13 @@ def _ident_table(name: str) -> str:
 
 
 def _agg_expr() -> str:
+    """Soma tolerante a valores inválidos na origem (texto, vazio, '-')."""
     v = value_col()
-    return f"SUM({_ident(v)}::numeric)" if v else "COUNT(*)"
+    if not v:
+        return "COUNT(*)"
+    c = _ident(v)
+    return (f"SUM(CASE WHEN {c}::text ~ '^[0-9]+(\\.[0-9]+)?$' "
+            f"THEN {c}::text::numeric ELSE 0 END)")
 
 
 def _run(sql: str, params: list):
@@ -117,90 +122,125 @@ def _build_where(filtros: dict, cols: set[str]) -> tuple[str, list, list]:
     return where, params, descr
 
 
-def consultar(filtros: dict, group_by: str | None = None, top: int = 15) -> dict:
-    """Soma de registros do SIPIA-CT + distribuição por uma dimensão.
+_UFS = ("AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS",
+        "MT", "PA", "PB", "PE", "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC",
+        "SE", "SP", "TO")
 
-    Sem `indicador` no filtro, agrupa por `indicador` por padrão (as dimensões
-    NÃO são somáveis entre si — cada uma é um recorte do mesmo universo)."""
+NOME_SISTEMA = "SIPIA-CT (Sistema de Informação para a Infância e Adolescência — Conselho Tutelar)"
+FONTE = "SIPIA-CT (Conselho Tutelar)"
+
+# Dimensão usada para o TOTAL de registros quando o usuário não escolhe uma: cada
+# registro tem exatamente um sexo, então a soma de "Sexo" é o universo. Somar
+# todas as dimensões contava o mesmo registro 3–4 vezes (ex.: Sergipe 2023:
+# 964 + 964 + 964 + 28 = 2.920, quando o certo é 964).
+_DIM_TOTAL = os.getenv("SIPIA_CT_DIM_TOTAL", "Sexo")
+
+
+def consultar(filtros: dict, group_by: str | None = None, top: int = 15) -> dict:
+    """Total de registros do SIPIA-CT + distribuição.
+
+    - Sem ``indicador``: o total vem da dimensão ``Sexo`` (universo único) e a
+      distribuição é por ano (sem filtro de ano), por UF (com ano e sem UF) ou
+      por direito violado (com UF e ano).
+    - Com ``indicador``: total e distribuição por categoria daquela dimensão.
+    """
     tbl = table_name()
     if not tbl:
-        return {
-            "disponivel": False,
-            "fonte": "SIPIA-CT (Conselho Tutelar)",
-            "mensagem": ("A base do SIPIA-CT ainda não está conectada (defina "
-                         "SIPIA_CT_TABLE no .env). Responda com o SINAM e diga, de "
-                         "forma transparente, que o Conselho Tutelar (SIPIA-CT) não "
-                         "está integrado nesta versão."),
-        }
+        return {"disponivel": False, "fonte": FONTE,
+                "mensagem": ("A base do SIPIA-CT não está conectada nesta instalação.")}
     if not table_exists():
-        return {"disponivel": False, "fonte": f"SIPIA-CT ({tbl})",
-                "erro": f"Tabela '{tbl}' não encontrada no banco."}
+        return {"disponivel": False, "fonte": FONTE,
+                "mensagem": "A base do SIPIA-CT não está disponível no momento."}
 
     cols = allowed_columns()
     tq = _ident_table(tbl)
     agg = _agg_expr()
-    where, params, descr = _build_where(filtros or {}, cols)
+    filtros = dict(filtros or {})
+    indicador = None
+    for k in list(filtros):
+        if k.split("__")[0] == "indicador":
+            indicador = str(filtros.pop(k))
+    dim = indicador or _DIM_TOTAL
 
-    # A view tem linhas-lixo da ingestão dos CSVs: a categoria 'Total'
-    # (linha-resumo que duplicaria a soma) e cabeçalhos mal parseados
-    # ('coluna', 'coluna (2)'...). Exclui ambos por padrão, exceto quando o
-    # usuário filtra 'categoria' explicitamente.
-    tem_categoria_filtro = any(k.split("__")[0] == "categoria" for k in (filtros or {}))
+    where, params, descr = _build_where(filtros, cols)
+    extra, extra_p = [], []
+    if "indicador" in cols:
+        extra.append(f"{_ident('indicador')} ILIKE %s")
+        extra_p.append(dim)
+    tem_categoria_filtro = any(k.split("__")[0] == "categoria" for k in filtros)
     if ("categoria" in cols and not tem_categoria_filtro
             and os.getenv("SIPIA_CT_EXCLUDE_TOTAL", "1") == "1"):
         catq = _ident("categoria")
-        clause = f"({catq} NOT ILIKE %s AND {catq} NOT ILIKE %s)"
-        where = (where + " AND " + clause) if where else (" WHERE " + clause)
-        params = list(params) + ["Total", "coluna%"]
-
-    filtros_txt = "; ".join(descr) if descr else "nenhum (base completa)"
+        extra.append(f"({catq} NOT ILIKE %s AND {catq} NOT ILIKE %s)")
+        extra_p += ["Total", "coluna%"]
+    if "uf" in cols and not any(k.split("__")[0] == "uf" for k in filtros):
+        extra.append(f"upper({_ident('uf')}) IN ({', '.join(['%s'] * len(_UFS))})")
+        extra_p += list(_UFS)
+    if extra:
+        where = (where + " AND " if where else " WHERE ") + " AND ".join(extra)
+        params = list(params) + extra_p
 
     try:
         total = int(_run(f"SELECT COALESCE({agg}, 0) FROM {tq}{where}", list(params))[0][0] or 0)
-    except Exception as exc:  # noqa: BLE001
-        # A base SIPIA-CT tem alguns valores inválidos na origem que só quebram
-        # em varreduras amplas — orienta a refinar (queries com UF/ano funcionam).
-        return {"disponivel": False, "fonte": f"SIPIA-CT ({tbl})",
-                "mensagem": ("Não consegui agregar esse recorte do SIPIA-CT (há "
-                             "registros com valor inválido na origem quando a busca é "
-                             "muito ampla). Refine por ESTADO e/ou ANO — ex.: Sergipe "
-                             "em 2023 — que a consulta funciona."),
-                "detalhe_tecnico": f"{type(exc).__name__}: {str(exc).splitlines()[0]}"}
+    except Exception:  # noqa: BLE001
+        return {"disponivel": False, "fonte": FONTE,
+                "mensagem": ("Não consegui consultar o SIPIA-CT para esse recorte agora. "
+                             "Tente informar o estado e o ano (ex.: Sergipe em 2023).")}
 
     out = {
         "disponivel": True,
-        "fonte": f"SIPIA-CT · Conselho Tutelar ({tbl})",
-        "filtros_aplicados": filtros_txt,
+        "fonte": FONTE,
+        "sistema": NOME_SISTEMA,
+        "filtros_aplicados": "; ".join(descr) if descr else "nenhum (todos os estados e anos)",
+        "uf": str(filtros.get("uf") or "").upper() or None,
+        "ano": filtros.get("ano"),
+        "indicador": indicador,
+        "dimensao_total": dim,
         "soma_registros": total,
     }
-    tem_indicador = any(k.split("__")[0] == "indicador" for k in (filtros or {}))
-    if not tem_indicador:
-        out["nota"] = ("As dimensões (Sexo, Cor, Faixa Etária, Direito Violado, "
-                       "Agente Violador) são recortes do MESMO universo — não some "
-                       "umas com as outras. Filtre por 'indicador' para um total limpo.")
 
-    gb = (group_by or "").strip() or ("indicador" if not tem_indicador else "")
-    if gb and gb in cols:
+    tem_ano = any(k.split("__")[0] == "ano" for k in filtros)
+    tem_uf = bool(out["uf"])
+    if group_by and group_by in cols and group_by != "indicador":
+        gb = group_by
+    elif indicador:
+        gb = "categoria"
+    elif not tem_ano:
+        gb = "ano"
+    elif not tem_uf:
+        gb = "uf"
+    else:
+        gb = "categoria"
+
+    if gb == "categoria" and not indicador:
+        # Distribuição por direito violado (o mesmo universo, outra dimensão).
+        dim_dist = "Direito Violado"
+        w2 = where
+        p2 = [dim_dist if (p == dim) else p for p in params]
+        out["distribuicao_dimensao"] = dim_dist
+    else:
+        w2, p2 = where, params
+    if gb in cols:
         gq = _ident(gb)
         try:
-            # Puxa até 200 linhas (cap de segurança) e consolida em Python: isso
-            # permite mesclar variações/typos da origem (ex.: 'Femenino' ->
-            # 'Feminino') antes de ordenar e cortar no top.
             rows = _run(
-                f"SELECT {gq} AS dim, COALESCE({agg},0) AS n FROM {tq}{where} "
+                f"SELECT {gq} AS dim, COALESCE({agg},0) AS n FROM {tq}{w2} "
                 f"GROUP BY 1 ORDER BY n DESC NULLS LAST LIMIT 200",
-                list(params),
+                list(p2),
             )
             dist: dict[str, int] = {}
             for r in rows:
-                valor = r[0] if r[0] not in (None, "") else "Ignorado"
-                valor = _normalizar_categoria(gb, valor)
+                valor = r[0] if r[0] not in (None, "") else "Não informado"
+                valor = _normalizar_categoria(gb, str(valor))
                 dist[valor] = dist.get(valor, 0) + int(r[1] or 0)
-            ordenado = sorted(dist.items(), key=lambda kv: -kv[1])[:int(top)]
+            if gb == "ano":
+                ordenado = sorted(dist.items(), key=lambda kv: str(kv[0]))
+            else:
+                ordenado = sorted(dist.items(), key=lambda kv: -kv[1])[:int(top)]
             out["distribuicao_por"] = gb
-            out["distribuicao"] = [{"valor": v, "n": n} for v, n in ordenado]
-        except Exception as exc:  # noqa: BLE001
-            out["aviso"] = f"Falha ao agrupar por {gb}: {type(exc).__name__}: {exc}"
+            out["distribuicao"] = [{"valor": v, "n": n} for v, n in ordenado if n]
+        except Exception:  # noqa: BLE001
+            pass
     return out
 
 

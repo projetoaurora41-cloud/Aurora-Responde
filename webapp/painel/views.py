@@ -107,6 +107,8 @@ def filter_options(request):
         seen_codes: dict[str, set[str]] = defaultdict(set)
         for uf_raw, codigo in pairs:
             sigla = municipios_lookup.uf_sigla(uf_raw)
+            if analytics.municipio_ignorado(codigo):
+                continue
             if codigo in seen_codes[sigla]:
                 continue
             seen_codes[sigla].add(codigo)
@@ -120,9 +122,7 @@ def filter_options(request):
         for lst in municipios_por_uf.values():
             lst.sort(key=lambda m: m["nome"].lower())
         ufs = sorted(municipios_por_uf.keys())
-        anos = sorted(
-            a for a in Model.objects.exclude(NU_ANO="").values_list("NU_ANO", flat=True).distinct() if a
-        )
+        anos = analytics.available_years()
         return {
             "ufs": ufs,
             "ufs_meta": [{"sigla": s, "label": municipios_lookup.uf_label(s)} for s in ufs],
@@ -159,8 +159,13 @@ def map_municipalities(request, uf: str):
         )
         municipios: dict[str, dict] = {}
         total_uf = 0
+        sem_municipio = 0
         for row in qs:
             codigo = row["ID_MN_OCOR"]
+            if analytics.municipio_ignorado(codigo):
+                sem_municipio += row["total"]
+                total_uf += row["total"]
+                continue
             info = municipios_lookup.lookup(codigo)
             nome = info["n"] if info else codigo
             municipios[codigo] = {
@@ -172,16 +177,18 @@ def map_municipalities(request, uf: str):
                 "exploracao_sexual": row["exploracao_sexual"],
             }
             total_uf += row["total"]
-        return municipios, total_uf
+        return municipios, total_uf, sem_municipio
 
     if analytics.caching_enabled():
-        municipios, total_uf = agg_cache.cached("mapa_muni", {"uf": sigla, "f": filters}, _compute)
+        municipios, total_uf, sem_municipio = agg_cache.cached(
+            "mapa_muni_v2", {"uf": sigla, "f": filters}, _compute)
     else:
-        municipios, total_uf = _compute()
+        municipios, total_uf, sem_municipio = _compute()
     return JsonResponse({
         "uf": sigla,
         "uf_label": municipios_lookup.uf_label(sigla),
         "total": total_uf,
+        "sem_municipio": sem_municipio,
         "municipios": municipios,
     })
 

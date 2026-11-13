@@ -19,7 +19,7 @@ CATEGORIAS_RECURSOS: list[dict] = [
                     "de direitos humanos, incluindo violência contra crianças e "
                     "adolescentes. Funciona 24 horas, todos os dias."
                 ),
-                "url": "https://www.gov.br/mdh/pt-br/ondh/disque-100",
+                "url": "https://www.gov.br/pt-br/servicos/denunciar-violacao-de-direitos-humanos",
                 "orgao": "MDHC",
             },
             {
@@ -73,7 +73,7 @@ CATEGORIAS_RECURSOS: list[dict] = [
                 ),
                 "url": (
                     "https://www.gov.br/saude/pt-br/composicao/svsa/"
-                    "vigilancia-de-violencias-e-acidentes"
+                    "inqueritos-de-saude/viva-sinan"
                 ),
                 "orgao": "Ministério da Saúde",
             },
@@ -112,15 +112,6 @@ CATEGORIAS_RECURSOS: list[dict] = [
                 "descricao": (
                     "Política nacional de enfrentamento ao tráfico de pessoas, com "
                     "orientações, sinais de alerta e canais de denúncia."
-                ),
-                "url": "https://www.gov.br/mj/pt-br/assuntos/sua-protecao/trafico-de-pessoas",
-                "orgao": "MJSP",
-            },
-            {
-                "titulo": "Comitês Estaduais de Enfrentamento ao Tráfico — CONATRAP",
-                "descricao": (
-                    "Relação dos comitês estaduais responsáveis pela articulação "
-                    "local da política de enfrentamento ao tráfico de pessoas."
                 ),
                 "url": "https://www.gov.br/mj/pt-br/assuntos/sua-protecao/trafico-de-pessoas",
                 "orgao": "MJSP",
@@ -296,7 +287,7 @@ CATEGORIAS_RECURSOS: list[dict] = [
                 ),
                 "descricao": (
                     "Coordenação das políticas nacionais de proteção de crianças e "
-                    "adolescentes, incluindo o Disque 100 e a rede de garantia de direitos."
+                    "adolescentes e da rede de garantia de direitos."
                 ),
                 "url": "https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente",
                 "orgao": "MDHC",
@@ -307,7 +298,7 @@ CATEGORIAS_RECURSOS: list[dict] = [
                     "Coordenação da política nacional de assistência social e proteção "
                     "socioassistencial, com atendimento pelos CRAS e CREAS dos municípios."
                 ),
-                "url": "https://aplicacoes.mds.gov.br/sagi/snas/inicio.html",
+                "url": "https://www.gov.br/mds/pt-br/acoes-e-programas/suas",
                 "orgao": "MDS",
             },
             {

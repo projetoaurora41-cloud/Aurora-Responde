@@ -87,6 +87,14 @@ def wape_grade(wape) -> dict:
 def tool_label(name: str) -> str:
     """Human-readable label for tool icon row."""
     return {
+        "relatorio_brasil": "notificações do SINAN (Brasil)",
+        "relatorio_uf": "notificações do SINAN (estado)",
+        "relatorio_municipio": "notificações do SINAN (município)",
+        "ranking_municipios": "ranking de municípios (SINAN)",
+        "perfil_vitimas": "perfil das vítimas (SINAN)",
+        "consulta_sipia_ct": "registros do Conselho Tutelar (SIPIA-CT)",
+        "rag_juridico": "base jurídica",
+        "rag_interno": "documentação da plataforma",
         "consultar": "Consultar (ORM)",
         "contar": "Contar (ORM)",
         "serie_temporal": "Série temporal (ORM)",
@@ -103,7 +111,7 @@ def tool_label(name: str) -> str:
         "backtest_forecast": "Backtest de 1 modelo",
         "run_sql": "SQL livre (legado)",
         "peek_table": "Espiar tabela bruta",
-    }.get(name, name)
+    }.get(name, "fonte de dados")
 
 
 @register.filter

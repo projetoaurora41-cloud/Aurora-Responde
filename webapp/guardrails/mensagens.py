@@ -30,6 +30,34 @@ MSG_CONSELHO_TUTELAR = (
     "da delegacia, do Conselho Tutelar nem de outros serviços de proteção."
 )
 
+MSG_ALICIAMENTO = (
+    "Você não tem culpa disso, e fez bem em contar.\n\n"
+    "**Não envie fotos nem vídeos** e não continue a conversa com essa pessoa. "
+    "Se puder, guarde as mensagens (prints) como prova, sem apagar nada.\n\n"
+    "**Conte agora para um adulto de confiança** (mãe, pai, responsável, professor "
+    "ou alguém da escola).\n\n"
+    "Ligue para o **Disque 100** (gratuito, pode ser anônimo, 24 horas). "
+    "**Se você estiver em perigo agora, ligue 190.** Você também pode procurar o "
+    "**Conselho Tutelar** da sua cidade.\n\n"
+    "Pedir ou oferecer dinheiro a uma criança ou adolescente em troca de fotos é "
+    "**crime** (ECA, arts. 240 e 241-D)."
+)
+
+MSG_COMO_DENUNCIAR = (
+    "O Aurora **não recebe denúncias**. Para denunciar violência contra criança ou "
+    "adolescente, use os canais oficiais:\n\n"
+    "- **Disque 100** — gratuito, anônimo e 24 horas, atendido pela Ouvidoria "
+    "Nacional de Direitos Humanos. Também recebe denúncias pelo site "
+    "gov.br/pt-br/servicos/denunciar-violacao-de-direitos-humanos.\n"
+    "- **Conselho Tutelar** do município — aplica as medidas de proteção à criança "
+    "ou ao adolescente.\n"
+    "- **190 (Polícia Militar)** — em emergência ou se a violência estiver "
+    "acontecendo agora.\n\n"
+    "Você também pode registrar um **boletim de ocorrência** na delegacia (de "
+    "preferência a especializada na proteção da criança e do adolescente) ou pela "
+    "delegacia eletrônica do seu estado."
+)
+
 MSG_INJECAO = (
     "Não posso seguir instruções que tentam alterar meu papel ou ignorar as "
     "regras deste assistente. Reformule a pergunta sobre dados de violência, "

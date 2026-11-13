@@ -80,14 +80,15 @@
   {% if fonte == 'sinan' %}
     <section class="restricted-card">
       <header class="restricted-card-header">
-        <h2>Acesso restrito — SINAN</h2>
+        <h2>SINAN — microdados não publicados</h2>
       </header>
       <div class="restricted-card-body">
         <p>
-          A área de dados do SINAN é restrita. Entre com seu usuário e senha para continuar. Os
-          painéis e mapas continuam abertos ao público.
+          Os microdados do SINAN não ficam disponíveis para consulta pública nesta versão
+          do portal. Os indicadores agregados das notificações do SINAN estão no
+          <strong>Painel Aurora</strong> e no mapa da aba <strong>Brasil</strong>, abertos ao público.
         </p>
-        <a class="btn btn-primary mt-4" href="{% url 'dashboards' %}">Voltar ao painel</a>
+        <a class="btn btn-primary restricted-card-btn mt-4" href="{% url 'dashboards' %}">Voltar ao painel</a>
       </div>
     </section>
 
@@ -266,6 +267,7 @@
           </div>
           <div class="card-body p-2 position-relative">
             <div id="aurora-map"></div>
+            <p class="small text-muted mt-2 mb-0" id="map-sem-uf" hidden></p>
             <div class="map-loading" id="map-loading" role="status" aria-live="polite">
               <span class="map-loading-label" id="map-loading-label">Carregando mapa…</span>
               <div class="progress" aria-label="Progresso de carregamento do mapa">
