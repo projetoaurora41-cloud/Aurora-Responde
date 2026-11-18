@@ -11,9 +11,10 @@ só LLM — o Jurema-7B** — que redige **todas** as respostas. A escolha da fo
 ## Fluxo de uma pergunta
 
 1. **Guardrails (entrada)** — antes de qualquer coisa: se há indício de risco a
-   uma criança, responde com os encaminhamentos (Conselho Tutelar / Disque 100 /
-   Boletim de Ocorrência) **sem** chamar o LLM; detecta injeção de prompt; mascara
-   PII (CPF/CNPJ/CNS).
+   uma criança, responde com os encaminhamentos **sem** chamar o LLM — **190**
+   (emergência), **delegacia/B.O.** (formalização), **Disque 100** e **Conselho
+   Tutelar** (denúncia/proteção); detecta injeção de prompt; mascara PII
+   (CPF/CNPJ/CNS).
 2. **Roteador determinístico** — detectores de texto decidem o **tema**
    (dados / legislação / SIPIA-CT / produto), o **nível geográfico** (Brasil / UF /
    município), o **tipo de violência**, se é **ranking** ou **comparação**, e o

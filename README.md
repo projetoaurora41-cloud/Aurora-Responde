@@ -10,9 +10,9 @@ plataforma). **Não há orquestrador Qwen3** nem modelos de forecasting.
 
 ![Arquitetura do Aurora Responde (só Jurema)](docs/arquitetura_aurora_responde.svg)
 
-1. **Guardrails (entrada)** — risco a uma criança → encaminhamentos (Conselho
-   Tutelar / Disque 100 / Boletim de Ocorrência) sem LLM; detecção de injeção;
-   mascaramento de PII.
+1. **Guardrails (entrada)** — risco a uma criança → encaminhamentos sem LLM
+   (190 em emergência; delegacia/B.O. para formalizar; Disque 100 e Conselho
+   Tutelar para denúncia/proteção); detecção de injeção; mascaramento de PII.
 2. **Roteador determinístico** identifica o tema (dados / legislação / SIPIA-CT /
    produto), o nível geográfico, o tipo de violência e o ano — sem um LLM decidindo.
 3. A **fonte** é consultada: **PostgreSQL ao vivo** para números exatos
@@ -125,7 +125,7 @@ python webapp/manage.py runserver
 - **Legislação:** "O que diz a Lei Menino Bernardo sobre castigo físico?"
 - **SIPIA-CT:** "No Conselho Tutelar, qual a distribuição por sexo?"
 - **Produto:** "Como o Aurora Responde funciona?"
-- **Risco:** "Meu vizinho bate no filho, o que faço?" → orienta Conselho Tutelar / Disque 100 / BO.
+- **Risco:** "Meu vizinho bate no filho, o que faço?" → orienta 190 (se urgente), delegacia/B.O., Disque 100 e Conselho Tutelar.
 
 ## Comandos comuns
 

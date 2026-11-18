@@ -1,7 +1,7 @@
 """Mensagens canônicas do pipeline de guardrails."""
 
 _BO = (
-    "**Procure imediatamente uma delegacia** (de preferência a Delegacia de "
+    "**Dirija-se a uma delegacia** (de preferência a Delegacia de "
     "Proteção à Criança e ao Adolescente) para **registrar um boletim de "
     "ocorrência (B.O.)**, ou registre o B.O. **online** pela Delegacia Eletrônica "
     "do seu estado. Maus-tratos, abuso, agressão e exploração são **crimes**, e o "
@@ -13,7 +13,7 @@ MSG_DISQUE_100 = (
     + _BO
     + "\n\nVocê também pode ligar para o **Disque 100** (telefone 100) — "
     "denúncia anônima, gratuita e 24 horas — e, se for criança ou adolescente, "
-    "procurar o **Conselho Tutelar** do município.\n\n"
+    "dirija-se ao **Conselho Tutelar** do município.\n\n"
     "O Aurora Responde trata de dados e legislação; não substitui o atendimento "
     "policial, de proteção ou de acolhimento."
 )
@@ -21,7 +21,7 @@ MSG_DISQUE_100 = (
 MSG_CONSELHO_TUTELAR = (
     "**Se há perigo imediato, ligue agora para o 190** (Polícia Militar).\n\n"
     + _BO
-    + "\n\nDepois, ou em paralelo, procure o **Conselho Tutelar** do município "
+    + "\n\nDepois, ou em paralelo, dirija-se ao **Conselho Tutelar** do município "
     "— órgão local responsável por aplicar medidas de proteção quando direitos "
     "de crianças e adolescentes são ameaçados ou violados — e, se preferir, "
     "denuncie de forma anônima no **Disque 100** (telefone 100), gratuito e 24 "
