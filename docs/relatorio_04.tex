@@ -36,6 +36,7 @@
 \usepackage{array}
 \usepackage{ragged2e}
 \newcolumntype{P}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{N}[1]{>{\RaggedRight\hyphenpenalty=10000\exhyphenpenalty=10000\arraybackslash}p{#1}}
 \usepackage[table,dvipsnames]{xcolor}
 \usepackage{makecell}
 \usepackage{graphicx}
@@ -638,59 +639,49 @@ Esses componentes materializam a atividade de desenvolvimento do frontend previs
 \subsubsection{Avaliação de funcionalidade e usabilidade}
 \label{subsubsec:avaliacao_funcionalidade_usabilidade}
 
-\begin{table}[H]
-\centering
+\begingroup
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\footnotesize
+\begin{longtable}{@{}N{3.6cm}N{4.6cm}N{4.6cm}N{2.3cm}@{}}
 \caption{Testes funcionais realizados no Portal Aurora}
-\label{tab:testes_funcionais}
-\begin{tabularx}{\textwidth}{@{}P{3.2cm}P{4.2cm}P{3cm}P{2.5cm}@{}}
+\label{tab:testes_funcionais}\\
 \toprule
-\textbf{Funcionalidade} &
-\textbf{Procedimento de teste} &
-\textbf{Resultado esperado} &
-\textbf{Status} \\
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Funcionalidade}} &
+\textcolor{white}{\textbf{Procedimento de teste}} &
+\textcolor{white}{\textbf{Resultado esperado}} &
+\textcolor{white}{\textbf{Status}} \\
 \midrule
-Carregamento do dashboard &
-Acessar a página principal sem filtros &
-Exibição dos indicadores e gráficos &
-Aprovado \\
-
-Filtro por Unidade da Federação &
-Selecionar uma UF e aplicar o filtro &
-Atualização dos indicadores e visualizações &
-Aprovado \\
-
-Filtro por município &
-Selecionar UF e município &
-Exibição dos dados correspondentes &
-Aprovado \\
-
-Filtro temporal &
-Alterar ano inicial e final &
-Reprocessamento das visualizações &
-Aprovado \\
-
-Limpeza dos filtros &
-Acionar o comando de limpeza &
-Retorno ao estado inicial &
-Aprovado \\
-
-Detalhamento municipal &
-Selecionar uma UF no mapa &
-Exibição dos municípios correspondentes &
-Aprovado \\
-
-Consulta SIPIA-CT &
-Selecionar indicador e ano &
-Atualização do mapa estadual &
-Aprovado \\
-
-Ausência de dados &
-Aplicar combinação sem registros &
-Exibição de mensagem informativa &
-A ajustar \\
+\endfirsthead
+\multicolumn{4}{@{}l}{\footnotesize\sffamily\color{BodyGray}Tabela \thetable{} — continuação}\\[2pt]
+\toprule
+\rowcolor{HdrBg}
+\textcolor{white}{\textbf{Funcionalidade}} &
+\textcolor{white}{\textbf{Procedimento de teste}} &
+\textcolor{white}{\textbf{Resultado esperado}} &
+\textcolor{white}{\textbf{Status}} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r@{}}{\footnotesize\sffamily\color{BodyGray}continua na próxima página}\\
+\endfoot
 \bottomrule
-\end{tabularx}
-\end{table}
+\endlastfoot
+\textbf{Carregamento do dashboard} & Acessar a página principal sem filtros & Exibição dos indicadores e gráficos & Aprovado \\
+\rowcolor{RowTint}
+\textbf{Filtro por Unidade da Federação} & Selecionar uma UF e aplicar o filtro & Atualização dos indicadores e visualizações & Aprovado \\
+\textbf{Filtro por município} & Selecionar UF e município & Exibição dos dados correspondentes & Aprovado \\
+\rowcolor{RowTint}
+\textbf{Filtro temporal} & Alterar ano inicial e final & Reprocessamento das visualizações & Aprovado \\
+\textbf{Limpeza dos filtros} & Acionar o comando de limpeza & Retorno ao estado inicial & Aprovado \\
+\rowcolor{RowTint}
+\textbf{Detalhamento municipal} & Selecionar uma UF no mapa & Exibição dos municípios correspondentes & Aprovado \\
+\textbf{Consulta SIPIA-CT} & Selecionar indicador e ano & Atualização do mapa estadual & Aprovado \\
+\rowcolor{RowTint}
+\textbf{Ausência de dados} & Aplicar combinação sem registros & Exibição de mensagem informativa & A ajustar \\
+\end{longtable}
+\endgroup
 
 Complementarmente à matriz de testes funcionais, o ciclo de avaliação da versão 1.0 foi registrado por meio de formulário padronizado de Avaliação de Aplicação do Projeto Aurora, preenchido pelos avaliadores participantes ao final de cada rodada de testes. Foram registradas cinco avaliações, todas referentes ao ambiente \texttt{dashboard.projetoauroramjsp.com.br} (Desenvolvimento), totalizando 53 casos de teste executados. Os registros são apresentados de forma anonimizada, com supressão do carimbo de data/hora e da identificação dos respondentes (nome e endereço de correio eletrônico), preservando-se integralmente o conteúdo técnico informado. A Tabela~\ref{tab:ciclo_avaliacoes} sintetiza o escopo de cada avaliação; a Tabela~\ref{tab:resultado_categorias} apresenta os resultados por categoria de teste; e a Tabela~\ref{tab:falhas_correcoes} consolida as falhas encontradas, as correções realizadas e as limitações ainda existentes.
 
@@ -780,14 +771,14 @@ Complementarmente à matriz de testes funcionais, o ciclo de avaliação da vers
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.25}
 \footnotesize
-\begin{longtable}{@{}P{1.9cm}P{3.7cm}P{4.2cm}P{4.0cm}@{}}
+\begin{longtable}{@{}N{2.0cm}N{4.0cm}N{4.5cm}N{4.6cm}@{}}
 \caption{Falhas encontradas, correções realizadas e limitações registradas no ciclo de testes}
 \label{tab:falhas_correcoes}\\
 \toprule
 \rowcolor{HdrBg}
 \textcolor{white}{\textbf{Avaliação}} &
 \textcolor{white}{\textbf{Falhas encontradas}} &
-\textcolor{white}{\textbf{Correções realizadas durante o ciclo}} &
+\textcolor{white}{\textbf{Correções realizadas\newline durante o ciclo}} &
 \textcolor{white}{\textbf{Limitações ainda existentes}} \\
 \midrule
 \endfirsthead
@@ -796,7 +787,7 @@ Complementarmente à matriz de testes funcionais, o ciclo de avaliação da vers
 \rowcolor{HdrBg}
 \textcolor{white}{\textbf{Avaliação}} &
 \textcolor{white}{\textbf{Falhas encontradas}} &
-\textcolor{white}{\textbf{Correções realizadas durante o ciclo}} &
+\textcolor{white}{\textbf{Correções realizadas\newline durante o ciclo}} &
 \textcolor{white}{\textbf{Limitações ainda existentes}} \\
 \midrule
 \endhead
