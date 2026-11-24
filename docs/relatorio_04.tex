@@ -492,7 +492,7 @@ Concluída \\
 \rowcolor{RowTint}
 Publicar em servidor web temporário &
 Portal acessível em endereço público; HTTPS ativo; documentação de implantação &
-Seção~\ref{subsubsec:publicacao_servidor_meta3}; URL \url{https://dashboard.projetoauroramjsp.com.br/}; arquivos \texttt{DEPLOY.md}, \texttt{docker-compose.yml}, \texttt{Dockerfile} &
+Seção~\ref{subsec:publicacao_servidor}; URL \url{https://assistente.projetoauroramjsp.com.br/}; repositório \texttt{Aurora-Responde} (\texttt{README.md}, \texttt{TUTORIAL.md}, \texttt{deploy.sh}) &
 Concluída \\
 
 Elaborar material de apoio e manuais de utilização &
@@ -808,17 +808,6 @@ Complementarmente à matriz de testes funcionais, o ciclo de avaliação da vers
 
 Em todas as cinco avaliações, a conclusão registrada quanto ao atendimento dos critérios de aceite foi "totalmente atendido", não tendo sido reportada falha em nenhuma das categorias de teste avaliadas. As categorias assinaladas como não aplicáveis decorrem do escopo específico de cada rodada de testes — por exemplo, avaliações restritas aos painéis públicos não exercitaram os mecanismos de autenticação e de permissões de acesso. As falhas e limitações registradas foram tratadas após o ciclo de testes. A divergência na contagem de municípios de Sergipe decorria de notificações com UF de ocorrência de um estado e código de município de outro; essas notificações continuam no total, mas deixaram de ser contadas como município da UF, e a contagem de Sergipe passou a considerar apenas os 75 municípios do estado. Para a ausência de dados, o painel, cada gráfico e os mapas passaram a exibir mensagem informativa quando a combinação de filtros não retorna registros. O tempo de carregamento foi reduzido com a busca dos gráficos sob demanda, à medida que se tornam visíveis na tela, e com o armazenamento em cache dos indicadores-resumo. Por fim, foi implantada limitação de requisições por endereço IP em toda a aplicação, com tetos configuráveis para as páginas e para as interfaces de dados dos painéis e resposta HTTP 429 quando o limite é excedido, complementando o limite já existente no assistente.
 
-\subsubsection{Publicação em Servidor Web Temporário}
-\label{subsubsec:publicacao_servidor_meta3}
-
-Em atendimento à atividade de publicação do Portal Aurora em servidor web temporário, a versão implementada da plataforma --- painel analítico, distribuição geográfica e assistente Aurora Responde --- foi implantada em servidor Linux disponibilizado ao projeto, acessado remotamente por SSH. O código-fonte é mantido no repositório \texttt{Aurora-Responde} e, no servidor, a aplicação Django é executada pelo servidor WSGI Gunicorn diretamente no ambiente virtual Python do projeto, sem uso de contêineres. As configurações específicas de produção (módulo de \textit{settings} e ponto de entrada WSGI) ficam em diretório próprio do servidor, separado do código versionado.
-
-O acesso público à plataforma é realizado pelo endereço \url{https://assistente.projetoauroramjsp.com.br/}. A exposição da aplicação à Web é intermediada por um servidor de proxy reverso, que recebe as requisições HTTPS e as encaminha ao Gunicorn, executado internamente no servidor. A aplicação está configurada para operar com HTTPS e para considerar o endereço do cliente informado pelo proxy reverso, o que permite aplicar a limitação de requisições por IP mencionada acima.
-
-A camada de persistência utiliza PostgreSQL, executado em servidor externo à aplicação e acessado por meio de variáveis de ambiente; os dados do SINAN (\texttt{sinan.VIOLBR}) e do SIPIA-CT são lidos diretamente dessa base pelo painel e pelo assistente. O modelo de linguagem utilizado pelo assistente é servido localmente pelo Ollama. As credenciais e demais informações sensíveis do ambiente de publicação são mantidas em arquivo \texttt{.env} localizado no servidor e não são versionadas no repositório. Entre as configurações utilizadas encontram-se parâmetros relacionados ao banco de dados, hosts autorizados, origens confiáveis para proteção CSRF, chave secreta, modo de depuração e limites de requisição. Dessa forma, informações sensíveis permanecem desacopladas do código-fonte versionado.
-
-O processo de implantação é realizado de forma manual. No diretório da aplicação no servidor, o código é atualizado a partir do repositório com o comando \texttt{git pull}; em seguida, são executadas as migrações do banco e a coleta dos arquivos estáticos com as configurações de produção e o Gunicorn é recarregado por meio do sinal \texttt{HUP}, que carrega a nova versão do código sem interromper o atendimento às requisições.
-
 \subsubsection{Material de Apoio e Manual de Utilização}
 \label{subsubsec:material_apoio_manual_meta3}
 
@@ -1001,6 +990,19 @@ Além do Aurora Responde, o Portal Aurora disponibiliza duas páginas de apoio c
 \telaAurora{figures/perguntas_frequentes.png}
 {Perguntas Frequentes — FAQ temático no Portal Aurora, com aviso institucional (190, delegacia, Disque~100 e Conselho Tutelar), eixos de navegação e campo de busca.}
 {perguntas_frequentes}
+
+\subsection{Publicação em Servidor Web Temporário}
+\label{subsec:publicacao_servidor}
+
+Em atendimento à atividade de publicação do Portal Aurora em servidor web temporário, a versão 1.0 da plataforma --- composta pela página inicial, pelo painel analítico, pela distribuição geográfica, pelo assistente conversacional Aurora Responde e pelas páginas de Links Úteis e Perguntas Frequentes --- foi disponibilizada publicamente no endereço \url{https://assistente.projetoauroramjsp.com.br/}. A publicação tem caráter exclusivamente de validação: destina-se a permitir que a equipe do projeto e o Ministério da Justiça e Segurança Pública (MJSP) avaliem as funcionalidades, a navegação e os dados apresentados em ambiente real de acesso, e permanecerá no ar por período determinado, de \ph{data de início} a \ph{data de término}. Encerrado esse período, o ambiente temporário será desativado, e a hospedagem definitiva do portal ficará a cargo da infraestrutura indicada pelo MJSP.
+
+No ambiente temporário, a aplicação é executada em servidor Linux disponibilizado ao projeto, administrado remotamente por SSH. A aplicação Django é servida pelo servidor WSGI Gunicorn, a partir do ambiente virtual Python do projeto, e a exposição à Web é intermediada por servidor de proxy reverso, que recebe as requisições HTTPS e as encaminha ao Gunicorn, executado internamente no servidor. A aplicação está configurada para operar com HTTPS e para considerar o endereço do cliente informado pelo proxy reverso, o que permite aplicar a limitação de requisições por endereço IP descrita na Seção~\ref{subsubsec:avaliacao_funcionalidade_usabilidade}. As configurações específicas de produção ficam em diretório próprio do servidor, separado do código versionado.
+
+A camada de persistência utiliza PostgreSQL, executado em servidor externo à aplicação e acessado por meio de variáveis de ambiente; os dados do SINAN (\texttt{sinan.VIOLBR}) e do SIPIA-CT são lidos diretamente dessa base pelo painel e pelo assistente, e o modelo de linguagem do assistente é servido localmente pelo Ollama. As credenciais e demais informações sensíveis --- parâmetros do banco de dados, hosts autorizados, origens confiáveis para proteção CSRF, chave secreta, modo de depuração e limites de requisição --- são mantidas em arquivo \texttt{.env} localizado no servidor e não são versionadas no repositório, permanecendo desacopladas do código-fonte.
+
+A atualização do ambiente é realizada de forma manual: no diretório da aplicação, o código é atualizado a partir do repositório com o comando \texttt{git pull}, são executadas as migrações do banco e a coleta dos arquivos estáticos com as configurações de produção, e o Gunicorn é recarregado por meio do sinal \texttt{HUP}, que carrega a nova versão do código sem interromper o atendimento às requisições.
+
+O repositório \texttt{Aurora-Responde}, com todos os arquivos necessários para colocar o portal no ar, ficará à disposição do MJSP. Além do código-fonte da aplicação, o repositório reúne as orientações de instalação e implantação: o \texttt{README.md}, com a visão geral, a estrutura do projeto e as variáveis de ambiente; o \texttt{TUTORIAL.md}, com o passo a passo de instalação em Windows e Linux; o modelo de configuração \texttt{.env.example}; os roteiros \texttt{deploy.sh} e \texttt{deploy.ps1}, com o arquivo de parâmetros \texttt{deploy.env.example}, que automatizam a implantação em servidor Linux; os arquivos \texttt{Dockerfile} e \texttt{docker-compose.yml}, para implantação alternativa em contêineres; e a documentação técnica da pasta \texttt{docs/}, que inclui os requisitos de servidor (\texttt{servidor.md}), a implantação com Docker (\texttt{docker.md}) e a solução de problemas (\texttt{troubleshooting.md}). Com esse material, a equipe técnica do MJSP poderá reproduzir a implantação em sua própria infraestrutura, de forma independente do ambiente temporário de validação.
 
 % ============================================================
 %  NOVA SUBSEÇÃO: Critérios de Aceite
@@ -1536,7 +1538,7 @@ Com base nas telas registradas, o fluxo típico de uso da plataforma é: (1)~ace
 
 Domínio ou endereço eletrônico completo de acesso público à Plataforma Aurora.
 
-\href{https://dashboard.projetoauroramjsp.com.br/}{Plataforma Aurora}
+\url{https://assistente.projetoauroramjsp.com.br/}
 
 \newpage
 \vspace{9.5em}
