@@ -68,6 +68,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Limite de requisições por IP (painéis, mapas e páginas) — ver aurora/ratelimit.py.
+    "aurora.ratelimit.RateLimitMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -177,6 +179,12 @@ else:
 AURORA_MAX_INPUT_CHARS = int(os.getenv("AURORA_MAX_INPUT_CHARS", "2000"))
 GUARDRAILS_RATE_LIMIT_PER_MIN = int(os.getenv("GUARDRAILS_RATE_LIMIT_PER_MIN", "10"))
 GUARDRAILS_RATE_LIMIT_PER_DAY = int(os.getenv("GUARDRAILS_RATE_LIMIT_PER_DAY", "200"))
+# Limite por IP para o site todo (aurora/ratelimit.py). 0 desliga a faixa.
+AURORA_RATE_LIMIT_ENABLED = os.getenv("AURORA_RATE_LIMIT_ENABLED", "1").lower() not in ("0", "false", "no")
+AURORA_RATE_LIMIT_API_PER_MIN = int(os.getenv("AURORA_RATE_LIMIT_API_PER_MIN", "120"))
+AURORA_RATE_LIMIT_PAGE_PER_MIN = int(os.getenv("AURORA_RATE_LIMIT_PAGE_PER_MIN", "240"))
+# Atrás do proxy reverso: usar o IP real do cliente (X-Forwarded-For).
+AURORA_TRUST_X_FORWARDED_FOR = os.getenv("AURORA_TRUST_X_FORWARDED_FOR", "1").lower() not in ("0", "false", "no")
 # Encaminhamento 26 — detecção de entrada/saída.
 GUARDRAILS_INJECTION_THRESHOLD = float(os.getenv("GUARDRAILS_INJECTION_THRESHOLD", "0.70"))
 GUARDRAILS_SUPPRESS_BELOW = int(os.getenv("GUARDRAILS_SUPPRESS_BELOW", "5"))

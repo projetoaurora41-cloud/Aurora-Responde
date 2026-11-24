@@ -220,6 +220,16 @@
     if (el) el.style.color = "#b91c1c";
   }
 
+  // Aviso quando a combinação de filtros não retorna nenhuma notificação.
+  function showSemDados() {
+    const el = document.getElementById("map-loading");
+    const lbl = document.getElementById("map-loading-label");
+    const bar = document.getElementById("map-loading-bar");
+    if (lbl) lbl.textContent = "Nenhum registro encontrado para os filtros selecionados. Ajuste ou limpe os filtros para ver os dados.";
+    if (bar && bar.parentElement) bar.parentElement.hidden = true;
+    if (el) { el.hidden = false; el.style.pointerEvents = "none"; }
+  }
+
   function hideLoading() {
     const el = document.getElementById("map-loading");
     if (el) el.remove();
@@ -464,7 +474,9 @@
 
       if (bounds) map.fitBounds(bounds, { padding: [20, 20] });
       if (hint) {
-        hint.textContent = "Clique em um município para ver os detalhes locais.";
+        hint.textContent = totalsResp.total
+          ? "Clique em um município para ver os detalhes locais."
+          : "Nenhum registro encontrado para os filtros selecionados. Ajuste ou limpe os filtros para ver os dados.";
         hint.hidden = false;
       }
     }
@@ -536,6 +548,10 @@
       });
     }
 
+    if (!grand) {
+      showSemDados();
+      return;
+    }
     hideLoading();
   }
 

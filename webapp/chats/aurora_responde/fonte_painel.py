@@ -165,7 +165,8 @@ def ranking(filters: dict | None, top: int = 10) -> dict:
               .order_by("-n"))
         rows, ignorados = [], 0
         for r in qs[: top + 80]:
-            if an.municipio_ignorado(r["ID_MN_OCOR"]):
+            if (an.municipio_ignorado(r["ID_MN_OCOR"])
+                    or not an.municipio_da_uf(r["ID_MN_OCOR"], r["SG_UF_OCOR"])):
                 ignorados += int(r["n"] or 0)
                 continue
             if len(rows) < top:
@@ -175,7 +176,7 @@ def ranking(filters: dict | None, top: int = 10) -> dict:
                     "n": int(r["n"] or 0),
                 })
         return {"ranking": rows, "sem_municipio": ignorados}
-    return _cached("ranking", {"f": _key(filters), "t": top}, _c)
+    return _cached("ranking_v2", {"f": _key(filters), "t": top}, _c)
 
 
 def perfil(filters: dict | None) -> dict:

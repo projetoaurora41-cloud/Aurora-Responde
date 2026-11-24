@@ -143,19 +143,64 @@
     return chart;
   }
 
+  /* ---------------- Estados do card (carregando / vazio / erro) ---------------- */
+
+  const MSG_SEM_DADOS =
+    "Nenhum registro encontrado para os filtros selecionados. " +
+    "Ajuste ou limpe os filtros para ver os dados.";
+
+  function setStatus(canvas, text, kind) {
+    const wrapper = canvas.closest(".chart-wrapper") || canvas.parentElement;
+    let el = wrapper.querySelector(".chart-status");
+    if (!text) {
+      if (el) el.remove();
+      canvas.hidden = false;
+      return;
+    }
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "chart-status";
+      el.setAttribute("role", "status");
+      wrapper.appendChild(el);
+    }
+    el.dataset.kind = kind || "info";
+    el.textContent = text;
+    canvas.hidden = kind === "empty" || kind === "error";
+  }
+
+  // True quando o payload não tem nenhum valor numérico diferente de zero
+  // (combinação de filtros sem registros).
+  function payloadVazio(data) {
+    if (!data || typeof data !== "object") return true;
+    let achou = false;
+    const visitar = (v) => {
+      if (achou || v == null) return;
+      if (typeof v === "number") { if (v !== 0) achou = true; return; }
+      if (Array.isArray(v)) { v.forEach(visitar); return; }
+      if (typeof v === "object") {
+        if (Array.isArray(v.datasets)) v.datasets.forEach(ds => visitar(ds && ds.data));
+        if (Array.isArray(v.data)) visitar(v.data);
+        Object.entries(v).forEach(([k, x]) => {
+          if (k !== "datasets" && k !== "data" && k !== "labels" && k !== "rows" && x && typeof x === "object") visitar(x);
+        });
+      }
+    };
+    visitar(data);
+    return !achou;
+  }
+
   async function loadDashboard(meta) {
     const canvas = document.getElementById("chart-" + meta.key);
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    setStatus(canvas, "Carregando…", "loading");
     let payload;
     try {
       const resp = await fetch(buildUrl(meta.key), { headers: { Accept: "application/json" } });
+      if (resp.status === 429) throw new Error("muitas requisições; aguarde alguns segundos e recarregue a página");
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       payload = await resp.json();
     } catch (e) {
-      ctx.font = "13px sans-serif";
-      ctx.fillStyle = "#64748b";
-      ctx.fillText("Falha ao carregar dashboard: " + e.message, 10, 20);
+      setStatus(canvas, "Falha ao carregar o gráfico: " + e.message, "error");
       return;
     }
     const type = (payload.chart || meta.chart || "bar").toLowerCase();
@@ -164,6 +209,11 @@
       const periodEl = card && card.querySelector("[data-period]");
       if (periodEl) periodEl.textContent = payload.period;
     }
+    if (payloadVazio(payload.data)) {
+      setStatus(canvas, MSG_SEM_DADOS, "empty");
+      return;
+    }
+    setStatus(canvas, null);
     if (type === "stacked") {
       makeStacked(canvas, payload);
     } else if (type === "pyramid") {
@@ -177,6 +227,48 @@
       makeBarOrLine(canvas, payload, "bar");
     }
     fillTable(meta.key, payload.data && payload.data.rows);
+  }
+
+  /* ---------------- Carregamento sob demanda ----------------
+   * Antes, os 10 gráficos eram pedidos ao mesmo tempo na abertura da página,
+   * o que deixava tudo lento. Agora cada gráfico só é buscado quando o card
+   * se aproxima da área visível, com no máximo 2 consultas simultâneas. */
+
+  const MAX_SIMULTANEOS = 2;
+  const fila = [];
+  let ativos = 0;
+
+  function bombear() {
+    while (ativos < MAX_SIMULTANEOS && fila.length) {
+      const meta = fila.shift();
+      ativos += 1;
+      loadDashboard(meta).finally(() => { ativos -= 1; bombear(); });
+    }
+  }
+
+  function enfileirar(meta) { fila.push(meta); bombear(); }
+
+  function agendarDashboards(lista) {
+    lista.forEach((meta) => {
+      const c = document.getElementById("chart-" + meta.key);
+      if (c) setStatus(c, "Carregando…", "loading");
+    });
+    if (!("IntersectionObserver" in window)) { lista.forEach(enfileirar); return; }
+    const porCanvas = new Map();
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        obs.unobserve(en.target);
+        const meta = porCanvas.get(en.target);
+        if (meta) enfileirar(meta);
+      });
+    }, { rootMargin: "300px 0px" });
+    lista.forEach((meta) => {
+      const c = document.getElementById("chart-" + meta.key);
+      if (!c) return;
+      porCanvas.set(c, meta);
+      obs.observe(c);
+    });
   }
 
   /* ---------------- Filter sidebar ---------------- */
@@ -330,7 +422,7 @@
   async function init() {
     await setupFilters();
     if (!window.AURORA || !Array.isArray(window.AURORA.dashboards)) return;
-    window.AURORA.dashboards.forEach(loadDashboard);
+    agendarDashboards(window.AURORA.dashboards);
   }
 
   if (document.readyState === "loading") {

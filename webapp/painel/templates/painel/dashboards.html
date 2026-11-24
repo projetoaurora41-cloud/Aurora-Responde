@@ -14,6 +14,11 @@
     <div class="alert alert-warning">
       Nenhum dado de notificação disponível nesta base.
     </div>
+  {% elif sem_resultados %}
+    <div class="alert alert-info" role="status">
+      Nenhuma notificação encontrada para a combinação de filtros selecionada.
+      Ajuste os filtros ou <a href="{% url 'dashboards' %}">limpe a seleção</a> para voltar a ver os dados.
+    </div>
   {% endif %}
 
   <!-- KPIs -->

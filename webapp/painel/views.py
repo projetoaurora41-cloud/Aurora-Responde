@@ -45,17 +45,23 @@ def perguntas_frequentes(request):
 def dashboards(request):
     filter_form = DashboardFilterForm(request.GET or None)
     Model = analytics.violbr_model()
-    has_data = Model.objects.exists()
     filters = filter_form.to_filters() if request.GET else {}
-    kpis = analytics.overview_kpis(filters) if has_data else {
-        "total": 0, "violencia_sexual": 0, "exploracao_sexual": 0, "municipios": 0,
-    }
-    kpis = {key: _fmt_int_pt(val) for key, val in kpis.items()}
+    caching = analytics.caching_enabled()
+    has_data = (agg_cache.cached("has_data", "violbr", Model.objects.exists)
+                if caching else Model.objects.exists())
+    vazio = {"total": 0, "violencia_sexual": 0, "exploracao_sexual": 0, "municipios": 0}
+    if has_data:
+        kpis_raw = (agg_cache.cached("kpis_v2", filters, lambda: analytics.overview_kpis(filters))
+                    if caching else analytics.overview_kpis(filters))
+    else:
+        kpis_raw = vazio
+    kpis = {key: _fmt_int_pt(val) for key, val in kpis_raw.items()}
     return render(request, "painel/dashboards.html", {
         "filter_form": filter_form,
         "dashboards": analytics.DASHBOARDS,
         "has_data": has_data,
-        "total_rows": Model.objects.count(),
+        # Filtros aplicados, mas nenhuma notificação corresponde a eles.
+        "sem_resultados": bool(has_data and filters and not kpis_raw.get("total")),
         "kpis": kpis,
     })
 
@@ -109,6 +115,8 @@ def filter_options(request):
             sigla = municipios_lookup.uf_sigla(uf_raw)
             if analytics.municipio_ignorado(codigo):
                 continue
+            if not analytics.municipio_da_uf(codigo, uf_raw):
+                continue
             if codigo in seen_codes[sigla]:
                 continue
             seen_codes[sigla].add(codigo)
@@ -130,7 +138,7 @@ def filter_options(request):
             "anos": anos,
         }
 
-    payload = agg_cache.cached("filters", "all", _compute) if analytics.caching_enabled() else _compute()
+    payload = agg_cache.cached("filters_v2", "all", _compute) if analytics.caching_enabled() else _compute()
     return JsonResponse(payload)
 
 
@@ -162,7 +170,7 @@ def map_municipalities(request, uf: str):
         sem_municipio = 0
         for row in qs:
             codigo = row["ID_MN_OCOR"]
-            if analytics.municipio_ignorado(codigo):
+            if analytics.municipio_ignorado(codigo) or not analytics.municipio_da_uf(codigo, sigla):
                 sem_municipio += row["total"]
                 total_uf += row["total"]
                 continue
@@ -181,7 +189,7 @@ def map_municipalities(request, uf: str):
 
     if analytics.caching_enabled():
         municipios, total_uf, sem_municipio = agg_cache.cached(
-            "mapa_muni_v2", {"uf": sigla, "f": filters}, _compute)
+            "mapa_muni_v3", {"uf": sigla, "f": filters}, _compute)
     else:
         municipios, total_uf, sem_municipio = _compute()
     return JsonResponse({

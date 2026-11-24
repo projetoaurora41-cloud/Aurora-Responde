@@ -121,7 +121,11 @@
     totals = payload.totals || {}; grand = payload.grand || 0;
     breaks = buildBreaks(Object.values(totals));
     renderLayer();
-    if (note) note.textContent = `${Object.keys(totals).length} estados · ${fmt(grand)} registros no total.`;
+    if (note) {
+      note.textContent = grand
+        ? `${Object.keys(totals).length} estados · ${fmt(grand)} registros no total.`
+        : "Nenhum registro encontrado para o indicador e o ano selecionados. Escolha outra combinação.";
+    }
     document.getElementById("detail-card").hidden = true;
   }
 

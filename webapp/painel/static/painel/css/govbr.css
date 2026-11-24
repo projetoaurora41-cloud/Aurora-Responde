@@ -738,6 +738,14 @@ a { color: var(--gov-blue); }
 
 /* --- Gráficos / tabelas ---------------------------------------------- */
 .chart-wrapper { position: relative; height: 320px; }
+/* Estado do gráfico: carregando, sem dados para o filtro ou erro. */
+.chart-status {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 1rem; text-align: center; font-size: .9rem; color: #555;
+  border: 1px dashed #c5d4eb; border-radius: 6px; background: #f8fafd;
+}
+.chart-status[data-kind="loading"] { border-style: solid; border-color: transparent; background: transparent; color: #6b7280; }
+.chart-status[data-kind="error"] { color: #b91c1c; border-color: #f3c2c2; background: #fff7f7; }
 .table-rows { max-height: 240px; overflow-y: auto; font-size: .85rem; }
 
 /* --- Rodapé ----------------------------------------------------------- */

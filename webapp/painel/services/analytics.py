@@ -256,6 +256,22 @@ def municipio_ignorado(codigo: str) -> bool:
     return municipios_lookup.lookup(c) is None
 
 
+def municipio_da_uf(codigo: str, uf_raw: str) -> bool:
+    """True quando o município (código IBGE) pertence à UF de ocorrência.
+
+    Algumas notificações trazem ``SG_UF_OCOR`` de um estado e ``ID_MN_OCOR``
+    de município de outro (erro de digitação na ficha). Sem esta checagem,
+    Sergipe aparecia com 76 municípios — um a mais que os 75 oficiais.
+    Linhas inconsistentes continuam no total de notificações, mas não contam
+    como município da UF nem entram na lista/ranking daquela UF.
+    """
+    info = municipios_lookup.lookup(codigo)
+    if not info:
+        return False
+    sigla = municipios_lookup.uf_sigla(uf_raw)
+    return not sigla or info.get("uf") == sigla
+
+
 def _municipio_label(codigo: str, uf_raw: str = "") -> str:
     """Rótulo amigável no formato ``São Paulo (SP)``.
 
@@ -321,6 +337,8 @@ def municipality_ranking_rows(filters=None, limit: int = 25) -> list[dict[str, A
     # Busca um pouco além do limite para compensar os códigos descartados.
     for r in qs[: limit + 60]:
         if municipio_ignorado(r["ID_MN_OCOR"]):
+            continue
+        if not municipio_da_uf(r["ID_MN_OCOR"], r["SG_UF_OCOR"]):
             continue
         rows.append(r)
         if len(rows) >= limit:
@@ -757,11 +775,13 @@ def overview_kpis(filters=None) -> dict[str, int]:
         violencia_sexual=Count("id", filter=Q(VIOL_SEXU="1")),
         exploracao_sexual=Count("id", filter=Q(SEX_EXPLO="1")),
     )
-    municipios = sum(
-        1
-        for c in qs.exclude(ID_MN_OCOR="").values_list("ID_MN_OCOR", flat=True).distinct()
-        if not municipio_ignorado(c)
-    )
+    # Conta códigos IBGE distintos, só quando o município pertence à UF de
+    # ocorrência da notificação (ver ``municipio_da_uf``).
+    municipios = len({
+        c
+        for uf, c in qs.exclude(ID_MN_OCOR="").values_list("SG_UF_OCOR", "ID_MN_OCOR").distinct()
+        if not municipio_ignorado(c) and municipio_da_uf(c, uf)
+    })
     return {
         "total": agg["total"] or 0,
         "violencia_sexual": agg["violencia_sexual"] or 0,
